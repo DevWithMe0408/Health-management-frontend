@@ -1,0 +1,37 @@
+@import "tailwindcss";
+
+/* src/index.css */
+/* ... (Tailwind directives) ... */
+
+/* Custom Scrollbar for chart container */
+.custom-scrollbar::-webkit-scrollbar {
+  height: 8px; /* Chiều cao của thanh cuộn ngang */
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: #f1f1f1; /* Màu nền của track */
+  border-radius: 10px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #A7F3D0; /* Màu brand-green-light */
+  border-radius: 10px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #34D399; /* Màu brand-green */
+}
+
+/* For Firefox */
+.custom-scrollbar {
+  scrollbar-width: thin; /* "auto" or "thin" */
+  scrollbar-color: #A7F3D0 #f1f1f1; /* thumb and track color */
+}
+
+@keyframes modalOpen {
+          0% { opacity: 0; transform: scale(0.95); }
+          100% { opacity: 1; transform: scale(1); }
+        }
+        .animate-modalOpen {
+          animation: modalOpen 0.3s ease-out forwards;
+        }

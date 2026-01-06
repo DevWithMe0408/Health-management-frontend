@@ -1,0 +1,24 @@
+health-management-app/
+├── public/
+├── src/
+│   ├── assets/             # Chứa hình ảnh, fonts, etc.
+│   ├── components/         # Các UI components tái sử dụng (Button, Input, Card, etc.)
+│   │   ├── common/         # Các components chung nhất
+│   │   └── layout/         # Components cho layout (Header, Footer, Sidebar)
+│   ├── config/             # Cấu hình (ví dụ: URL API)
+│   ├── contexts/           # React Context API (ví dụ: AuthContext)
+│   ├── hooks/              # Custom React Hooks
+│   ├── layouts/            # Các layout chính của trang (AuthLayout, MainLayout)
+│   ├── pages/              # Các trang hoàn chỉnh (LoginPage, RegisterPage, HomePage)
+│   ├── services/           # Logic gọi API backend
+│   ├── styles/             # Global styles, theme variables
+│   ├── types/              # Định nghĩa TypeScript interfaces/types chung
+│   ├── utils/              # Các hàm tiện ích
+│   ├── App.tsx             # Component gốc của ứng dụng
+│   ├── main.tsx            # Điểm vào của ứng dụng
+│   └── vite-env.d.ts
+├── index.html
+├── package.json
+├── tsconfig.json
+├── tsconfig.node.json
+└── vite.config.ts
