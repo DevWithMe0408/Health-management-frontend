@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import type { SubmitHandler } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { toast } from 'sonner';
 import { LoginSchema } from '../types/auth.schemas';
 import type { LoginFormData } from '../types/auth.schemas';
 import { loginUser } from '../services/auth.service';
@@ -11,7 +12,6 @@ import { motion } from 'framer-motion';
 import AuthLayout from '../layouts/AuthLayout';
 
 const LoginPage: React.FC = () => {
-  const [serverError, setServerError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [showPassword, setShowPassword] = useState<boolean>(false);
   const { login } = useAuth();
@@ -28,18 +28,13 @@ const LoginPage: React.FC = () => {
 
   const onSubmit: SubmitHandler<LoginFormData> = async (data) => {
     setIsLoading(true);
-    setServerError(null);
     try {
       const authData = await loginUser(data);
-      login(authData);
-      console.log('Đăng nhập thành công:', authData);
-
-      const from = location.state?.from?.pathname || "/dashboard";
+      await login(authData);
+      const from = location.state?.from?.pathname || '/dashboard';
       navigate(from, { replace: true });
-
     } catch (error: any) {
-      console.error('Lỗi đăng nhập:', error);
-      setServerError(error.message || 'Đăng nhập thất bại. Vui lòng thử lại.');
+      toast.error(error.message || 'Đăng nhập thất bại. Vui lòng thử lại.');
     } finally {
       setIsLoading(false);
     }
@@ -47,13 +42,10 @@ const LoginPage: React.FC = () => {
 
   const formVariants = {
     hidden: { opacity: 0, y: 20 },
-    visible: { 
-      opacity: 1, 
+    visible: {
+      opacity: 1,
       y: 0,
-      transition: {
-        duration: 0.6,
-        staggerChildren: 0.1
-      }
+      transition: { duration: 0.6, staggerChildren: 0.1 }
     }
   };
 
@@ -67,30 +59,15 @@ const LoginPage: React.FC = () => {
       title="Welcome to HealthCare"
       subtitle="Sign in by entering information below"
       footerText="Don't have an account?"
-      footerLink={{
-        text: "Sign Up",
-        to: "/register"
-      }}
+      footerLink={{ text: 'Sign Up', to: '/register' }}
     >
-      <motion.form 
-        onSubmit={handleSubmit(onSubmit)} 
+      <motion.form
+        onSubmit={handleSubmit(onSubmit)}
         className="space-y-6"
         variants={formVariants}
         initial="hidden"
         animate="visible"
       >
-        {/* Server Error Alert */}
-        {serverError && (
-          <motion.div 
-            className="bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded-lg text-sm"
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.95 }}
-          >
-            {serverError}
-          </motion.div>
-        )}
-
         {/* Username Field */}
         <motion.div variants={itemVariants}>
           <label htmlFor="username" className="block text-sm font-medium text-gray-700 mb-2">
@@ -105,7 +82,7 @@ const LoginPage: React.FC = () => {
             whileFocus={{ scale: 1.02 }}
           />
           {errors.username && (
-            <motion.p 
+            <motion.p
               className="mt-1 text-sm text-red-600"
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
@@ -149,7 +126,7 @@ const LoginPage: React.FC = () => {
             </motion.button>
           </div>
           {errors.password && (
-            <motion.p 
+            <motion.p
               className="mt-1 text-sm text-red-600"
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}

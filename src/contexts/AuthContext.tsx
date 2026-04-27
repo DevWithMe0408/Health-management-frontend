@@ -5,10 +5,8 @@ import type { UserProfileData } from '../services/auth.service'; // Import UserP
 import { getCurrentUserProfile } from '../services/auth.service'; // Import hàm lấy thông tin user profile
 
 interface UserProfile extends UserProfileData {
-  userId: number; // Thêm userId vào UserProfile
-  // Bạn có thể thêm các trường khác nếu cần thiết
-  // Ví dụ: email, fullName, v.v.
-} // UserProfile giờ có cả userId
+  userId: string | null;
+}
 
 interface AuthContextType {
   isAuthenticated: boolean;

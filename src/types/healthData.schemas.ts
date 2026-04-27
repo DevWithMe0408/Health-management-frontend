@@ -38,5 +38,5 @@ export const SubmitHealthDataSchema = z.object({
 export type SubmitHealthDataFormData = z.infer<typeof SubmitHealthDataSchema>;
 
 export interface SubmitHealthApiRequest extends Partial<SubmitHealthDataFormData> {
-  userId: number;
+  userId: string;
 }
