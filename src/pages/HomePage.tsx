@@ -77,7 +77,6 @@ const HomePage: React.FC = () => {
   }, [user, accessToken]);
 
 
-  // Hàm fetch dữ liệu lịch sử cho một loại chỉ số (sử dụng useCallback)
   const fetchChartDataForType = useCallback(async (
     indicatorName: IndicatorTypeName,
     currentGranularity: Granularity,
@@ -87,26 +86,18 @@ const HomePage: React.FC = () => {
       try {
         const data = await getHistoricalHealthData(
           accessToken,
-          indicatorName, // Gửi tên của Enum (string)
+          indicatorName,
           currentDateRange.from.toISOString().split('T')[0],
           currentDateRange.to.toISOString().split('T')[0]
         );
-        setChartsData(prevData => ({
-          ...prevData,
-          [indicatorName]: data
-        }));
+        setChartsData(prevData => ({ ...prevData, [indicatorName]: data }));
       } catch (err: any) {
         console.error(`Error fetching ${indicatorName} history:`, err);
-        setChartsData(prevData => ({
-          ...prevData,
-          [indicatorName]: [] // Set mảng rỗng nếu lỗi
-        }));
-        // Có thể set một lỗi chung cho tất cả charts
-        if (!chartsError) setChartsError(`Lỗi tải dữ liệu biểu đồ cho ${indicatorName}.`);
+        setChartsData(prevData => ({ ...prevData, [indicatorName]: [] }));
+        setChartsError(`Lỗi tải dữ liệu biểu đồ cho ${indicatorName}.`);
       }
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [accessToken, chartsError]); // chartsError để tránh vòng lặp nếu có lỗi
+  }, [accessToken]); // KHÔNG đưa chartsError vào deps — gây vòng lặp vô hạn
 
 
   // useEffect để fetch dữ liệu cho các biểu đồ được chọn khi filter thay đổi

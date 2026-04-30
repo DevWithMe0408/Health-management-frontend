@@ -2,15 +2,15 @@ import React, { useState } from 'react';
 import type { SubmitHandler } from 'react-hook-form';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { toast } from 'sonner';
 import { RegisterSchema } from '../types/auth.schemas';
 import type { RegisterFormData } from '../types/auth.schemas';
-import { registerUser } from '../services/auth.service';
+import { registerUser, ApiError } from '../services/auth.service';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import AuthLayout from '../layouts/AuthLayout';
 
 const RegisterPage: React.FC = () => {
-  const [serverError, setServerError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [showPassword, setShowPassword] = useState<boolean>(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState<boolean>(false);
@@ -19,6 +19,7 @@ const RegisterPage: React.FC = () => {
   const {
     register,
     handleSubmit,
+    setError,
     formState: { errors },
   } = useForm<RegisterFormData>({
     resolver: zodResolver(RegisterSchema),
@@ -26,15 +27,25 @@ const RegisterPage: React.FC = () => {
 
   const onSubmit: SubmitHandler<RegisterFormData> = async (data) => {
     setIsLoading(true);
-    setServerError(null);
     try {
-      const response = await registerUser(data);
-      console.log('Đăng ký thành công:', response);
-      alert(response.message || 'Đăng ký thành công! Vui lòng đăng nhập.');
+      await registerUser(data);
+      toast.success('Đăng ký thành công! Vui lòng đăng nhập.');
       navigate('/login');
     } catch (error: any) {
-      console.error('Lỗi đăng ký:', error);
-      setServerError(error.message || 'Đăng ký thất bại. Vui lòng thử lại.');
+      if (error instanceof ApiError) {
+        switch (error.code) {
+          case 'AUTH-001':
+            setError('username', { message: error.message });
+            break;
+          case 'AUTH-002':
+            setError('email', { message: error.message });
+            break;
+          default:
+            toast.error(error.message);
+        }
+      } else {
+        toast.error(error.message || 'Đăng ký thất bại. Vui lòng thử lại.');
+      }
     } finally {
       setIsLoading(false);
     }
@@ -42,13 +53,10 @@ const RegisterPage: React.FC = () => {
 
   const formVariants = {
     hidden: { opacity: 0, y: 20 },
-    visible: { 
-      opacity: 1, 
+    visible: {
+      opacity: 1,
       y: 0,
-      transition: {
-        duration: 0.6,
-        staggerChildren: 0.1
-      }
+      transition: { duration: 0.6, staggerChildren: 0.1 }
     }
   };
 
@@ -62,30 +70,15 @@ const RegisterPage: React.FC = () => {
       title="Create Account"
       subtitle="Sign up by entering information below"
       footerText="Already have an account?"
-      footerLink={{
-        text: "Sign In",
-        to: "/login"
-      }}
+      footerLink={{ text: 'Sign In', to: '/login' }}
     >
-      <motion.form 
-        onSubmit={handleSubmit(onSubmit)} 
+      <motion.form
+        onSubmit={handleSubmit(onSubmit)}
         className="space-y-6"
         variants={formVariants}
         initial="hidden"
         animate="visible"
       >
-        {/* Server Error Alert */}
-        {serverError && (
-          <motion.div 
-            className="bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded-lg text-sm"
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.95 }}
-          >
-            {serverError}
-          </motion.div>
-        )}
-
         {/* Username Field */}
         <motion.div variants={itemVariants}>
           <label htmlFor="username" className="block text-sm font-medium text-gray-700 mb-2">
@@ -100,7 +93,7 @@ const RegisterPage: React.FC = () => {
             whileFocus={{ scale: 1.02 }}
           />
           {errors.username && (
-            <motion.p 
+            <motion.p
               className="mt-1 text-sm text-red-600"
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
@@ -124,7 +117,7 @@ const RegisterPage: React.FC = () => {
             whileFocus={{ scale: 1.02 }}
           />
           {errors.email && (
-            <motion.p 
+            <motion.p
               className="mt-1 text-sm text-red-600"
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
@@ -168,7 +161,7 @@ const RegisterPage: React.FC = () => {
             </motion.button>
           </div>
           {errors.password && (
-            <motion.p 
+            <motion.p
               className="mt-1 text-sm text-red-600"
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
@@ -212,7 +205,7 @@ const RegisterPage: React.FC = () => {
             </motion.button>
           </div>
           {errors.confirmPassword && (
-            <motion.p 
+            <motion.p
               className="mt-1 text-sm text-red-600"
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}

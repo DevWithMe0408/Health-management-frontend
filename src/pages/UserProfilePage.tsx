@@ -1,5 +1,5 @@
-// src/pages/UserProfilePage.tsx
 import React, { useState, useEffect } from 'react';
+import { toast } from 'sonner';
 import { useAuth } from '../contexts/AuthContext';
 import { getUserAccountDetails, updateUserAccountDetails } from '../services/user.service';
 import type { UserAccountDetails, UpdateUserAccountDetailsPayload } from '../services/user.service';
@@ -36,8 +36,7 @@ const UserProfilePage: React.FC = () => {
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [isEditing, setIsEditing] = useState<boolean>(false);
   const [isSaving, setIsSaving] = useState<boolean>(false);
-  const [error, setError] = useState<string | null>(null);
-  const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [loadError, setLoadError] = useState<string | null>(null);
 
   const {
     register,
@@ -61,20 +60,18 @@ const UserProfilePage: React.FC = () => {
 
   const fetchProfile = async () => {
     if (!accessToken) {
-      setError("Không tìm thấy thông tin xác thực.");
+      setLoadError("Không tìm thấy thông tin xác thực.");
       setIsLoading(false);
       return;
     }
 
     setIsLoading(true);
-    setError(null);
-    setSuccessMessage(null);
-    
+    setLoadError(null);
+
     try {
       const data = await getUserAccountDetails(accessToken);
       setProfileData(data);
-      
-      // CHỈ RESET FORM KHI KHÔNG ĐANG EDITING
+
       if (!isEditing) {
         const formData = {
           name: data.name || '',
@@ -82,13 +79,11 @@ const UserProfilePage: React.FC = () => {
           birthDate: data.birthDate ? new Date(data.birthDate) : null,
           gender: data.gender || '',
         };
-        
-        console.log('Resetting form with:', formData);
         reset(formData);
       }
     } catch (err: any) {
       console.error("Error fetching profile:", err);
-      setError(err.message || "Không thể tải thông tin tài khoản.");
+      setLoadError(err.message || "Không thể tải thông tin tài khoản.");
       setProfileData(null);
     } finally {
       setIsLoading(false);
@@ -100,10 +95,7 @@ const UserProfilePage: React.FC = () => {
   }, [accessToken]); // BỎ isEditing KHỎI DEPENDENCY
 
   const handleEditToggle = () => {
-    console.log('Edit toggle clicked, current isEditing:', isEditing);
-    
     if (isEditing && profileData) {
-      // Reset form khi hủy chỉnh sửa
       const formData = {
         name: profileData.name || '',
         phoneNumber: profileData.phoneNumber || '',
@@ -112,82 +104,65 @@ const UserProfilePage: React.FC = () => {
       };
       reset(formData);
     }
-    
     setIsEditing(!isEditing);
-    setError(null);
-    setSuccessMessage(null);
-    
-    console.log('After toggle, isEditing will be:', !isEditing);
   };
 
   const onSubmit: SubmitHandler<UpdateProfileFormData> = async (formData) => {
-    console.log('Form submitted with data:', formData);
-    console.log('isDirty:', isDirty);
-    
     if (!accessToken) {
-      setError("Phiên đăng nhập hết hạn. Vui lòng đăng nhập lại.");
+      toast.error("Phiên đăng nhập hết hạn. Vui lòng đăng nhập lại.");
       return;
     }
 
-    // KIỂM TRA CÓ THAY ĐỔI THỰC SỰ KHÔNG
     if (!isDirty) {
-      setSuccessMessage("Không có thay đổi nào để lưu.");
+      toast.info("Không có thay đổi nào để lưu.");
       setIsEditing(false);
       return;
     }
 
     setIsSaving(true);
-    setError(null);
-    setSuccessMessage(null);
 
-    // Validation và tạo payload
     const payload: UpdateUserAccountDetailsPayload = {};
-    
+
     if (formData.name && formData.name.trim()) {
       payload.name = formData.name.trim();
     }
-    
+
     if (formData.phoneNumber && formData.phoneNumber.trim()) {
       const phoneRegex = /^(0|\+?84)?\d{9,10}$/;
       if (!phoneRegex.test(formData.phoneNumber.trim())) {
-        setError("Số điện thoại không hợp lệ");
+        toast.error("Số điện thoại không hợp lệ");
         setIsSaving(false);
         return;
       }
       payload.phoneNumber = formData.phoneNumber.trim();
     }
-    
+
     if (formData.birthDate instanceof Date) {
       if (formData.birthDate > new Date()) {
-        setError("Ngày sinh không thể là tương lai");
+        toast.error("Ngày sinh không thể là tương lai");
         setIsSaving(false);
         return;
       }
       payload.birthDate = formData.birthDate.toISOString().split('T')[0];
     }
-    
+
     if (formData.gender && ["MALE", "FEMALE", "OTHER"].includes(formData.gender)) {
       payload.gender = formData.gender;
     }
 
-    console.log('Payload to send:', payload);
-
     try {
       const updatedProfile = await updateUserAccountDetails(accessToken, payload);
       setProfileData(updatedProfile);
-      setSuccessMessage("Cập nhật thông tin tài khoản thành công!");
+      toast.success("Cập nhật thông tin tài khoản thành công!");
       setIsEditing(false);
-      
-      // Reset form với dữ liệu mới
-      const newFormData = {
+      reset({
         name: updatedProfile.name || '',
         phoneNumber: updatedProfile.phoneNumber || '',
         birthDate: updatedProfile.birthDate ? new Date(updatedProfile.birthDate) : null,
         gender: updatedProfile.gender || '',
-      };
-      reset(newFormData);
+      });
     } catch (err: any) {
-      setError(err.message || "Lỗi khi cập nhật thông tin.");
+      toast.error(err.message || "Lỗi khi cập nhật thông tin.");
     } finally {
       setIsSaving(false);
     }
@@ -206,12 +181,12 @@ const UserProfilePage: React.FC = () => {
     );
   }
 
-  if (error && !isEditing) {
+  if (loadError) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-emerald-100 flex items-center justify-center">
         <div className="text-center">
-          <p className="text-red-600 mb-4">{error}</p>
-          <button 
+          <p className="text-red-600 mb-4">{loadError}</p>
+          <button
             onClick={fetchProfile}
             className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700"
           >
@@ -269,17 +244,6 @@ const UserProfilePage: React.FC = () => {
 
             {/* Content của thẻ */}
             <div className="p-8">
-              {successMessage && (
-                <p className="mb-4 text-sm text-green-600 bg-green-100 p-3 rounded-md">
-                  {successMessage}
-                </p>
-              )}
-              {error && isEditing && (
-                <p className="mb-4 text-sm text-red-600 bg-red-100 p-3 rounded-md">
-                  {error}
-                </p>
-              )}
-
               {/* FORM CHỈ HIỂN THỊ KHI ĐANG EDITING */}
               {isEditing ? (
                 <form onSubmit={handleSubmit(onSubmit)}>

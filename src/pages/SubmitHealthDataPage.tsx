@@ -2,20 +2,18 @@ import React, { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import type { SubmitHandler } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { toast } from 'sonner';
 import { SubmitHealthDataSchema } from '../types/healthData.schemas';
 import type { SubmitHealthDataFormData } from '../types/healthData.schemas';
-import type {SubmitHealthApiRequest} from '../types/healthData.schemas';
-import { submitHealthData } from '../services/healthData.service';
-import {getLatestHealthData} from '../services/healthData.service';
+import type { SubmitHealthApiRequest } from '../types/healthData.schemas';
+import { submitHealthData, getLatestHealthData } from '../services/healthData.service';
 import { useAuth } from '../contexts/AuthContext';
-import InputField from '../components/common/InputField'; // Sử dụng lại
-// Tailwind classes cho loading state 
-const loadingOverlayClass = "absolute inset-0 bg-white bg-opacity-75 flex items-center justify-center z-10";
+import InputField from '../components/common/InputField';
+
 const spinnerClass = "animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500";
 
 const SubmitHealthDataPage: React.FC = () => {
   const { user, accessToken } = useAuth();
-  const [serverMessage, setServerMessage] = useState<{ type: 'success' | 'error' | 'info'; text: string } | null>(null); // ✅ Thêm 'info' type
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [isFetchingLatestData, setIsFetchingLatestData] = useState<boolean>(true);
 
@@ -61,17 +59,9 @@ const SubmitHealthDataPage: React.FC = () => {
     const fetchLatestData = async () => {
       if (user && accessToken) {
         setIsFetchingLatestData(true);
-        setServerMessage(null);
         try {
           const latestData = await getLatestHealthData(accessToken);
-          console.log("Fetched latest data:", latestData);
-
           const formValues: SubmitHealthDataFormData = createEmptyFormValues();
-          // Ánh xạ dữ liệu từ API response vào form fields
-          // Tên trường trong form phải khớp với key trong latestData.baseMetrics (tên của IndicatorType)
-          // hoặc bạn cần một map để chuyển đổi.
-          // Ví dụ, nếu IndicatorType.WEIGHT là "WEIGHT"
-          // và trường form là "weight" (chữ thường)
           if (latestData.baseMetrics) {
             formValues.height = latestData.baseMetrics["HEIGHT"] ?? undefined;
             formValues.weight = latestData.baseMetrics["WEIGHT"] ?? undefined;
@@ -80,13 +70,11 @@ const SubmitHealthDataPage: React.FC = () => {
             formValues.neck = latestData.baseMetrics["NECK"] ?? undefined;
             formValues.bust = latestData.baseMetrics["BUST"] ?? undefined;
             formValues.activityFactor = latestData.baseMetrics["ACTIVITY_FACTOR"] ?? undefined;
-            // Không tự động điền các chỉ số BMINew, BMRNew,... từ dữ liệu cũ
           }
-          reset(formValues); // Điền dữ liệu vào form và reset trạng thái dirty
+          reset(formValues);
         } catch (error: any) {
           console.error("Error fetching latest health data:", error);
-          setServerMessage({ type: 'error', text: `Không thể tải dữ liệu gần nhất: ${error.message}` });
-          // Reset về form rỗng nếu không tải được
+          toast.error(`Không thể tải dữ liệu gần nhất: ${error.message}`);
           reset(createEmptyFormValues());
         } finally {
           setIsFetchingLatestData(false);
@@ -103,74 +91,61 @@ const SubmitHealthDataPage: React.FC = () => {
 
 const onSubmit: SubmitHandler<SubmitHealthDataFormData> = async (formData) => {
   if (!user || !accessToken) {
-    setServerMessage({ type: 'error', text: 'Bạn cần đăng nhập để thực hiện hành động này.' });
+    toast.error('Bạn cần đăng nhập để thực hiện hành động này.');
     return;
   }
-  //logic kiểm tra isDirty và empty values
+
   const hasValidData = Object.values(formData).some(val => val != null && val !== 0);
   if (!isDirty && !hasValidData) {
-      setServerMessage({ 
-        type: 'info', 
-        text: 'Không có dữ liệu mới nào được nhập để gửi.' 
-      });
-      return;
-    }
+    toast.info('Không có dữ liệu mới nào được nhập để gửi.');
+    return;
+  }
 
   setIsLoading(true);
-  setServerMessage(null);
 
   try {
     const cleanedData: Partial<SubmitHealthDataFormData> = {};
     for (const key in formData) {
-        const value = formData[key as keyof SubmitHealthDataFormData];
-        // Chỉ kiểm tra null/undefined, không cần kiểm tra empty string
-        if (value != null) {
-          cleanedData[key as keyof SubmitHealthDataFormData] = value;
-        }
+      const value = formData[key as keyof SubmitHealthDataFormData];
+      if (value != null) {
+        cleanedData[key as keyof SubmitHealthDataFormData] = value;
       }
-  
-    
+    }
+
     const apiRequestData: SubmitHealthApiRequest = {
-      ...(cleanedData as SubmitHealthDataFormData), // Ép kiểu sau khi đã làm sạch
+      ...(cleanedData as SubmitHealthDataFormData),
       userId: user.userId!,
     };
 
-     const response = await submitHealthData(apiRequestData, accessToken);
-      setServerMessage({ type: 'success', text: response.message });
-      // Sau khi submit thành công, tải lại dữ liệu mới nhất để form được cập nhật
-      // Hoặc chỉ reset nếu bạn muốn người dùng nhập mới hoàn toàn
-      // reset(); // Cách cũ
-      if (user && accessToken) { // Tải lại dữ liệu mới nhất
-        setIsFetchingLatestData(true);
-        try {
-          const latestData = await getLatestHealthData(accessToken);
-          const formValues: SubmitHealthDataFormData = createEmptyFormValues();
-          
-          if (latestData.baseMetrics) {
-            formValues.height = latestData.baseMetrics["HEIGHT"] ?? null;
-            formValues.weight = latestData.baseMetrics["WEIGHT"] ?? null;
-            formValues.waist = latestData.baseMetrics["WAIST"] ?? null;
-            formValues.hip = latestData.baseMetrics["HIP"] ?? null;
-            formValues.neck = latestData.baseMetrics["NECK"] ?? null;
-            formValues.bust = latestData.baseMetrics["BUST"] ?? null;
-            formValues.activityFactor = latestData.baseMetrics["ACTIVITY_FACTOR"] ?? null;
-          }
-            reset(formValues);
-          } catch(err) {
-            console.error("Failed to refresh form with latest data after submit:", err);
-            reset(createEmptyFormValues()); // fallback to empty form
-          } finally {
-            setIsFetchingLatestData(false)
-            };
-      } else {
-        reset(createEmptyFormValues()); // Nếu không có user/token, reset về form rỗng
+    const response = await submitHealthData(apiRequestData, accessToken);
+    toast.success(response.message || 'Dữ liệu đã được gửi thành công!');
+
+    setIsFetchingLatestData(true);
+    try {
+      const latestData = await getLatestHealthData(accessToken);
+      const formValues: SubmitHealthDataFormData = createEmptyFormValues();
+      if (latestData.baseMetrics) {
+        formValues.height = latestData.baseMetrics["HEIGHT"] ?? null;
+        formValues.weight = latestData.baseMetrics["WEIGHT"] ?? null;
+        formValues.waist = latestData.baseMetrics["WAIST"] ?? null;
+        formValues.hip = latestData.baseMetrics["HIP"] ?? null;
+        formValues.neck = latestData.baseMetrics["NECK"] ?? null;
+        formValues.bust = latestData.baseMetrics["BUST"] ?? null;
+        formValues.activityFactor = latestData.baseMetrics["ACTIVITY_FACTOR"] ?? null;
       }
-    } catch (error: any) {
-      setServerMessage({ type: 'error', text: error.message || 'Gửi dữ liệu thất bại.' });
+      reset(formValues);
+    } catch (err) {
+      console.error("Failed to refresh form with latest data after submit:", err);
+      reset(createEmptyFormValues());
     } finally {
-      setIsLoading(false);
+      setIsFetchingLatestData(false);
     }
-  };
+  } catch (error: any) {
+    toast.error(error.message || 'Gửi dữ liệu thất bại.');
+  } finally {
+    setIsLoading(false);
+  }
+};
 
   if (isFetchingLatestData) {
     return (
@@ -185,18 +160,6 @@ const onSubmit: SubmitHandler<SubmitHealthDataFormData> = async (formData) => {
     <div className="container mx-auto px-4 py-8">
       <h2 className="text-2xl font-semibold text-gray-700 mb-6">Nhập/Cập nhật Chỉ Số Sức Khỏe</h2>
       {/* ... (phần hiển thị serverMessage và form JSX như trước, sử dụng Tailwind classes) ... */}
-      {serverMessage && (
-        <p 
-          className={`p-3 mb-5 rounded-md text-sm ${
-            serverMessage.type === 'success' ? 'bg-green-100 border border-green-400 text-green-700' :
-            serverMessage.type === 'error' ? 'bg-red-100 border border-red-400 text-red-700' :
-            'bg-blue-100 border border-blue-400 text-blue-700' // Cho type 'info'
-          }`}
-        >
-          {serverMessage.text}
-        </p>
-      )}
-
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
         {/* ... (phần form fields với Tailwind) ... */}
         <p className="text-sm italic text-gray-500">

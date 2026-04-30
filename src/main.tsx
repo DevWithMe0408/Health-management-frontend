@@ -1,13 +1,15 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
+import { Toaster } from 'sonner';
 import App from './App.tsx';
-import { AuthProvider } from './contexts/AuthContext.tsx'; // Import AuthProvider
+import { AuthProvider } from './contexts/AuthContext.tsx';
 import './index.css';
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
-    <AuthProvider> {/* Bọc App bằng AuthProvider */}
+    <AuthProvider>
       <App />
+      <Toaster position="top-right" richColors closeButton />
     </AuthProvider>
   </React.StrictMode>,
 );

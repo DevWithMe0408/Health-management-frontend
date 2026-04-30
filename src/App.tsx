@@ -14,6 +14,8 @@ import ProtectedRoute from './components/common/ProtectedRoute';
 import { useAuth } from './contexts/AuthContext'; // Import useAuth
 import UserProfilePage from './pages/UserProfilePage'; // Import UserProfilePage
 
+import AdminRoute from './components/common/AdminRoute';
+
 const AppRoutes: React.FC = () => {
   const { isAuthenticated, isLoading } = useAuth();
 
@@ -90,6 +92,12 @@ const AppRoutes: React.FC = () => {
       <Route path="/notifications" element={<ProtectedRoute><MainLayout><div>Notifications Page (Coming Soon)</div></MainLayout></ProtectedRoute>} />
       
       <Route path="*" element={<MainLayout><NotFoundPage /></MainLayout>} />
+
+        {/* cac route trang admin */}
+        {/* Admin routes - chi ROLE_ADMIN moi truy cap */}
+      
+
+    
     </Routes>
   );
 }
