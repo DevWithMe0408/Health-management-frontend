@@ -7,14 +7,23 @@ import HomePage from './pages/HomePage';
 import SubmitHealthDataPage from './pages/SubmitHealthDataPage';
 import HealthStatsPage from './pages/HealthStatsPage';
 import NotFoundPage from './pages/NotFoundPage';
-import LandingPage from './pages/LandingPage'; // Import LandingPage
+import LandingPage from './pages/LandingPage';
 import MainLayout from './layouts/MainLayout';
 import AuthLayout from './layouts/AuthLayout';
 import ProtectedRoute from './components/common/ProtectedRoute';
-import { useAuth } from './contexts/AuthContext'; // Import useAuth
-import UserProfilePage from './pages/UserProfilePage'; // Import UserProfilePage
+import { useAuth } from './contexts/AuthContext';
+import UserProfilePage from './pages/UserProfilePage';
 
 import AdminRoute from './components/common/AdminRoute';
+import AdminLayout from './layouts/AdminLayout';
+import AdminDashboardPage from './pages/adminPage/AdminDashboardPage';
+import GoalConfigPage from './pages/adminPage/GoalConfigPage';
+import MealConfigPage from './pages/adminPage/MealConfigPage';
+import PenaltyConfigPage from './pages/adminPage/PenaltyConfigPage';
+import ScoringConfigPage from './pages/adminPage/ScoringConfigPage';
+import SystemConfigPage from './pages/adminPage/SystemConfigPage';
+import UsersListPage from './pages/adminPage/UsersListPage';
+import UserDetailPage from './pages/adminPage/UserDetailPage';
 
 const AppRoutes: React.FC = () => {
   const { isAuthenticated, isLoading } = useAuth();
@@ -93,11 +102,15 @@ const AppRoutes: React.FC = () => {
       
       <Route path="*" element={<MainLayout><NotFoundPage /></MainLayout>} />
 
-        {/* cac route trang admin */}
-        {/* Admin routes - chi ROLE_ADMIN moi truy cap */}
-      
-
-    
+      {/* Admin routes — chỉ ROLE_ADMIN mới truy cập */}
+      <Route path="/admin" element={<AdminRoute><AdminLayout><AdminDashboardPage /></AdminLayout></AdminRoute>} />
+      <Route path="/admin/configs/goals" element={<AdminRoute><AdminLayout><GoalConfigPage /></AdminLayout></AdminRoute>} />
+      <Route path="/admin/configs/meals" element={<AdminRoute><AdminLayout><MealConfigPage /></AdminLayout></AdminRoute>} />
+      <Route path="/admin/configs/penalties" element={<AdminRoute><AdminLayout><PenaltyConfigPage /></AdminLayout></AdminRoute>} />
+      <Route path="/admin/configs/scoring" element={<AdminRoute><AdminLayout><ScoringConfigPage /></AdminLayout></AdminRoute>} />
+      <Route path="/admin/configs/system" element={<AdminRoute><AdminLayout><SystemConfigPage /></AdminLayout></AdminRoute>} />
+      <Route path="/admin/users" element={<AdminRoute><AdminLayout><UsersListPage /></AdminLayout></AdminRoute>} />
+      <Route path="/admin/users/:userId" element={<AdminRoute><AdminLayout><UserDetailPage /></AdminLayout></AdminRoute>} />
     </Routes>
   );
 }
