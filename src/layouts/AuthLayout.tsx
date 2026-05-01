@@ -24,7 +24,7 @@ const AuthLayout: React.FC<AuthLayoutProps> = ({
 }) => {
   const location = useLocation();
   const [currentPage, setCurrentPage] = useState<'login' | 'register'>('login');
-  const [isTransitioning, setIsTransitioning] = useState(false);
+  const [, setIsTransitioning] = useState(false);
 
   useEffect(() => {
     const newPage = location.pathname === '/register' ? 'register' : 'login';

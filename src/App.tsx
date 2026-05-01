@@ -9,7 +9,6 @@ import HealthStatsPage from './pages/HealthStatsPage';
 import NotFoundPage from './pages/NotFoundPage';
 import LandingPage from './pages/LandingPage';
 import MainLayout from './layouts/MainLayout';
-import AuthLayout from './layouts/AuthLayout';
 import ProtectedRoute from './components/common/ProtectedRoute';
 import { useAuth } from './contexts/AuthContext';
 import UserProfilePage from './pages/UserProfilePage';

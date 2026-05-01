@@ -7,7 +7,6 @@ import {
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
-  Legend,
   // AreaChart, Area, // Nếu muốn biểu đồ vùng
   // BarChart, Bar, // Nếu muốn biểu đồ cột
 } from 'recharts';

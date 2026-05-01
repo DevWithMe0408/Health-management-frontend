@@ -33,7 +33,7 @@ export const submitHealthData = async (data: SubmitHealthApiRequest, token: stri
     });
     return { message: (response.data as any)?.message || 'Dữ liệu đã được gửi thành công!' };
   } catch (error) {
-    extractErrorMessage(error, 'Gửi dữ liệu thất bại.');
+    return extractErrorMessage(error, 'Gửi dữ liệu thất bại.');
   }
 };
 
@@ -44,7 +44,7 @@ export const getLatestHealthData = async (token: string): Promise<LatestHealthDa
     });
     return response.data;
   } catch (error) {
-    extractErrorMessage(error, 'Lấy dữ liệu gần nhất thất bại.');
+    return extractErrorMessage(error, 'Lấy dữ liệu gần nhất thất bại.');
   }
 };
 
@@ -71,7 +71,7 @@ export const getDashboardMetrics = async (token: string): Promise<DashboardMetri
     });
     return response.data;
   } catch (error) {
-    extractErrorMessage(error, 'Lấy dữ liệu dashboard thất bại.');
+    return extractErrorMessage(error, 'Lấy dữ liệu dashboard thất bại.');
   }
 };
 
@@ -100,6 +100,6 @@ export const getHistoricalHealthData = async (
     );
     return response.data;
   } catch (error) {
-    extractErrorMessage(error, `Lấy dữ liệu lịch sử cho ${indicatorType} thất bại.`);
+    return extractErrorMessage(error, `Lấy dữ liệu lịch sử cho ${indicatorType} thất bại.`);
   }
 };

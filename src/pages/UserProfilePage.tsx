@@ -5,7 +5,6 @@ import { getUserAccountDetails, updateUserAccountDetails } from '../services/use
 import type { UserAccountDetails, UpdateUserAccountDetailsPayload } from '../services/user.service';
 import { useForm, Controller } from 'react-hook-form'; 
 import type {SubmitHandler} from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 
 // Import icons
@@ -18,7 +17,6 @@ import {
   ShieldCheckIcon,
   PencilIcon 
 } from '@heroicons/react/24/outline';
-import InputField from '../components/common/InputField';
 
 // Schema validation cho form chỉnh sửa - SỬA LẠI HOÀN TOÀN
 const UpdateProfileSchema = z.object({
@@ -31,7 +29,7 @@ const UpdateProfileSchema = z.object({
 type UpdateProfileFormData = z.infer<typeof UpdateProfileSchema>;
 
 const UserProfilePage: React.FC = () => {
-  const { accessToken, user: authUser, login } = useAuth();
+  const { accessToken } = useAuth();
   const [profileData, setProfileData] = useState<UserAccountDetails | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [isEditing, setIsEditing] = useState<boolean>(false);
@@ -43,7 +41,7 @@ const UserProfilePage: React.FC = () => {
     handleSubmit,
     reset,
     control,
-    formState: { errors, isDirty },
+    formState: { isDirty },
     watch,
   } = useForm<UpdateProfileFormData>({
     defaultValues: {

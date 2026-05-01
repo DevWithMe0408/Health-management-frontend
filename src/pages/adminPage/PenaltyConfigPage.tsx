@@ -48,7 +48,7 @@ const PenaltyConfigPage: React.FC = () => {
       if (!prev) return prev;
       return {
         ...prev,
-        [section]: { ...(prev[section] as Record<string, number>), [field]: value },
+        [section]: { ...(prev[section] as unknown as Record<string, number>), [field]: value },
       };
     });
     setIsDirty(true);

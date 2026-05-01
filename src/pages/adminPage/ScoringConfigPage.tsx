@@ -47,7 +47,7 @@ const ScoringConfigPage: React.FC = () => {
       const section = parts[0] as keyof ScoringConfigUpdateRequest;
       return {
         ...prev,
-        [section]: { ...(prev[section] as Record<string, number>), [parts[1]]: value },
+        [section]: { ...(prev[section] as unknown as Record<string, number>), [parts[1]]: value },
       };
     });
     setIsDirty(true);
