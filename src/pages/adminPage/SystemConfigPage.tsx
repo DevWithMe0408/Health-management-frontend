@@ -222,7 +222,7 @@ const SystemConfigPage: React.FC = () => {
           <button type="button" onClick={handleCancel} disabled={!isDirty}
             className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 disabled:opacity-40">Hủy</button>
           <button type="button" onClick={handleSave} disabled={!isDirty || saving || hasError}
-            className="px-4 py-2 text-sm font-medium text-white bg-brand-green rounded-md hover:bg-green-700 disabled:opacity-40">
+            className="px-4 py-2 text-sm font-medium text-white bg-gray-500 rounded-md hover:bg-brand-green disabled:opacity-40 disabled:cursor-not-allowed transition-colors">
             {saving ? 'Đang lưu…' : 'Lưu thay đổi'}
           </button>
         </div>

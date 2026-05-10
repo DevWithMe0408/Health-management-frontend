@@ -170,7 +170,7 @@ const MealConfigPage: React.FC = () => {
             Hủy
           </button>
           <button type="button" onClick={handleSave} disabled={!isDirty || saving}
-            className="px-4 py-2 text-sm font-medium text-white bg-brand-green rounded-md hover:bg-green-700 disabled:opacity-40">
+            className="px-4 py-2 text-sm font-medium text-white bg-gray-500 rounded-md hover:bg-brand-green disabled:opacity-40 disabled:cursor-not-allowed transition-colors">
             {saving ? 'Đang lưu…' : 'Lưu thay đổi'}
           </button>
         </div>
