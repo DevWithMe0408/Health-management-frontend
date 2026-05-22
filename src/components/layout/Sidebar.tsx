@@ -1,7 +1,7 @@
 import React from 'react';
 import { NavLink, useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
-import { HomeIcon, PencilSquareIcon, BeakerIcon, BellIcon, UserCircleIcon, ArrowLeftOnRectangleIcon } from '@heroicons/react/24/outline';
+import { HomeIcon, PencilSquareIcon, BeakerIcon, BellIcon, ArrowLeftOnRectangleIcon } from '@heroicons/react/24/outline';
 
 interface NavItemProps {
   to: string;

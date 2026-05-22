@@ -5,7 +5,7 @@ import { getDashboardMetrics, getHistoricalHealthData } from '../services/health
 import type { DashboardMetricsApiResponse, HistoricalDataPoint } from '../services/healthData.service';
 import MetricCard from '../components/dashboard/MetricCard';
 import TrendChart from '../components/dashboard/TrendChart';
-import { INDICATOR_TYPES, getIndicatorInfo, IndicatorCategory, getAllIndicatorInfos } from '../model/IndicatorType';
+import { IndicatorCategory, getAllIndicatorInfos } from '../model/IndicatorType';
 import type {IndicatorTypeName} from '../model/IndicatorType';
 import { XMarkIcon } from '@heroicons/react/24/outline'; // Import XMarkIcon
 
@@ -79,7 +79,7 @@ const HomePage: React.FC = () => {
 
   const fetchChartDataForType = useCallback(async (
     indicatorName: IndicatorTypeName,
-    currentGranularity: Granularity,
+    _currentGranularity: Granularity,
     currentDateRange: { from: Date | null; to: Date | null }
   ) => {
     if (accessToken && currentDateRange.from && currentDateRange.to) {
