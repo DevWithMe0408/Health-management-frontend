@@ -466,3 +466,52 @@ Notes:
 
 - This phase addresses the blocker where Tailwind v4 skipped custom brand utility generation.
 - Bonus onboarding animations, WizardProgress changes, Step 4 checkmark changes, page transitions, and config cleanup are intentionally deferred to later phases.
+
+### Step 13 - Onboarding Polish Bonus Phase B
+
+Status: completed
+
+Completed changes:
+
+- Updated `WizardProgress` completed state:
+  - increased step node size from `h-8 w-8` to `h-9 w-9`;
+  - changed completed state to solid brand-green with white checkmark;
+  - added a soft brand-green shadow and longer transition.
+- Updated Step 2 goal selected checkmark:
+  - increased selected badge to `h-7 w-7`;
+  - added brand-green shadow;
+  - added `wizardPop` animation.
+- Updated Step 4 activity selected state:
+  - replaced the radio dot with a checkmark SVG;
+  - matched Step 2 badge sizing and animation.
+- Updated onboarding input styles:
+  - changed transition to `transition-all duration-200 ease-out`;
+  - added hover border feedback;
+  - added brand-green focus ring;
+  - made error fields return to white background on focus.
+- Added shared `@keyframes wizardPop` in `src/index.css`.
+
+Verification:
+
+- `npx tsc -b --pretty false` passed.
+- `npx eslint src\components\onboarding\shared\WizardProgress.tsx src\components\onboarding\steps\Step2Goal.tsx src\components\onboarding\steps\Step4Activity.tsx src\components\onboarding\shared\formStyles.ts` passed.
+- `npm run build` passed. Vite reported the existing large chunk warning.
+- Verified generated CSS contains:
+  - `@keyframes wizardPop`;
+  - `.focus\:ring-brand-green-light:focus`;
+  - `.shadow-brand-green\/30`;
+  - `.duration-200`.
+
+Files touched:
+
+- `src/components/onboarding/shared/WizardProgress.tsx`
+- `src/components/onboarding/steps/Step2Goal.tsx`
+- `src/components/onboarding/steps/Step4Activity.tsx`
+- `src/components/onboarding/shared/formStyles.ts`
+- `src/index.css`
+- `doc/context.md`
+
+Notes:
+
+- This phase only covers Phase B from `doc/RefactorUI/Onboarding/HuongDanFixTailwindV426_5.md`.
+- Page transitions with Framer Motion and Tailwind config cleanup are still deferred.

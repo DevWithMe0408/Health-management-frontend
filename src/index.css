@@ -58,3 +58,9 @@
         .animate-modalOpen {
           animation: modalOpen 0.3s ease-out forwards;
         }
+
+@keyframes wizardPop {
+  0% { transform: scale(0.6); opacity: 0; }
+  60% { transform: scale(1.15); opacity: 1; }
+  100% { transform: scale(1); opacity: 1; }
+}

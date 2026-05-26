@@ -17,16 +17,16 @@ const WizardProgress: React.FC<WizardProgressProps> = ({ current }) => {
           return (
             <React.Fragment key={step}>
               <div
-                className={`grid h-8 w-8 shrink-0 place-items-center rounded-full text-sm font-semibold transition ${
+                className={`relative grid h-9 w-9 shrink-0 place-items-center rounded-full text-sm font-semibold transition-all duration-300 ${
                   done
-                    ? 'border-2 border-brand-green bg-brand-green text-white'
+                    ? 'bg-brand-green text-white shadow-md shadow-brand-green/30'
                     : active
                       ? 'border-2 border-brand-green bg-white text-brand-green ring-4 ring-brand-green-light'
                       : 'border border-gray-200 bg-white text-gray-400'
                 }`}
               >
                 {done ? (
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
                     <path
                       d="M5 12l5 5L20 7"
                       stroke="currentColor"

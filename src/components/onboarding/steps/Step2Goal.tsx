@@ -128,7 +128,10 @@ const Step2Goal: React.FC<Step2GoalProps> = ({ onNext }) => {
                 }`}
               >
                 {selected && (
-                  <span className="absolute right-3 top-3 grid h-6 w-6 place-items-center rounded-full bg-brand-green text-white">
+                  <span
+                    className="absolute right-3 top-3 grid h-7 w-7 place-items-center rounded-full bg-brand-green text-white shadow-md shadow-brand-green/40"
+                    style={{ animation: 'wizardPop 200ms ease-out' }}
+                  >
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
                       <path
                         d="M5 12l5 5L20 7"

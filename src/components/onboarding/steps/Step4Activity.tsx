@@ -117,11 +117,24 @@ const Step4Activity: React.FC<Step4ActivityProps> = ({ onBack, onNext }) => {
                     <div className="mt-0.5 text-xs text-gray-500">{option.description}</div>
                   </div>
                   <span
-                    className={`grid h-5 w-5 flex-shrink-0 place-items-center rounded-full border-2 ${
-                      selected ? 'border-brand-green bg-brand-green' : 'border-gray-300 bg-white'
+                    className={`grid h-7 w-7 flex-shrink-0 place-items-center rounded-full transition-all duration-200 ${
+                      selected
+                        ? 'bg-brand-green text-white shadow-md shadow-brand-green/40'
+                        : 'border-2 border-gray-200 bg-white'
                     }`}
+                    style={selected ? { animation: 'wizardPop 200ms ease-out' } : undefined}
                   >
-                    {selected && <span className="h-1.5 w-1.5 rounded-full bg-white" />}
+                    {selected && (
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+                        <path
+                          d="M5 12l5 5L20 7"
+                          stroke="currentColor"
+                          strokeWidth="3"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
+                      </svg>
+                    )}
                   </span>
                 </button>
               );
