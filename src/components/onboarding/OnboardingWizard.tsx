@@ -1,4 +1,6 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
+import { AnimatePresence, motion } from 'framer-motion';
+import type { Variants } from 'framer-motion';
 import { useSearchParams } from 'react-router-dom';
 import { useOnboarding } from '../../contexts/OnboardingContext';
 import OnboardingShell from './shared/OnboardingShell';
@@ -15,15 +17,24 @@ const getAllowedStep = (state: ReturnType<typeof useOnboarding>['state']) => {
   return 5;
 };
 
+const stepVariants: Variants = {
+  initial: (direction: number) => ({ opacity: 0, x: direction > 0 ? 24 : -24 }),
+  animate: { opacity: 1, x: 0 },
+  exit: (direction: number) => ({ opacity: 0, x: direction > 0 ? -24 : 24 }),
+};
+
 const OnboardingWizard: React.FC = () => {
   const { state, setStep } = useOnboarding();
   const [searchParams, setSearchParams] = useSearchParams();
+  const [direction, setDirection] = useState(1);
   const { currentStep } = state;
 
   useEffect(() => {
     const stepFromUrl = Number(searchParams.get('step'));
     if (Number.isInteger(stepFromUrl) && stepFromUrl >= 1 && stepFromUrl <= 5) {
-      setStep(Math.min(stepFromUrl, getAllowedStep(state)));
+      const targetStep = Math.min(stepFromUrl, getAllowedStep(state));
+      setDirection(targetStep >= currentStep ? 1 : -1);
+      setStep(targetStep);
     }
     // Run once on first load so the URL can restore the visible step.
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -33,17 +44,33 @@ const OnboardingWizard: React.FC = () => {
     setSearchParams({ step: String(currentStep) }, { replace: true });
   }, [currentStep, setSearchParams]);
 
-  const goToStep = (step: number) => setStep(Math.min(step, getAllowedStep(state)));
+  const goToStep = (step: number) => {
+    const targetStep = Math.min(step, getAllowedStep(state));
+    setDirection(targetStep >= currentStep ? 1 : -1);
+    setStep(targetStep);
+  };
   const goNext = () => goToStep(currentStep + 1);
   const goBack = () => goToStep(currentStep - 1);
 
   return (
     <OnboardingShell>
-      {currentStep === 1 && <Step1Welcome onNext={goNext} />}
-      {currentStep === 2 && <Step2Goal onNext={goNext} />}
-      {currentStep === 3 && <Step3Personal onBack={goBack} onNext={goNext} />}
-      {currentStep === 4 && <Step4Activity onBack={goBack} onNext={goNext} />}
-      {currentStep === 5 && <Step5Review onBack={goBack} goToStep={goToStep} />}
+      <AnimatePresence mode="wait" custom={direction}>
+        <motion.div
+          key={currentStep}
+          custom={direction}
+          variants={stepVariants}
+          initial="initial"
+          animate="animate"
+          exit="exit"
+          transition={{ duration: 0.25, ease: 'easeOut' }}
+        >
+          {currentStep === 1 && <Step1Welcome onNext={goNext} />}
+          {currentStep === 2 && <Step2Goal onNext={goNext} />}
+          {currentStep === 3 && <Step3Personal onBack={goBack} onNext={goNext} />}
+          {currentStep === 4 && <Step4Activity onBack={goBack} onNext={goNext} />}
+          {currentStep === 5 && <Step5Review onBack={goBack} goToStep={goToStep} />}
+        </motion.div>
+      </AnimatePresence>
     </OnboardingShell>
   );
 };

@@ -515,3 +515,34 @@ Notes:
 
 - This phase only covers Phase B from `doc/RefactorUI/Onboarding/HuongDanFixTailwindV426_5.md`.
 - Page transitions with Framer Motion and Tailwind config cleanup are still deferred.
+
+### Step 14 - Onboarding Page Transition Phase C
+
+Status: completed
+
+Completed changes:
+
+- Committed Phase B onboarding polish in commit `0904c5f feat(ui): polish wizard step indicator and checkmarks`.
+- Added Framer Motion `AnimatePresence` and `motion.div` around onboarding step rendering.
+- Added direction-aware transition handling:
+  - next/edit-forward transitions enter from the right and exit to the left;
+  - back/edit-backward transitions enter from the left and exit to the right.
+- Kept existing onboarding step guard and URL sync behavior.
+
+Verification:
+
+- Initial TypeScript check caught Framer Motion type mismatch when using function values directly in `initial` and `exit`.
+- Fixed the mismatch by moving direction-aware motion values into typed `Variants`.
+- `npx tsc -b --pretty false` passed.
+- `npx eslint src\components\onboarding\OnboardingWizard.tsx` passed.
+- `npm run build` passed. Vite reported the existing large chunk warning.
+
+Files touched:
+
+- `src/components/onboarding/OnboardingWizard.tsx`
+- `doc/context.md`
+
+Notes:
+
+- This phase covers Phase C from `doc/RefactorUI/Onboarding/HuongDanFixTailwindV4_v1.1.md`.
+- Tailwind config cleanup remains deferred.
