@@ -268,3 +268,42 @@ Notes:
 
 - This step only changes presentation for Phase 1 of `doc/RefactorUI/HuongDanPolishUI.md`.
 - Service layer, routing, validation, onboarding submit flow, and dashboard data flow were left unchanged.
+
+### Step 8 - Polish UI Phase 2 Onboarding Visual Identity
+
+Status: completed
+
+Completed changes:
+
+- Committed Phase 1 quick wins in commit `c2925a7 feat(ui): phase 1 polish - card radius + title typography`.
+- Rebuilt onboarding welcome screen as a free layout instead of a wizard card:
+  - added time pill;
+  - added gradient `HealthCare` headline;
+  - added three value cards with SVG icons;
+  - upgraded CTA styling and privacy microcopy.
+- Updated goal selection to a responsive 3-column card grid with SVG goal icons and selected checkmark.
+- Replaced gender dropdown with a 3-option segmented control.
+- Updated activity selection cards with large emoji markers, larger radius, and selected radio indicator.
+- Added Step 5 measurement info banner and changed review edit action from text to a pencil icon button.
+- Upgraded onboarding input style to rounded, 2px bordered, larger touch targets.
+
+Verification:
+
+- `npx tsc -b --pretty false` passed.
+- `npx eslint src\components\onboarding\steps\Step1Welcome.tsx src\components\onboarding\steps\Step2Goal.tsx src\components\onboarding\steps\Step3Personal.tsx src\components\onboarding\steps\Step4Activity.tsx src\components\onboarding\steps\Step5Review.tsx src\components\onboarding\shared\formStyles.ts` passed.
+- `npm run build` passed. Vite reported the existing large chunk warning.
+
+Files touched:
+
+- `src/components/onboarding/steps/Step1Welcome.tsx`
+- `src/components/onboarding/steps/Step2Goal.tsx`
+- `src/components/onboarding/steps/Step3Personal.tsx`
+- `src/components/onboarding/steps/Step4Activity.tsx`
+- `src/components/onboarding/steps/Step5Review.tsx`
+- `src/components/onboarding/shared/formStyles.ts`
+- `doc/context.md`
+
+Notes:
+
+- This step only changes onboarding presentation for Phase 2 of `doc/RefactorUI/HuongDanPolishUI.md`.
+- Onboarding state, validation schemas, routing, submit service, goal mismatch modal, and dashboard navigation were left unchanged.

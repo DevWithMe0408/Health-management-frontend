@@ -16,11 +16,11 @@ interface Step4ActivityProps {
 }
 
 const activityOptions = [
-  { value: 1.2, title: 'Ít vận động', description: 'Làm việc văn phòng, ít tập luyện' },
-  { value: 1.375, title: 'Nhẹ', description: 'Tập nhẹ 1-3 buổi mỗi tuần' },
-  { value: 1.55, title: 'Vừa', description: 'Tập đều 3-5 buổi mỗi tuần' },
-  { value: 1.725, title: 'Cao', description: 'Tập nặng 6-7 buổi mỗi tuần' },
-  { value: 1.9, title: 'Rất cao', description: 'Vận động viên hoặc lao động nặng' },
+  { value: 1.2, emoji: '🪑', title: 'Ít vận động', description: 'Làm văn phòng cả ngày, hầu như không tập' },
+  { value: 1.375, emoji: '🚶', title: 'Vận động nhẹ', description: 'Đi bộ thường xuyên, tập 1-3 buổi/tuần' },
+  { value: 1.55, emoji: '🏃', title: 'Vận động vừa', description: 'Tập đều 3-5 buổi/tuần' },
+  { value: 1.725, emoji: '💪', title: 'Vận động nhiều', description: 'Tập 6-7 buổi/tuần' },
+  { value: 1.9, emoji: '🔥', title: 'Rất vận động', description: 'Lao động chân tay nặng + tập gym' },
 ];
 
 const Step4Activity: React.FC<Step4ActivityProps> = ({ onBack, onNext }) => {
@@ -101,19 +101,28 @@ const Step4Activity: React.FC<Step4ActivityProps> = ({ onBack, onNext }) => {
                       shouldValidate: true,
                     })
                   }
-                  className={`rounded-md border p-3 text-left transition ${
+                  className={`flex items-center gap-3 rounded-2xl border-2 p-4 text-left transition ${
                     selected
-                      ? 'border-brand-green bg-brand-green-light ring-2 ring-brand-green/20'
-                      : 'border-gray-200 bg-white hover:border-brand-green/50 hover:bg-emerald-50/40'
+                      ? 'border-brand-green bg-brand-green-light'
+                      : 'border-gray-100 bg-white hover:border-emerald-200'
                   }`}
                 >
-                  <div className="flex items-center justify-between gap-3">
-                    <div>
-                      <div className="text-sm font-semibold text-gray-950">{option.title}</div>
-                      <div className="mt-0.5 text-xs text-gray-500">{option.description}</div>
+                  <span className="grid h-11 w-11 flex-shrink-0 place-items-center rounded-xl bg-white text-2xl">
+                    {option.emoji}
+                  </span>
+                  <div className="flex-1">
+                    <div className={`text-sm font-semibold ${selected ? 'text-brand-green-darker' : 'text-gray-900'}`}>
+                      {option.title}
                     </div>
-                    <span className="text-sm font-semibold text-brand-green-dark">{option.value}</span>
+                    <div className="mt-0.5 text-xs text-gray-500">{option.description}</div>
                   </div>
+                  <span
+                    className={`grid h-5 w-5 flex-shrink-0 place-items-center rounded-full border-2 ${
+                      selected ? 'border-brand-green bg-brand-green' : 'border-gray-300 bg-white'
+                    }`}
+                  >
+                    {selected && <span className="h-1.5 w-1.5 rounded-full bg-white" />}
+                  </span>
                 </button>
               );
             })}

@@ -27,6 +27,7 @@ const Step3Personal: React.FC<Step3PersonalProps> = ({ onBack, onNext }) => {
     register,
     handleSubmit,
     watch,
+    setValue,
     formState: { errors, isValid },
   } = useForm<Step3Data>({
     resolver: zodResolver(step3Schema),
@@ -75,12 +76,34 @@ const Step3Personal: React.FC<Step3PersonalProps> = ({ onBack, onNext }) => {
           </WizardField>
 
           <WizardField label="Giới tính" required error={errors.gender?.message}>
-            <select className={inputClassName(!!errors.gender)} {...register('gender')}>
-              <option value="">Chọn giới tính</option>
-              <option value="MALE">Nam</option>
-              <option value="FEMALE">Nữ</option>
-              <option value="OTHER">Khác</option>
-            </select>
+            <div className="grid grid-cols-3 gap-2">
+              {[
+                { value: 'MALE', label: 'Nam' },
+                { value: 'FEMALE', label: 'Nữ' },
+                { value: 'OTHER', label: 'Khác' },
+              ].map((option) => {
+                const selected = watch('gender') === option.value;
+                return (
+                  <button
+                    key={option.value}
+                    type="button"
+                    onClick={() =>
+                      setValue('gender', option.value as 'MALE' | 'FEMALE' | 'OTHER', {
+                        shouldDirty: true,
+                        shouldValidate: true,
+                      })
+                    }
+                    className={`rounded-xl border-2 px-3 py-2.5 text-sm font-medium transition ${
+                      selected
+                        ? 'border-brand-green bg-brand-green-light text-brand-green-darker'
+                        : 'border-gray-200 bg-white text-gray-600 hover:border-emerald-200'
+                    }`}
+                  >
+                    {option.label}
+                  </button>
+                );
+              })}
+            </div>
           </WizardField>
 
           <WizardField label="Số điện thoại" optional error={errors.phone?.message} colSpan={2}>

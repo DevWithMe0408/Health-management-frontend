@@ -40,16 +40,29 @@ const ReviewRow: React.FC<{ label: string; value: string; onEdit: () => void }> 
   onEdit,
 }) => (
   <div className="flex items-center justify-between gap-3 border-b border-gray-100 py-3 last:border-b-0">
-    <div>
+    <div className="min-w-0 flex-1">
       <div className="text-xs font-medium uppercase tracking-wide text-gray-400">{label}</div>
-      <div className="mt-0.5 text-sm font-semibold text-gray-900">{value}</div>
+      <div className="mt-0.5 truncate text-sm font-semibold text-gray-900">{value}</div>
     </div>
     <button
       type="button"
       onClick={onEdit}
-      className="rounded-md px-2 py-1 text-sm font-medium text-brand-green-dark transition hover:bg-brand-green-light"
+      title={`Sửa ${label.toLowerCase()}`}
+      className="grid h-8 w-8 flex-shrink-0 place-items-center rounded-lg text-gray-400 transition hover:bg-gray-100 hover:text-brand-green-dark"
     >
-      Sửa
+      <svg
+        width="14"
+        height="14"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
+        <path d="M11 4H4v16h16v-7" />
+        <path d="M18.5 2.5a2.121 2.121 0 113 3L12 15l-4 1 1-4 9.5-9.5z" />
+      </svg>
     </button>
   </div>
 );
@@ -138,6 +151,16 @@ const Step5Review: React.FC<Step5ReviewProps> = ({ onBack, goToStep }) => {
           Số đo là tùy chọn, nhưng sẽ giúp hệ thống phân loại thể trạng chính xác hơn.
         </p>
 
+        <div className="mt-5 rounded-xl bg-brand-green-light p-4 text-sm">
+          <div className="flex gap-2.5">
+            <span className="text-lg leading-none">💡</span>
+            <p className="leading-6 text-brand-green-darker">
+              Có các số đo này, hệ thống sẽ tính được <b>% mỡ cơ thể chính xác hơn</b>. Nếu chưa có thước dây,
+              bạn có thể bỏ qua và cập nhật sau.
+            </p>
+          </div>
+        </div>
+
         <form className="mt-6" onSubmit={handleSubmit(onSubmit)}>
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <WizardField label="Vòng eo" optional error={errors.waistCm?.message}>
@@ -193,7 +216,7 @@ const Step5Review: React.FC<Step5ReviewProps> = ({ onBack, goToStep }) => {
             </WizardField>
           </div>
 
-          <div className="mt-7 rounded-md border border-gray-100 bg-gray-50 px-4">
+          <div className="mt-7 rounded-xl border border-gray-100 bg-gray-50 px-4">
             <ReviewRow
               label="Mục tiêu"
               value={state.goalCode ? goalLabels[state.goalCode] : 'Chưa chọn'}

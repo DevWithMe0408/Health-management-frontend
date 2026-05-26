@@ -13,21 +13,68 @@ interface Step2GoalProps {
   onNext: () => void;
 }
 
-const goals: Array<{ code: GoalCode; title: string; description: string }> = [
+const goals: Array<{
+  code: GoalCode;
+  title: string;
+  description: string;
+  icon: React.ReactNode;
+}> = [
   {
     code: 'GIAM',
     title: 'Giảm cân',
-    description: 'Tối ưu năng lượng nạp vào và theo dõi tiến độ giảm cân lành mạnh.',
+    description: 'Phù hợp khi bạn muốn xuống cân an toàn (~0.5kg/tuần).',
+    icon: (
+      <svg
+        width="28"
+        height="28"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
+        <path d="M12 5v14M5 12l7 7 7-7" />
+      </svg>
+    ),
   },
   {
     code: 'DUY_TRI',
-    title: 'Duy trì',
-    description: 'Giữ thể trạng ổn định, cân bằng vận động và dinh dưỡng hằng ngày.',
+    title: 'Duy trì cân nặng',
+    description: 'Giữ ổn định thể trạng, xây dựng thói quen ăn lành mạnh.',
+    icon: (
+      <svg
+        width="28"
+        height="28"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
+        <path d="M5 12h14" />
+      </svg>
+    ),
   },
   {
     code: 'TANG',
     title: 'Tăng cân',
-    description: 'Tăng cân có kiểm soát dựa trên nhu cầu năng lượng và chỉ số cơ thể.',
+    description: 'Tăng cân lành mạnh, ưu tiên cơ và năng lượng.',
+    icon: (
+      <svg
+        width="28"
+        height="28"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
+        <path d="M12 19V5M5 12l7-7 7 7" />
+      </svg>
+    ),
   },
 ];
 
@@ -55,13 +102,15 @@ const Step2Goal: React.FC<Step2GoalProps> = ({ onNext }) => {
   return (
     <WizardCard>
       <WizardProgress current={1} />
-      <h1 className="text-2xl font-bold text-gray-950 md:text-3xl">Mục tiêu của bạn là gì?</h1>
-      <p className="mt-2 text-sm leading-6 text-gray-600">
-        Mục tiêu giúp hệ thống cá nhân hóa dashboard và các nhắc nhở sau này.
+      <h1 className="text-2xl font-bold tracking-tight text-gray-900 md:text-3xl">
+        Bạn muốn đạt mục tiêu gì?
+      </h1>
+      <p className="mt-2 text-sm leading-6 text-gray-600 md:text-base">
+        Chúng tôi sẽ tùy chỉnh thực đơn theo mục tiêu này. Bạn có thể đổi sau.
       </p>
 
       <form onSubmit={handleSubmit(onSubmit)}>
-        <div className="mt-6 grid gap-3">
+        <div className="mt-7 grid gap-3 md:grid-cols-3 md:gap-4">
           {goals.map((goal) => {
             const selected = selectedGoal === goal.code;
             return (
@@ -72,24 +121,37 @@ const Step2Goal: React.FC<Step2GoalProps> = ({ onNext }) => {
                   setValue('goalCode', goal.code, { shouldDirty: true, shouldValidate: true });
                   updateData({ goalCode: goal.code });
                 }}
-                className={`rounded-md border p-4 text-left transition ${
+                className={`group relative flex flex-col items-start gap-3 rounded-2xl border-2 p-5 text-left transition ${
                   selected
-                    ? 'border-brand-green bg-brand-green-light ring-2 ring-brand-green/20'
-                    : 'border-gray-200 bg-white hover:border-brand-green/50 hover:bg-emerald-50/40'
+                    ? 'border-brand-green bg-brand-green-light'
+                    : 'border-gray-100 bg-white hover:border-emerald-200 hover:bg-emerald-50/40'
                 }`}
               >
-                <div className="flex items-start justify-between gap-3">
-                  <div>
-                    <div className="text-base font-semibold text-gray-950">{goal.title}</div>
-                    <div className="mt-1 text-sm leading-6 text-gray-600">{goal.description}</div>
-                  </div>
-                  <span
-                    className={`mt-1 grid h-5 w-5 shrink-0 place-items-center rounded-full border ${
-                      selected ? 'border-brand-green bg-brand-green text-white' : 'border-gray-300'
-                    }`}
-                  >
-                    {selected && <span className="h-2 w-2 rounded-full bg-white" />}
+                {selected && (
+                  <span className="absolute right-3 top-3 grid h-6 w-6 place-items-center rounded-full bg-brand-green text-white">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+                      <path
+                        d="M5 12l5 5L20 7"
+                        stroke="currentColor"
+                        strokeWidth="3"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                    </svg>
                   </span>
+                )}
+                <div
+                  className={`grid h-12 w-12 place-items-center rounded-xl ${
+                    selected ? 'bg-white text-brand-green-dark' : 'bg-gray-100 text-gray-500'
+                  }`}
+                >
+                  {goal.icon}
+                </div>
+                <div>
+                  <div className={`text-base font-bold ${selected ? 'text-brand-green-darker' : 'text-gray-900'}`}>
+                    {goal.title}
+                  </div>
+                  <div className="mt-1 text-xs leading-5 text-gray-600">{goal.description}</div>
                 </div>
               </button>
             );
