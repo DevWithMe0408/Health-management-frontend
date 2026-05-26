@@ -109,3 +109,53 @@ Notes:
 - No UI was wired to these services yet.
 - Existing legacy `healthData.service.ts` was left unchanged to avoid breaking current pages.
 - Dashboard service intentionally uses BE constitution classification and does not reimplement body classification logic in FE.
+
+### Step 4 - Onboarding UI
+
+Status: completed
+
+Completed changes:
+
+- Added `OnboardingContext` with sessionStorage persistence and step state.
+- Added onboarding Zod schemas for goal, personal info, activity/basic metrics, and optional measurements.
+- Replaced the temporary `OnboardingWizardPage` placeholder with `OnboardingProvider` + `OnboardingWizard`.
+- Added production Tailwind onboarding layout and shared components: shell, card, progress, field, nav row, and form style helper.
+- Added all five wizard steps:
+  - Step 1: welcome/start
+  - Step 2: goal selection
+  - Step 3: personal profile
+  - Step 4: height/weight/activity
+  - Step 5: optional measurements, review, submit
+- Added `GoalRecommendationModal` for backend suggested-goal mismatch after onboarding submit.
+- Wired Step 5 to `submitOnboarding()`, `refreshUser()`, session reset, and navigation to `/dashboard`.
+
+Verification:
+
+- `npx tsc -b --pretty false` passed.
+- `npx eslint src\components\onboarding src\contexts\OnboardingContext.tsx src\types\onboarding.schemas.ts src\pages\OnboardingWizardPage.tsx` passed with 0 errors and 1 fast-refresh warning on `OnboardingContext.tsx`.
+- `npm run build` passed. Vite reported the existing large chunk warning.
+
+Files touched:
+
+- `src/contexts/OnboardingContext.tsx`
+- `src/types/onboarding.schemas.ts`
+- `src/pages/OnboardingWizardPage.tsx`
+- `src/components/onboarding/OnboardingWizard.tsx`
+- `src/components/onboarding/GoalRecommendationModal.tsx`
+- `src/components/onboarding/shared/OnboardingShell.tsx`
+- `src/components/onboarding/shared/WizardCard.tsx`
+- `src/components/onboarding/shared/WizardField.tsx`
+- `src/components/onboarding/shared/WizardNavRow.tsx`
+- `src/components/onboarding/shared/WizardProgress.tsx`
+- `src/components/onboarding/shared/formStyles.ts`
+- `src/components/onboarding/steps/Step1Welcome.tsx`
+- `src/components/onboarding/steps/Step2Goal.tsx`
+- `src/components/onboarding/steps/Step3Personal.tsx`
+- `src/components/onboarding/steps/Step4Activity.tsx`
+- `src/components/onboarding/steps/Step5Review.tsx`
+- `doc/context.md`
+
+Notes:
+
+- Full `npm run lint` still fails due pre-existing lint errors in legacy files such as `HomePage`, auth/register/login pages, admin pages, and `healthData.service.ts`.
+- This step does not implement the new dashboard UI.
