@@ -546,3 +546,83 @@ Notes:
 
 - This phase covers Phase C from `doc/RefactorUI/Onboarding/HuongDanFixTailwindV4_v1.1.md`.
 - Tailwind config cleanup remains deferred.
+
+### Step 15 - Tailwind Config Deprecated Reference Phase D
+
+Status: completed
+
+Completed changes:
+
+- Committed Phase C onboarding transitions in commit `470b3ed feat(ui): smooth onboarding step transitions`.
+- Updated `tailwind.config.ts` to make its deprecated status explicit.
+- Kept the file as a reference and rollback aid instead of deleting it.
+- Added `brand-green.medium` to the reference config so it matches the Tailwind v4 `@theme` block in `src/index.css`.
+- Updated reference font stack to match the active `--font-sans` token.
+- Did not add `@plugin "@tailwindcss/forms";` to `src/index.css` because no form plugin regression has been verified.
+
+Verification:
+
+- `npx tsc -b --pretty false` passed.
+- `npx eslint tailwind.config.ts` passed.
+- `npm run build` passed. Vite reported the existing large chunk warning.
+- Verified generated CSS still contains:
+  - `--color-brand-green:#059669`;
+  - `--color-brand-green-medium:#10b981`;
+  - `.bg-brand-green`;
+  - `.text-brand-green`.
+
+Files touched:
+
+- `tailwind.config.ts`
+- `doc/context.md`
+
+Notes:
+
+- Runtime Tailwind v4 tokens still live in `src/index.css`.
+- This phase is cleanup/documentation only and should not change generated CSS behavior.
+
+### Step 16 - Compact Handoff Summary
+
+Status: completed
+
+Current branch:
+
+- `feature/onboarding-dashboard-fe`
+
+Latest completed commits:
+
+- `6734fba fix(ui): migrate brand tokens to Tailwind v4 theme`
+- `0904c5f feat(ui): polish wizard step indicator and checkmarks`
+- `470b3ed feat(ui): smooth onboarding step transitions`
+
+Current uncommitted work at the time of this handoff:
+
+- `tailwind.config.ts`: Phase D deprecated-reference cleanup.
+- `doc/context.md`: Step 15 and Step 16 logs.
+
+Untracked guide files intentionally not staged:
+
+- `doc/RefactorUI/HuongDanPolishUI.md`
+- `doc/RefactorUI/Onboarding/HuongDanFixTailwindV426_5.md`
+- `doc/RefactorUI/Onboarding/HuongDanFixTailwindV4_v1.1.md`
+
+Completed scope:
+
+- Phase A: Tailwind v4 `@theme` brand token fix in `src/index.css`.
+- Phase B: onboarding wizard progress/checkmark/input polish.
+- Phase C: direction-aware Framer Motion page transitions.
+- Phase D: `tailwind.config.ts` marked deprecated and kept as reference.
+
+Verification summary:
+
+- TypeScript checks passed after each phase.
+- Scoped ESLint checks passed after each phase.
+- Production build passed after each phase; Vite still reports the existing large chunk warning.
+- Generated CSS contains active brand tokens/classes from `src/index.css`, including `brand-green-medium`.
+
+Recommended next actions:
+
+- Commit Phase D + handoff logs.
+- Push the branch if user wants remote updated.
+- Do not add `@plugin "@tailwindcss/forms"` unless a real form regression is observed.
+- Do not stage untracked guide files unless the user explicitly asks to version them.
