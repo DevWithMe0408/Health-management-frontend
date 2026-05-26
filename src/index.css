@@ -1,9 +1,32 @@
 @import "tailwindcss";
 
-/* src/index.css */
-/* ... (Tailwind directives) ... */
+/* ============================================================
+ * BRAND TOKENS - Tailwind v4 @theme directive
+ *
+ * Tailwind v4 does not read this project's old Tailwind v3-style
+ * tailwind.config.ts by default. Keep brand tokens here so classes
+ * such as bg-brand-green, text-brand-green-dark, ring-brand-green,
+ * and from-brand-green are generated.
+ * ============================================================ */
 
-/* Custom Scrollbar for chart container */
+@theme {
+  --color-brand-green: #059669;
+  --color-brand-green-light: #ecfdf5;
+  --color-brand-green-medium: #10b981;
+  --color-brand-green-dark: #047857;
+  --color-brand-green-darker: #065f46;
+
+  --color-brand-gray: #6b7280;
+  --color-brand-gray-light: #e5e7eb;
+  --color-brand-gray-dark: #374151;
+
+  --font-sans: "Be Vietnam Pro", "Inter", system-ui, sans-serif;
+}
+
+/* ============================================================
+ * Custom Scrollbar for chart container
+ * ============================================================ */
+
 .custom-scrollbar::-webkit-scrollbar {
   height: 8px; /* Chiều cao của thanh cuộn ngang */
 }

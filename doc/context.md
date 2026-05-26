@@ -424,3 +424,45 @@ Notes:
 
 - All four polish phases are now committed.
 - The only tracked change after this verification step should be this context log entry unless further edits are made.
+
+### Step 12 - Tailwind v4 Brand Token Fix Phase A
+
+Status: completed
+
+Completed changes:
+
+- Read `doc/RefactorUI/Onboarding/HuongDanFixTailwindV426_5.md` and verified the main root cause:
+  - project uses Tailwind v4 packages;
+  - `src/index.css` only imported Tailwind and did not define `@theme`;
+  - brand colors were still only declared in the old `tailwind.config.ts`;
+  - generated CSS did not contain `--color-brand-green` or `.bg-brand-green`.
+- Added a Tailwind v4 `@theme` block to `src/index.css` so `brand-*` utilities are generated.
+- Added the documented brand tokens:
+  - `brand-green`, `brand-green-light`, `brand-green-dark`, `brand-green-darker`;
+  - `brand-gray`, `brand-gray-light`, `brand-gray-dark`;
+  - `font-sans`.
+- Added extra token `brand-green-medium` because existing legacy files already use classes such as `focus:border-brand-green-medium` and `focus:ring-brand-green-medium`.
+- Kept `tailwind.config.ts` unchanged for this phase to avoid cleanup risk before visual review.
+- Did not add `@plugin "@tailwindcss/forms";` in this phase because form plugin side effects should be verified separately.
+
+Verification:
+
+- `npx tsc -b --pretty false` passed.
+- `npm run build` passed. Vite reported the existing large chunk warning.
+- Verified generated CSS contains:
+  - `--color-brand-green:#059669`;
+  - `--color-brand-green-medium:#10b981`;
+  - `.bg-brand-green`;
+  - `.text-brand-green`;
+  - `.focus\:ring-brand-green-light:focus`.
+- `npx eslint src\index.css` does not lint CSS in the current ESLint config and reports the file as ignored; no JS/TS lint check is applicable for this CSS-only phase.
+
+Files touched:
+
+- `src/index.css`
+- `doc/context.md`
+
+Notes:
+
+- This phase addresses the blocker where Tailwind v4 skipped custom brand utility generation.
+- Bonus onboarding animations, WizardProgress changes, Step 4 checkmark changes, page transitions, and config cleanup are intentionally deferred to later phases.
