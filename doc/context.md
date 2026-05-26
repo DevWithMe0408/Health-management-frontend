@@ -350,3 +350,39 @@ Notes:
 
 - This step only changes dashboard widget presentation for Phase 3 of `doc/RefactorUI/HuongDanPolishUI.md`.
 - Dashboard services, backend contracts, and `DashboardPage` data loading were left unchanged.
+
+### Step 10 - Polish UI Phase 4 Dashboard Details
+
+Status: completed
+
+Completed changes:
+
+- Committed Phase 3 dashboard widget polish in commit `4587187 feat(ui): phase 3 polish - dashboard widgets visual`.
+- Reworked `HealthMetricsDetails` into a collapsible panel:
+  - collapsed state shows a compact preview for BMR, TDEE, PBF, and WHR;
+  - expanded state shows metric cards;
+  - added tooltip text for BMI, BMR, TDEE, PBF, and WHR;
+  - preserved existing metrics error display inside the expanded panel.
+- Updated dashboard greeting hero:
+  - richer rounded gradient container;
+  - greeting now includes hand emoji;
+  - current goal uses goal-specific emoji and uppercase label;
+  - PBF method is shown as a compact pill;
+  - update CTA uses the lighter white/emerald style from the polish guide.
+
+Verification:
+
+- `npx tsc -b --pretty false` passed.
+- `npx eslint src\components\dashboard\HealthMetricsDetails.tsx src\pages\DashboardPage.tsx` passed.
+- `npm run build` passed. Vite reported the existing large chunk warning.
+
+Files touched:
+
+- `src/components/dashboard/HealthMetricsDetails.tsx`
+- `src/pages/DashboardPage.tsx`
+- `doc/context.md`
+
+Notes:
+
+- This step only changes presentation for Phase 4 of `doc/RefactorUI/HuongDanPolishUI.md`.
+- Dashboard fetching, route structure, and backend contracts were left unchanged.

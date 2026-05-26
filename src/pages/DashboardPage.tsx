@@ -87,30 +87,35 @@ const DashboardPage: React.FC = () => {
 
   return (
     <div className="space-y-5">
-      <section className="rounded-lg border border-emerald-100 bg-gradient-to-br from-emerald-50 via-white to-white p-5 shadow-sm">
+      <section
+        className="rounded-3xl border border-emerald-200 bg-gradient-to-br from-brand-green-light via-emerald-50 to-white p-6 lg:p-7"
+        style={{ boxShadow: '0 1px 2px rgba(15,23,42,.04)' }}
+      >
         <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
           <div>
-            <p className="text-sm font-semibold text-brand-green-dark">Dashboard sức khỏe</p>
-            <h1 className="mt-1 text-2xl font-bold text-gray-950">
-              Xin chào, {displayName}
+            <h1 className="text-2xl font-bold tracking-tight text-gray-900 lg:text-[26px]">
+              Xin chào, {displayName}! 👋
             </h1>
-            <p className="mt-2 max-w-2xl text-sm leading-6 text-gray-600">
-              Theo dõi thể trạng, cân nặng và các chỉ số nền để điều chỉnh mục tiêu kịp thời.
-            </p>
+            {currentGoal && (
+              <div className="mt-2 flex items-center gap-2 text-sm text-gray-600">
+                <span className="text-base">
+                  {currentGoal === 'GIAM' ? '📉' : currentGoal === 'TANG' ? '📈' : '⚖️'}
+                </span>
+                Đang theo mục tiêu:
+                <span className="font-bold tracking-wide text-brand-green-darker">
+                  {goalLabels[currentGoal].toUpperCase()}
+                </span>
+              </div>
+            )}
           </div>
 
           <div className="flex flex-wrap items-center gap-2">
-            {currentGoal && (
-              <span className="rounded-md border border-emerald-200 bg-white px-3 py-2 text-sm font-semibold text-brand-green-dark">
-                Mục tiêu: {goalLabels[currentGoal]}
-              </span>
-            )}
-            <span className="rounded-md border border-gray-200 bg-white px-3 py-2 text-sm font-medium text-gray-600">
-              PBF: {pbfMethod}
+            <span className="rounded-xl border border-gray-200 bg-white px-3 py-2 text-xs font-medium text-gray-600">
+              PBF: <b className="text-gray-900">{pbfMethod}</b>
             </span>
             <Link
               to="/submit-data"
-              className="inline-flex items-center gap-2 rounded-md bg-brand-green px-3 py-2 text-sm font-semibold text-white transition hover:bg-brand-green-dark"
+              className="inline-flex items-center gap-1.5 rounded-xl border border-emerald-200 bg-white px-3.5 py-2 text-sm font-semibold text-brand-green-darker transition hover:bg-emerald-50"
             >
               <PlusCircleIcon className="h-4 w-4" />
               Cập nhật chỉ số
