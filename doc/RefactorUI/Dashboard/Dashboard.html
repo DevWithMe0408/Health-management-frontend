@@ -1,0 +1,194 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8" />
+<title>HealthCare — Dashboard</title>
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link
+  href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap"
+  rel="stylesheet"
+/>
+<style>
+  html, body { margin: 0; padding: 0; height: 100%; background: #f3f5f4; font-family: "Be Vietnam Pro", system-ui, sans-serif; }
+  *, *::before, *::after { box-sizing: border-box; }
+  button, input { font-family: inherit; }
+
+  @keyframes dbShimmer {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+  }
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+<script type="text/babel" src="design-canvas.jsx"></script>
+<script type="text/babel" src="dashboard-shared.jsx"></script>
+<script type="text/babel" src="dashboard-w1.jsx"></script>
+<script type="text/babel" src="dashboard-w2.jsx"></script>
+<script type="text/babel" src="dashboard-w3.jsx"></script>
+<script type="text/babel" src="dashboard-page.jsx"></script>
+
+<script type="text/babel">
+function App() {
+  return (
+    <DesignCanvas
+      title="HealthCare — Dashboard / Trang chủ"
+      subtitle="3 widget chính · 4 thể trạng · empty / incomplete / loading states · Desktop + Mobile"
+    >
+      <DCSection id="full" title="Trang đầy đủ · Desktop & Mobile">
+        <DCArtboard id="desktop" label="Desktop — Normal state (CÂN ĐỐI)" width={1440} height={1380}>
+          <DashboardDesktop />
+        </DCArtboard>
+
+        <DCArtboard id="mobile" label="Mobile — Stack đầy đủ" width={390} height={1640}>
+          <DashboardMobile />
+        </DCArtboard>
+      </DCSection>
+
+      <DCSection id="w1" title="Widget 1 — Thể trạng · 4 phân loại + states">
+        <DCArtboard id="w1-gay" label="GẦY (BMI thấp)" width={520} height={420}>
+          <Frame>
+            <W1Constitution constitution="GAY" bmi={17.2} pbf={9.8} updatedDaysAgo={1} />
+          </Frame>
+        </DCArtboard>
+        <DCArtboard id="w1-candoi" label="CÂN ĐỐI (default)" width={520} height={420}>
+          <Frame>
+            <W1Constitution constitution="CAN_DOI" bmi={22.1} pbf={15.4} updatedDaysAgo={2} />
+          </Frame>
+        </DCArtboard>
+        <DCArtboard id="w1-thua" label="THỪA CÂN" width={520} height={420}>
+          <Frame>
+            <W1Constitution constitution="THUA_CAN" bmi={24.3} pbf={28.5} updatedDaysAgo={3} />
+          </Frame>
+        </DCArtboard>
+        <DCArtboard id="w1-beo" label="BÉO PHÌ" width={520} height={420}>
+          <Frame>
+            <W1Constitution constitution="BEO_PHI" bmi={27.8} pbf={34.2} updatedDaysAgo={5} />
+          </Frame>
+        </DCArtboard>
+        <DCArtboard id="w1-incomplete" label="Incomplete — chỉ có BMI, thiếu vòng đo" width={520} height={480}>
+          <Frame>
+            <W1Constitution
+              state="incomplete"
+              constitution="CAN_DOI"
+              bmi={22.1}
+              pbf={null}
+              updatedDaysAgo={2}
+            />
+          </Frame>
+        </DCArtboard>
+        <DCArtboard id="w1-empty" label="Empty — user mới chưa có data" width={520} height={420}>
+          <Frame>
+            <W1Constitution state="empty" />
+          </Frame>
+        </DCArtboard>
+        <DCArtboard id="w1-loading" label="Loading skeleton" width={520} height={420}>
+          <Frame>
+            <W1Constitution state="loading" />
+          </Frame>
+        </DCArtboard>
+        <DCArtboard id="w1-modeldown" label="Model 1 unavailable — fallback formula" width={520} height={480}>
+          <Frame>
+            <W1Constitution constitution="CAN_DOI" bmi={22.1} pbf={15.4} modelDown />
+          </Frame>
+        </DCArtboard>
+      </DCSection>
+
+      <DCSection id="w2" title="Widget 2 — Thống kê · 3 sub-widget">
+        <DCArtboard id="w2a" label="2A — Cân nặng 30 ngày" width={780} height={340}>
+          <Frame>
+            <W2WeightChart />
+          </Frame>
+        </DCArtboard>
+        <DCArtboard id="w2a-empty" label="2A — Empty (chưa đủ 2 lần cân)" width={780} height={340}>
+          <Frame>
+            <W2WeightChart empty />
+          </Frame>
+        </DCArtboard>
+        <DCArtboard id="w2b" label="2B — Đã có thực đơn 7 ngày (3 bữa)" width={520} height={340}>
+          <Frame>
+            <W2Compliance />
+          </Frame>
+        </DCArtboard>
+        <DCArtboard id="w2b-5" label="2B — Gói 5 bữa" width={520} height={380}>
+          <Frame>
+            <W2Compliance
+              planType="5_BUA"
+              data={[
+                [true, true, true, true, true],
+                [true, true, true, true, false],
+                [true, true, true, false, false],
+                [true, true, true, true, true],
+                [true, true, false, false, false],
+                [true, true, true, true, false],
+                [true, true, true, true, true],
+              ]}
+            />
+          </Frame>
+        </DCArtboard>
+        <DCArtboard id="w2b-empty" label="2B — Empty" width={520} height={340}>
+          <Frame>
+            <W2Compliance empty />
+          </Frame>
+        </DCArtboard>
+        <DCArtboard id="w2c" label="2C — 3 metric cards" width={520} height={200}>
+          <Frame>
+            <W2Metrics />
+          </Frame>
+        </DCArtboard>
+      </DCSection>
+
+      <DCSection id="w3" title="Widget 3 — Nhắc nhở · states theo priority">
+        <DCArtboard id="w3-high" label="HIGH + LOW (default scenario)" width={520} height={520}>
+          <Frame>
+            <W3Notifications />
+          </Frame>
+        </DCArtboard>
+        <DCArtboard id="w3-medium" label="MEDIUM — trend notifications" width={520} height={420}>
+          <Frame>
+            <W3Notifications state="medium" />
+          </Frame>
+        </DCArtboard>
+        <DCArtboard id="w3-empty" label="Empty — mọi thứ ổn" width={520} height={300}>
+          <Frame>
+            <W3Notifications state="empty" />
+          </Frame>
+        </DCArtboard>
+      </DCSection>
+
+      <DCSection id="extras" title="Chi tiết chỉ số y khoa · collapsed vs expanded">
+        <DCArtboard id="med-collapsed" label="Collapsed (default)" width={920} height={120}>
+          <Frame>
+            <MedicalDetailSection open={false} />
+          </Frame>
+        </DCArtboard>
+        <DCArtboard id="med-expanded" label="Expanded — 7 chỉ số" width={920} height={300}>
+          <Frame>
+            <MedicalDetailSection open={true} />
+          </Frame>
+        </DCArtboard>
+      </DCSection>
+    </DesignCanvas>
+  );
+}
+
+// Small wrapper for isolated widget artboards
+function Frame({ children }) {
+  return (
+    <div style={{ background: DB.bg, padding: 20, width: '100%', height: '100%', fontFamily: '"Be Vietnam Pro", system-ui, sans-serif' }}>
+      {children}
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+</script>
+</body>
+</html>

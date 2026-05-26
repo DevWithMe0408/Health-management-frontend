@@ -203,3 +203,38 @@ Notes:
 
 - Meal-log and favorite-dish widgets from the full dashboard spec are not wired yet because this step uses only the service endpoints prepared in Step 3.
 - Full `npm run lint` still has pre-existing legacy failures outside the Step 5 files.
+
+### Step 6 - Final Verification
+
+Status: completed
+
+Completed checks:
+
+- Ran TypeScript build check across the project.
+- Ran ESLint on all files added or modified by the onboarding/dashboard refactor.
+- Ran production build.
+- Ran full repository lint to document existing repository lint state.
+- Started Vite dev server for browser review.
+
+Verification:
+
+- `npx tsc -b --pretty false` passed.
+- Refactor-scoped ESLint passed with 0 errors and 1 warning:
+  - `src/contexts/OnboardingContext.tsx`: fast-refresh warning because the file exports both provider and hook, matching the existing `AuthContext` pattern.
+- `npm run build` passed. Vite reported the existing large chunk warning.
+- `npm run lint` failed on pre-existing legacy lint issues outside the new refactor files, including `HomePage.tsx`, `LoginPage.tsx`, `RegisterPage.tsx`, `SubmitHealthDataPage.tsx`, `UserProfilePage.tsx`, several admin pages, `TrendChart.tsx`, `AuthContext.tsx`, `auth.service.ts`, and `healthData.service.ts`.
+- Dev server started at `http://127.0.0.1:5173/`.
+
+Files touched:
+
+- `doc/context.md`
+
+Runtime artifacts:
+
+- `vite-dev.log`
+- `vite-dev.err.log`
+
+Notes:
+
+- The Vite dev server is running from this workspace on port `5173`.
+- Runtime log files should not be committed unless intentionally needed.

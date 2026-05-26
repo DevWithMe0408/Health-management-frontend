@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8" />
+<title>HealthCare — Onboarding Wizard</title>
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link
+  href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap"
+  rel="stylesheet"
+/>
+<style>
+  html, body { margin: 0; padding: 0; height: 100%; background: #f3f5f4; font-family: "Be Vietnam Pro", system-ui, sans-serif; }
+  *, *::before, *::after { box-sizing: border-box; }
+  button { font-family: inherit; }
+  input { font-family: inherit; }
+
+  @keyframes wizSpin { to { transform: rotate(360deg); } }
+
+  /* Annotation badge on artboards */
+  .pin {
+    position: absolute;
+    top: -10px;
+    left: 12px;
+    background: #0f1f1a;
+    color: white;
+    font-size: 10.5px;
+    font-weight: 600;
+    padding: 3px 8px;
+    border-radius: 4px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    z-index: 50;
+  }
+  .pin.alt { background: #dc2626; }
+  .pin.warn { background: #d97706; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+<script type="text/babel" src="design-canvas.jsx"></script>
+<script type="text/babel" src="wizard-shared.jsx"></script>
+<script type="text/babel" src="wizard-steps-1-3.jsx"></script>
+<script type="text/babel" src="wizard-steps-4-5.jsx"></script>
+
+<script type="text/babel">
+function App() {
+  return (
+    <DesignCanvas
+      title="HealthCare — Onboarding Wizard"
+      subtitle="5 bước (1 Welcome + 4 thu thập dữ liệu) • Desktop + Mobile + states"
+    >
+      <DCSection id="desktop" title="Desktop · Flow chính (5 bước)">
+        <DCArtboard id="step1" label="Step 1 — Welcome" width={1200} height={820}>
+          <Step1Welcome />
+        </DCArtboard>
+
+        <DCArtboard id="step2" label="Step 2 — Mục tiêu (chọn ‘Giảm cân’)" width={1200} height={820}>
+          <Step2Goal selected="GIAM" />
+        </DCArtboard>
+
+        <DCArtboard id="step3" label="Step 3 — Thông tin cá nhân" width={1200} height={820}>
+          <Step3Personal />
+        </DCArtboard>
+
+        <DCArtboard id="step4" label="Step 4 — Mức độ vận động" width={1200} height={920}>
+          <Step4Activity selected="NHE" />
+        </DCArtboard>
+
+        <DCArtboard id="step5" label="Step 5 — Số đo + Tóm tắt" width={1200} height={1000}>
+          <Step5Review />
+        </DCArtboard>
+      </DCSection>
+
+      <DCSection id="states" title="States · Edge cases">
+        <DCArtboard id="step3-error" label="Step 3 — Validation error (họ tên trống)" width={1200} height={820}>
+          <Step3Personal errorState />
+        </DCArtboard>
+
+        <DCArtboard id="step5-loading" label="Step 5 — Loading sau khi bấm ‘Hoàn tất’" width={1200} height={1000}>
+          <Step5Review loading />
+        </DCArtboard>
+      </DCSection>
+
+      <DCSection id="mobile" title="Mobile · 390 × 844 (responsive variants)">
+        <DCArtboard id="step1-m" label="Step 1 — Welcome (mobile)" width={390} height={844}>
+          <Step1Welcome mobile />
+        </DCArtboard>
+
+        <DCArtboard id="step2-m" label="Step 2 — Mục tiêu (mobile)" width={390} height={844}>
+          <Step2Goal mobile selected="GIAM" />
+        </DCArtboard>
+
+        <DCArtboard id="step3-m" label="Step 3 — Thông tin cá nhân (mobile)" width={390} height={844}>
+          <Step3Personal mobile />
+        </DCArtboard>
+
+        <DCArtboard id="step4-m" label="Step 4 — Vận động (mobile)" width={390} height={1080}>
+          <Step4Activity mobile selected="NHE" />
+        </DCArtboard>
+      </DCSection>
+    </DesignCanvas>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+</script>
+</body>
+</html>
