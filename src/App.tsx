@@ -3,7 +3,7 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
-import HomePage from './pages/HomePage';
+import DashboardPage from './pages/DashboardPage';
 import SubmitHealthDataPage from './pages/SubmitHealthDataPage';
 import HealthStatsPage from './pages/HealthStatsPage';
 import NotFoundPage from './pages/NotFoundPage';
@@ -65,7 +65,7 @@ const AppRoutes: React.FC = () => {
                                                 // Hoặc luôn đặt HomePage ở một path riêng như /dashboard
         element={
           <ProtectedRoute>
-            <MainLayout><HomePage /></MainLayout>
+            <MainLayout><DashboardPage /></MainLayout>
           </ProtectedRoute>
         } 
       />
@@ -74,7 +74,7 @@ const AppRoutes: React.FC = () => {
         path="/dashboard" // Đây sẽ là trang chủ sau khi đăng nhập
         element={
           <ProtectedRoute>
-            <MainLayout><HomePage /></MainLayout>
+            <MainLayout><DashboardPage /></MainLayout>
           </ProtectedRoute>
         } 
       />

@@ -159,3 +159,47 @@ Notes:
 
 - Full `npm run lint` still fails due pre-existing lint errors in legacy files such as `HomePage`, auth/register/login pages, admin pages, and `healthData.service.ts`.
 - This step does not implement the new dashboard UI.
+
+### Step 5 - Dashboard UI
+
+Status: completed
+
+Completed changes:
+
+- Added new `DashboardPage` and routed `/dashboard` to it through the existing `MainLayout`.
+- Left legacy `HomePage.tsx` in place, but it is no longer used by the main dashboard route.
+- Added dashboard widget components:
+  - `DashboardCard`
+  - `ConstitutionCard`
+  - `WeightChartCard`
+  - `MetricSummaryGrid`
+  - `HealthMetricsDetails`
+  - `ReminderList`
+- Wired dashboard UI to `getDashboardOverview()`.
+- Rendered constitution state from BE instead of duplicating classification logic in FE.
+- Added empty/error states for missing constitution and weight history.
+- Added dashboard reminders using available profile, metrics, weight history, and current goal data.
+- Added CTA links to existing routes such as `/submit-data`, `/profile`, and `/nutrition-plan`.
+
+Verification:
+
+- `npx tsc -b --pretty false` passed.
+- `npx eslint src\pages\DashboardPage.tsx src\components\dashboard\DashboardCard.tsx src\components\dashboard\ConstitutionCard.tsx src\components\dashboard\WeightChartCard.tsx src\components\dashboard\MetricSummaryGrid.tsx src\components\dashboard\HealthMetricsDetails.tsx src\components\dashboard\ReminderList.tsx src\App.tsx` passed.
+- `npm run build` passed. Vite reported the existing large chunk warning.
+
+Files touched:
+
+- `src/pages/DashboardPage.tsx`
+- `src/App.tsx`
+- `src/components/dashboard/DashboardCard.tsx`
+- `src/components/dashboard/ConstitutionCard.tsx`
+- `src/components/dashboard/WeightChartCard.tsx`
+- `src/components/dashboard/MetricSummaryGrid.tsx`
+- `src/components/dashboard/HealthMetricsDetails.tsx`
+- `src/components/dashboard/ReminderList.tsx`
+- `doc/context.md`
+
+Notes:
+
+- Meal-log and favorite-dish widgets from the full dashboard spec are not wired yet because this step uses only the service endpoints prepared in Step 3.
+- Full `npm run lint` still has pre-existing legacy failures outside the Step 5 files.
