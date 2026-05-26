@@ -386,3 +386,41 @@ Notes:
 
 - This step only changes presentation for Phase 4 of `doc/RefactorUI/HuongDanPolishUI.md`.
 - Dashboard fetching, route structure, and backend contracts were left unchanged.
+
+### Step 11 - Polish UI Final Verification
+
+Status: completed
+
+Completed changes:
+
+- Committed Phase 4 dashboard details polish in commit `ee03d45 feat(ui): phase 4 polish - collapsible details + greeting hero`.
+- Ran final checks for all onboarding/dashboard polish phases from `doc/RefactorUI/HuongDanPolishUI.md`.
+
+Verification:
+
+- `npx tsc -b --pretty false` passed.
+- Refactor/polish-scoped ESLint passed for:
+  - onboarding shared components and steps changed in Phase 1-2;
+  - dashboard cards/widgets changed in Phase 1, Phase 3, and Phase 4;
+  - `src/pages/DashboardPage.tsx`.
+- `npm run build` passed. Vite reported the existing large chunk warning.
+- `npm run lint` still fails on pre-existing legacy lint issues outside the polish scope:
+  - `src/components/dashboard/TrendChart.tsx`: `no-explicit-any`;
+  - `src/contexts/AuthContext.tsx`: `no-explicit-any`, unused eslint-disable warning, fast-refresh warning;
+  - `src/contexts/OnboardingContext.tsx`: fast-refresh warning;
+  - `src/pages/HomePage.tsx`: `no-explicit-any`, unused eslint-disable warning, `prefer-const`;
+  - `src/pages/LoginPage.tsx` and `src/pages/RegisterPage.tsx`: `no-explicit-any`;
+  - `src/pages/SubmitHealthDataPage.tsx`: `no-explicit-any`, unused eslint-disable warning;
+  - `src/pages/UserProfilePage.tsx`: unused schema value, `no-explicit-any`, missing hook dependency warning;
+  - several `src/pages/adminPage/*ConfigPage.tsx` files: `no-explicit-any`;
+  - `src/services/auth.service.ts`: unused `_c`;
+  - `src/services/healthData.service.ts`: `no-explicit-any`, empty interface type.
+
+Files touched:
+
+- `doc/context.md`
+
+Notes:
+
+- All four polish phases are now committed.
+- The only tracked change after this verification step should be this context log entry unless further edits are made.
