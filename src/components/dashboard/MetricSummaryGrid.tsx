@@ -60,15 +60,24 @@ const MetricSummaryGrid: React.FC<MetricSummaryGridProps> = ({ metrics, weightHi
   ];
 
   return (
-    <div className="grid gap-4 sm:grid-cols-3">
+    <div className="grid gap-3 sm:grid-cols-3">
       {items.map(({ label, value, helper, Icon, bg, text }) => (
-        <section key={label} className="rounded-lg border border-gray-200 bg-white p-4 shadow-sm">
-          <div className={`inline-flex rounded-md ${bg} p-2 ${text}`}>
+        <section
+          key={label}
+          className="rounded-2xl border border-gray-200 bg-white p-4"
+          style={{ boxShadow: '0 1px 2px rgba(15,23,42,.04)' }}
+        >
+          <div className={`mb-3 inline-flex rounded-xl ${bg} p-2.5 ${text}`}>
             <Icon className="h-5 w-5" />
           </div>
-          <div className="mt-3 text-2xl font-bold text-gray-950">{value}</div>
-          <div className="mt-1 text-sm font-semibold text-gray-800">{label}</div>
-          <div className="mt-0.5 text-xs text-gray-500">{helper}</div>
+          <div
+            className="text-2xl font-extrabold tracking-tight text-gray-900"
+            style={{ fontVariantNumeric: 'tabular-nums' }}
+          >
+            {value}
+          </div>
+          <div className="mt-1 text-xs font-semibold uppercase tracking-wide text-gray-500">{label}</div>
+          <div className="mt-0.5 text-[11px] text-gray-400">{helper}</div>
         </section>
       ))}
     </div>

@@ -307,3 +307,46 @@ Notes:
 
 - This step only changes onboarding presentation for Phase 2 of `doc/RefactorUI/HuongDanPolishUI.md`.
 - Onboarding state, validation schemas, routing, submit service, goal mismatch modal, and dashboard navigation were left unchanged.
+
+### Step 9 - Polish UI Phase 3 Dashboard Widgets
+
+Status: completed
+
+Completed changes:
+
+- Committed Phase 2 onboarding polish in commit `01c81eb feat(ui): phase 2 polish - onboarding visual identity`.
+- Updated `ConstitutionCard`:
+  - replaced generic Heroicons in the data state with custom SVG glyphs for thin/check/warn groups;
+  - added constitution-specific advice copy;
+  - added DashboardCard `info` tooltip text;
+  - updated PBF source badge display;
+  - changed warning banner to include a direct update CTA;
+  - added footer with computed date and detail link.
+- Updated BMI scale:
+  - segment widths now follow BMI thresholds 14/18.5/23/25/30 instead of equal 25% widths;
+  - labels now show numeric thresholds.
+- Updated `ReminderList`:
+  - replaced generic icons with emoji markers;
+  - added card subtitle and `Xem tất cả` action;
+  - added a dismiss icon button placeholder;
+  - added an empty state when there are no reminders;
+  - kept the existing weight-rising reminder and added an emoji for it.
+- Updated `MetricSummaryGrid` so values are visually dominant, labels are smaller uppercase text, and cards use larger radius.
+
+Verification:
+
+- `npx tsc -b --pretty false` passed.
+- `npx eslint src\components\dashboard\ConstitutionCard.tsx src\components\dashboard\ReminderList.tsx src\components\dashboard\MetricSummaryGrid.tsx` passed.
+- `npm run build` passed. Vite reported the existing large chunk warning.
+
+Files touched:
+
+- `src/components/dashboard/ConstitutionCard.tsx`
+- `src/components/dashboard/ReminderList.tsx`
+- `src/components/dashboard/MetricSummaryGrid.tsx`
+- `doc/context.md`
+
+Notes:
+
+- This step only changes dashboard widget presentation for Phase 3 of `doc/RefactorUI/HuongDanPolishUI.md`.
+- Dashboard services, backend contracts, and `DashboardPage` data loading were left unchanged.
