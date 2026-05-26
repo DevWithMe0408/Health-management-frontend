@@ -74,3 +74,38 @@ Notes:
 
 - The placeholder page is temporary and should be replaced in the onboarding UI step.
 - Login still navigates to `/dashboard`; `ProtectedRoute` performs the onboarding redirect when needed.
+
+### Step 3 - Service Layer Foundation
+
+Status: completed
+
+Completed changes:
+
+- Added shared `DataResponse<T>` unwrap/error helpers for backend wrapped responses.
+- Added shared refactor UI types for gender, goal, constitution, PBF method, preference key, and onboarding base metric names.
+- Added user goal service for `GET/PUT /api/user-goals/current` and `GET /api/user-goals/history`.
+- Added user preference service for `GET/PUT/DELETE /api/user-preferences`.
+- Added constitution service for `GET /api/health-data/constitution` with retry support for temporary 422 sync states.
+- Added onboarding submit service that performs the backend write flow: profile update, health metrics submit, goal update, profile-completed mark, then constitution fetch.
+- Added dashboard service foundation for dashboard metrics, weight history, current goal, preferences, and constitution aggregation.
+
+Verification:
+
+- `npx tsc -b --pretty false` passed.
+
+Files touched:
+
+- `src/services/apiResponse.ts`
+- `src/types/refactorUi.types.ts`
+- `src/services/userGoals.service.ts`
+- `src/services/userPreferences.service.ts`
+- `src/services/constitution.service.ts`
+- `src/services/onboarding.service.ts`
+- `src/services/dashboard.service.ts`
+- `doc/context.md`
+
+Notes:
+
+- No UI was wired to these services yet.
+- Existing legacy `healthData.service.ts` was left unchanged to avoid breaking current pages.
+- Dashboard service intentionally uses BE constitution classification and does not reimplement body classification logic in FE.
