@@ -15,6 +15,7 @@ interface AuthContextType {
   user: UserProfile | null; // Bạn có thể thêm thông tin user profile ở đây sau
   login: (authData: LoginResponse) => Promise<void>;
   logout: () => void;
+  refreshUser: () => Promise<void>;
   isLoading: boolean; // Để xử lý việc kiểm tra token khi tải lại trang
 }
 
@@ -80,6 +81,14 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         performLogout(); // Nếu không lấy được profile, có thể logout để đảm bảo an toàn
     }
   };
+
+  const refreshUser = async () => {
+    const token = accessToken || localStorage.getItem('accessToken');
+    if (!token) return;
+
+    const userProfile = await getCurrentUserProfile(token);
+    setUser(userProfile);
+  };
   
   const performLogout = () => {
     console.log("AuthProvider: Performing logout...");
@@ -92,7 +101,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   };
 
   return (
-    <AuthContext.Provider value={{ isAuthenticated, accessToken, refreshToken, user, login: performLogin, logout: performLogout, isLoading }}>
+    <AuthContext.Provider value={{ isAuthenticated, accessToken, refreshToken, user, login: performLogin, logout: performLogout, refreshUser, isLoading }}>
       {!isLoading && children}
       {isLoading && ( /* Màn hình loading toàn cục */
         <div style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center', background: 'rgba(255,255,255,0.8)', zIndex: 9999 }}>

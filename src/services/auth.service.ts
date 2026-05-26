@@ -28,6 +28,11 @@ export interface UserProfileData {
   userId: string | null;
   username: string;
   roles: string[];
+  name?: string | null;
+  birthDate?: string | null;
+  gender?: 'MALE' | 'FEMALE' | 'OTHER' | null;
+  phone?: string | null;
+  profileCompleted: boolean;
 }
 
 export const registerUser = async (data: RegisterFormData): Promise<void> => {
