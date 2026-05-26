@@ -10,8 +10,10 @@ import NotFoundPage from './pages/NotFoundPage';
 import LandingPage from './pages/LandingPage';
 import MainLayout from './layouts/MainLayout';
 import ProtectedRoute from './components/common/ProtectedRoute';
+import OnboardingRoute from './components/common/OnboardingRoute';
 import { useAuth } from './contexts/AuthContext';
 import UserProfilePage from './pages/UserProfilePage';
+import OnboardingWizardPage from './pages/OnboardingWizardPage';
 
 import AdminRoute from './components/common/AdminRoute';
 import AdminLayout from './layouts/AdminLayout';
@@ -46,6 +48,15 @@ const AppRoutes: React.FC = () => {
       {/* Routes công khai */}
       <Route path="/login" element={!isAuthenticated ? <LoginPage /> : <Navigate to="/dashboard" replace />} />
       <Route path="/register" element={!isAuthenticated ? <RegisterPage /> : <Navigate to="/dashboard" replace />} />
+
+      <Route
+        path="/onboarding/wizard"
+        element={
+          <OnboardingRoute>
+            <OnboardingWizardPage />
+          </OnboardingRoute>
+        }
+      />
 
       {/* Routes được bảo vệ sử dụng MainLayout */}
       {/* Trang chủ sau khi đăng nhập sẽ là /dashboard hoặc một path khác nếu / là landing page */}

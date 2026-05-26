@@ -46,3 +46,31 @@ Notes:
 
 - This step does not add onboarding routes or UI.
 - This step does not replace the current dashboard page.
+
+### Step 2 - Onboarding Routing Guards
+
+Status: completed
+
+Completed changes:
+
+- Added `OnboardingRoute` for `/onboarding/wizard`.
+- Updated `ProtectedRoute` so authenticated users with `profileCompleted === false` are redirected to `/onboarding/wizard`.
+- Added the `/onboarding/wizard` route in `App.tsx`.
+- Added a minimal `OnboardingWizardPage` placeholder so routing can compile before the full onboarding UI step.
+
+Verification:
+
+- `npx tsc -b --pretty false` passed.
+
+Files touched:
+
+- `src/components/common/OnboardingRoute.tsx`
+- `src/components/common/ProtectedRoute.tsx`
+- `src/pages/OnboardingWizardPage.tsx`
+- `src/App.tsx`
+- `doc/context.md`
+
+Notes:
+
+- The placeholder page is temporary and should be replaced in the onboarding UI step.
+- Login still navigates to `/dashboard`; `ProtectedRoute` performs the onboarding redirect when needed.
