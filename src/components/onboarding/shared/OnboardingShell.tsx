@@ -17,11 +17,18 @@ const OnboardingShell: React.FC<OnboardingShellProps> = ({ children }) => {
       <div className="pointer-events-none fixed -left-32 bottom-16 h-72 w-72 rounded-full bg-green-100/60 blur-3xl" />
 
       <header className="relative z-10 mx-auto mb-8 flex max-w-5xl items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="grid h-10 w-10 place-items-center rounded-md bg-brand-green text-white shadow-sm">
-            <span className="text-base font-bold">HC</span>
+        <div className="flex items-center gap-2.5">
+          <div
+            className="grid h-9 w-9 place-items-center rounded-lg bg-gradient-to-br from-brand-green to-emerald-500"
+            style={{ boxShadow: '0 4px 12px -4px rgba(5, 150, 105, 0.45)' }}
+          >
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+              <path d="M12 4v16M4 12h16" stroke="white" strokeWidth="2.75" strokeLinecap="round" />
+            </svg>
           </div>
-          <span className="text-lg font-bold text-brand-green-dark">HealthCare</span>
+          <span className="text-base font-bold tracking-tight text-gray-900">
+            Health<span className="text-brand-green">Care</span>
+          </span>
         </div>
         <button
           type="button"

@@ -238,3 +238,33 @@ Notes:
 
 - The Vite dev server is running from this workspace on port `5173`.
 - Runtime log files should not be committed unless intentionally needed.
+
+### Step 7 - Polish UI Phase 1 Quick Wins
+
+Status: completed
+
+Completed changes:
+
+- Updated `WizardCard` to use larger rounded corners and a softer multi-layer shadow.
+- Updated `DashboardCard` visual hierarchy:
+  - card radius changed from `rounded-lg` to `rounded-2xl`;
+  - card titles now render as small uppercase section labels;
+  - added optional `subtitle` and `info` props for later dashboard polish phases.
+- Updated onboarding shell brand mark from the `HC` text box to a gradient plus icon and split-color `HealthCare` wordmark.
+
+Verification:
+
+- `npx tsc -b --pretty false` passed.
+- `npx eslint src\components\onboarding\shared\WizardCard.tsx src\components\onboarding\shared\OnboardingShell.tsx src\components\dashboard\DashboardCard.tsx` passed.
+
+Files touched:
+
+- `src/components/onboarding/shared/WizardCard.tsx`
+- `src/components/onboarding/shared/OnboardingShell.tsx`
+- `src/components/dashboard/DashboardCard.tsx`
+- `doc/context.md`
+
+Notes:
+
+- This step only changes presentation for Phase 1 of `doc/RefactorUI/HuongDanPolishUI.md`.
+- Service layer, routing, validation, onboarding submit flow, and dashboard data flow were left unchanged.
