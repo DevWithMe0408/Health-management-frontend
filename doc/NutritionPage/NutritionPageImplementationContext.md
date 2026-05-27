@@ -86,7 +86,7 @@ Commit:
 
 ### Step 3 - Service Layer
 
-Status: completed, pending user review.
+Status: committed.
 
 Work done:
 - Added `src/services/meal.service.ts`.
@@ -102,6 +102,38 @@ Work done:
   - `DELETE /api/favorite-dishes/{dishId}`
 - Used existing `apiClient` and `unwrapDataResponse` conventions.
 - Did not catch errors in service functions; hooks/pages will handle toast/error UI later.
+
+Verification:
+- `npm run build` passed.
+
+Commit:
+- `5e6fbb1 feat: add nutrition meal service`
+
+### Step 4 - Hooks
+
+Status: completed, pending user review.
+
+Work done:
+- Added `src/hooks/useUserContext.ts`.
+  - Loads latest health data, current goal, and constitution.
+  - Produces Nutrition-specific context: `goalCode`, `tdee`, `weight`, `height`, `constitution`, `bmi`, `warning`.
+  - Marks `emptyHealthData` when required metrics are missing.
+- Added `src/hooks/useMealPreferences.ts`.
+  - Loads user preferences.
+  - Detects first-time setup when `MEAL_PLAN_TYPE` is missing.
+  - Saves plan type and per-meal config using existing `userPreferences.service.ts`.
+  - Uses preference keys: `MEAL_PLAN_TYPE`, `BREAKFAST_CONFIG`, `SNACK_AM_CONFIG`, `LUNCH_CONFIG`, `SNACK_PM_CONFIG`, `DINNER_CONFIG`.
+- Added `src/hooks/useMealPlan.ts`.
+  - Generates full-day plans.
+  - Restores/persists plan state in `sessionStorage` for 4 hours.
+  - Supports swap, revert swap, dismiss score-drop event, confirm eaten, skip, and expand/collapse state.
+  - Builds `pinnedDishes` from current meal dishes for swap requests.
+- Updated `src/types/refactorUi.types.ts` to allow Nutrition preference keys.
+
+Implementation notes:
+- Hooks are logic-only and not connected to any page yet.
+- `useMealPreferences` uses user-facing preference keys from the FE guide, then maps configs to backend `MealType` keys for recommendation requests.
+- `useUserContext` still depends on current `healthData.service.ts`, which converts some API errors into plain `Error`; true 404 handling may need refinement if backend unavailable errors must be distinguished from missing health data.
 
 Verification:
 - `npm run build` passed.
