@@ -734,3 +734,44 @@ Notes:
 - Manual browser responsive verification was not run in this phase.
 - Phase 4 should do final spacing/polish verification and optional browser review.
 - `doc/RefactorUI/Dashboard/ChinhSuaDashBoard.md` remains an untracked guide file and was not staged.
+
+### Step 20 - Dashboard Completion Phase 4 Polish Verification
+
+Status: completed
+
+Completed changes:
+
+- Committed Phase 3 layout alignment in commit `cca74de refactor(dashboard): align layout to design spec`.
+- Rechecked the Dashboard polish requirements from `doc/RefactorUI/Dashboard/ChinhSuaDashBoard.md`.
+- Verified `DashboardPage.tsx` already matches the required polish structure:
+  - outer content uses `space-y-5`;
+  - greeting hero uses `rounded-3xl`;
+  - desktop row grids use the documented asymmetric `xl:grid-cols-[...]` values;
+  - `HealthMetricsDetails` remains full width after the Compliance/Metric row.
+- Verified `DashboardCard` still provides `rounded-2xl`, uppercase title typography, `info`, and `rightAction` support.
+- Verified `ComplianceCard` uses the shared `DashboardCard` wrapper, a green gradient progress bar, and a 7-column day grid.
+- No component code changes were needed in Phase 4.
+
+Verification:
+
+- `npx tsc -b --pretty false` passed.
+- Scoped Dashboard ESLint passed for:
+  - `src/pages/DashboardPage.tsx`;
+  - `src/components/dashboard/DashboardCard.tsx`;
+  - `src/components/dashboard/ComplianceCard.tsx`;
+  - `src/components/dashboard/ConstitutionCard.tsx`;
+  - `src/components/dashboard/WeightChartCard.tsx`;
+  - `src/components/dashboard/MetricSummaryGrid.tsx`;
+  - `src/components/dashboard/HealthMetricsDetails.tsx`;
+  - `src/components/dashboard/ReminderList.tsx`.
+- `npm run build` passed. Vite reported the existing large chunk warning.
+
+Files touched:
+
+- `doc/context.md`
+
+Notes:
+
+- Phase 4 is complete but not committed yet; waiting for user review.
+- Manual browser responsive verification was not run in this phase.
+- `doc/RefactorUI/Dashboard/ChinhSuaDashBoard.md` remains an untracked guide file and was not staged.
