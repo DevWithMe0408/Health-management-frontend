@@ -7,6 +7,8 @@ import { getCurrentGoal } from './userGoals.service';
 import type { UserGoalResponse } from './userGoals.service';
 import { getAllPreferences } from './userPreferences.service';
 import type { PreferenceResponse } from './userPreferences.service';
+import { getMealLogHistory } from './mealLog.service';
+import type { MealLogHistoryItem } from './mealLog.service';
 
 export interface MetricDataResponse {
   value: number | null;
@@ -36,9 +38,15 @@ export interface DashboardOverview {
   constitution: ConstitutionResponse | null;
   metrics: DashboardMetricsResponse | null;
   weightHistory: HealthHistoryPoint[];
+  mealLogHistory: MealLogHistoryItem[];
   currentGoal: UserGoalResponse | null;
   preferences: PreferenceResponse[];
-  errors: Partial<Record<'constitution' | 'metrics' | 'weightHistory' | 'currentGoal' | 'preferences', string>>;
+  errors: Partial<
+    Record<
+      'constitution' | 'metrics' | 'weightHistory' | 'mealLogHistory' | 'currentGoal' | 'preferences',
+      string
+    >
+  >;
 }
 
 const formatLocalDate = (date: Date): string => {
@@ -81,20 +89,22 @@ export const getWeightHistory = async (days = 30): Promise<HealthHistoryPoint[]>
 };
 
 const collect = async <T,>(
-  promise: Promise<T>
+  promise: Promise<T>,
+  fallback?: string
 ): Promise<{ data: T | null; error: string | null }> => {
   try {
     return { data: await promise, error: null };
   } catch (error) {
-    return { data: null, error: getApiErrorMessage(error) };
+    return { data: null, error: getApiErrorMessage(error, fallback) };
   }
 };
 
 export const getDashboardOverview = async (): Promise<DashboardOverview> => {
-  const [constitution, metrics, weightHistory, currentGoal, preferences] = await Promise.all([
+  const [constitution, metrics, weightHistory, mealLogHistory, currentGoal, preferences] = await Promise.all([
     collect(getConstitution(1)),
     collect(getDashboardMetrics()),
     collect(getWeightHistory(30)),
+    collect(getMealLogHistory(7), 'Không tải được lịch sử thực đơn.'),
     collect(getCurrentGoal()),
     collect(getAllPreferences()),
   ]);
@@ -103,12 +113,14 @@ export const getDashboardOverview = async (): Promise<DashboardOverview> => {
     constitution: constitution.data,
     metrics: metrics.data,
     weightHistory: weightHistory.data ?? [],
+    mealLogHistory: mealLogHistory.data ?? [],
     currentGoal: currentGoal.data,
     preferences: preferences.data ?? [],
     errors: {
       constitution: constitution.error ?? undefined,
       metrics: metrics.error ?? undefined,
       weightHistory: weightHistory.error ?? undefined,
+      mealLogHistory: mealLogHistory.error ?? undefined,
       currentGoal: currentGoal.error ?? undefined,
       preferences: preferences.error ?? undefined,
     },

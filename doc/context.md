@@ -1,6 +1,6 @@
 # Frontend Refactor Context
 
-Last updated: 2026-05-26
+Last updated: 2026-05-27
 
 Purpose: track the implementation of the Onboarding and Dashboard refactor so the work can be reviewed step by step and recovered after context/session loss.
 
@@ -626,3 +626,37 @@ Recommended next actions:
 - Push the branch if user wants remote updated.
 - Do not add `@plugin "@tailwindcss/forms"` unless a real form regression is observed.
 - Do not stage untracked guide files unless the user explicitly asks to version them.
+
+### Step 17 - Dashboard Completion Phase 1 Service Layer
+
+Status: completed
+
+Completed changes:
+
+- Read `doc/RefactorUI/Dashboard/ChinhSuaDashBoard.md` and scoped Phase 1 to the service layer only.
+- Added `src/services/mealLog.service.ts` for `GET /api/meal-log/history?days=7`.
+- Added shared meal-log types:
+  - `MealType`;
+  - `PlanType`;
+  - `MealLogHistoryItem`.
+- Updated `DashboardOverview` with `mealLogHistory: MealLogHistoryItem[]`.
+- Wired `getMealLogHistory(7)` into `getDashboardOverview()`.
+- Kept the existing `collect()` pattern in `dashboard.service.ts` instead of switching to `Promise.allSettled`.
+- Added a meal-log-specific fallback error message for future `ComplianceCard` rendering.
+
+Verification:
+
+- `npx tsc -b --pretty false` passed.
+- `npx eslint src\services\mealLog.service.ts src\services\dashboard.service.ts` passed.
+
+Files touched:
+
+- `src/services/mealLog.service.ts`
+- `src/services/dashboard.service.ts`
+- `doc/context.md`
+
+Notes:
+
+- This phase does not add the `ComplianceCard` UI yet.
+- This phase does not change Dashboard layout yet.
+- `doc/RefactorUI/Dashboard/ChinhSuaDashBoard.md` is an untracked guide file and was not staged.
