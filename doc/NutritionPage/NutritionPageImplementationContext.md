@@ -67,7 +67,7 @@ Commit:
 
 ### Step 2 - Constants
 
-Status: completed, pending user review.
+Status: committed.
 
 Work done:
 - Added `src/constants/foodGroup.constants.ts`.
@@ -77,6 +77,31 @@ Work done:
 - Added `src/constants/slotCode.constants.ts`.
 - Constants use backend enum values confirmed from BE reference files.
 - Included labels, meal ordering, meal icons, placeholder palettes, score tiers, and macro deviation helpers.
+
+Verification:
+- `npm run build` passed.
+
+Commit:
+- `209f1b0 feat: add nutrition constants`
+
+### Step 3 - Service Layer
+
+Status: completed, pending user review.
+
+Work done:
+- Added `src/services/meal.service.ts`.
+- Wrapped nutrition recommendation endpoints:
+  - `POST /api/recommendation/full-day`
+  - `POST /api/recommendation/swap-dish`
+- Wrapped meal log endpoints:
+  - `POST /api/meal-log/confirm`
+  - `GET /api/meal-log/history`
+- Wrapped favorite dish endpoints:
+  - `GET /api/favorite-dishes`
+  - `POST /api/favorite-dishes/{dishId}`
+  - `DELETE /api/favorite-dishes/{dishId}`
+- Used existing `apiClient` and `unwrapDataResponse` conventions.
+- Did not catch errors in service functions; hooks/pages will handle toast/error UI later.
 
 Verification:
 - `npm run build` passed.
