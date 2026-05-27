@@ -211,7 +211,7 @@ Commit:
 
 ### Step 8 - SwapDrawer And AlternateCard
 
-Status: completed, pending user review.
+Status: committed.
 
 Work done:
 - Added `src/components/meal/AlternateCard.tsx`.
@@ -223,6 +223,28 @@ Work done:
   - Supports suggestion banner and apply action.
   - Confirms by calling `onConfirm(newDishId)`.
 - Kept sort UI non-interactive; BE already returns alternatives sorted by expected score.
+
+Verification:
+- `npm run build` passed.
+
+Commit:
+- `e9c1aab feat: add nutrition swap drawer`
+
+### Step 9 - SetupWizard
+
+Status: completed, pending user review.
+
+Work done:
+- Added `src/components/meal/SetupWizard.tsx`.
+- Wizard has 3 steps:
+  - Choose plan type: `3_BUA` or `5_BUA`.
+  - Configure each meal as `COMBO` or `NHIEU_MON`.
+  - Review selected plan and per-meal configuration.
+- Supports backend meal types:
+  - `3_BUA`: `SANG`, `TRUA`, `TOI`.
+  - `5_BUA`: `SANG`, `PHU_SANG`, `TRUA`, `PHU_CHIEU`, `TOI`.
+- Emits `NutritionPreferences` through `onComplete(preferences)`.
+- Component does not save preferences directly; page/hook layer will call `useMealPreferences.savePreferences`.
 
 Verification:
 - `npm run build` passed.
