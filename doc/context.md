@@ -660,3 +660,39 @@ Notes:
 - This phase does not add the `ComplianceCard` UI yet.
 - This phase does not change Dashboard layout yet.
 - `doc/RefactorUI/Dashboard/ChinhSuaDashBoard.md` is an untracked guide file and was not staged.
+
+### Step 18 - Dashboard Completion Phase 2 ComplianceCard
+
+Status: completed
+
+Completed changes:
+
+- Committed Phase 1 service-layer work in commit `afa0e0c feat(dashboard): add meal log history service`.
+- Added `src/components/dashboard/ComplianceCard.tsx` for Widget 2B "Đã có thực đơn · 7 ngày".
+- Implemented data grouping by `mealDate` with `Map<string, Set<MealType>>`.
+- Rendered a 7-day Monday-to-Sunday compliance grid with 3 meals for `3_BUA` or 5 meals for `5_BUA`.
+- Added plan inference from real meal-log data, defaulting to `3_BUA` when no `5_BUA` data exists.
+- Used local date formatting for week-date keys instead of `toISOString()` to avoid UTC timezone date drift.
+- Added defensive meal-type filtering so unknown backend enum values do not break rendering.
+- Added widget states:
+  - error state;
+  - empty state with CTA to `/nutrition-plan`;
+  - data state with right-side total, percentage, progress bar, tooltip titles, and legend.
+- Kept this widget independent; it is not wired into `DashboardPage.tsx` until Phase 3.
+
+Verification:
+
+- `npx tsc -b --pretty false` passed.
+- `npx eslint src\components\dashboard\ComplianceCard.tsx` passed.
+- `npm run build` passed. Vite reported the existing large chunk warning.
+
+Files touched:
+
+- `src/components/dashboard/ComplianceCard.tsx`
+- `doc/context.md`
+
+Notes:
+
+- Phase 2 is complete but not committed yet; waiting for user review.
+- Phase 3 should import `ComplianceCard` in `DashboardPage.tsx`, pass `overview?.mealLogHistory ?? []`, and reorganize the Dashboard layout.
+- `doc/RefactorUI/Dashboard/ChinhSuaDashBoard.md` remains an untracked guide file and was not staged.
