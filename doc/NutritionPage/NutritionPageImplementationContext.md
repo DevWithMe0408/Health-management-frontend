@@ -52,12 +52,31 @@ Work done:
 
 ### Step 1 - Meal Types
 
-Status: completed, pending user review.
+Status: committed.
 
 Work done:
 - Added `src/types/meal.types.ts`.
 - Types mirror current backend DTO/request shapes instead of the older FE guide draft.
 - Added separate UI-only state types for card status/expanded state.
+
+Verification:
+- `npm run build` passed.
+
+Commit:
+- `4b1b477 feat: add nutrition meal types`
+
+### Step 2 - Constants
+
+Status: completed, pending user review.
+
+Work done:
+- Added `src/constants/foodGroup.constants.ts`.
+- Added `src/constants/goal.constants.ts`.
+- Added `src/constants/mealType.constants.ts`.
+- Added `src/constants/score.constants.ts`.
+- Added `src/constants/slotCode.constants.ts`.
+- Constants use backend enum values confirmed from BE reference files.
+- Included labels, meal ordering, meal icons, placeholder palettes, score tiers, and macro deviation helpers.
 
 Verification:
 - `npm run build` passed.
