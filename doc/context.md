@@ -775,3 +775,42 @@ Notes:
 - Phase 4 is complete but not committed yet; waiting for user review.
 - Manual browser responsive verification was not run in this phase.
 - `doc/RefactorUI/Dashboard/ChinhSuaDashBoard.md` remains an untracked guide file and was not staged.
+
+### Step 21 - Dashboard Completion Compact Handoff
+
+Status: completed
+
+Current branch:
+
+- `feature/onboarding-dashboard-fe`
+
+Latest Dashboard completion commits:
+
+- `afa0e0c feat(dashboard): add meal log history service`
+- `67277ac feat(dashboard): build compliance card`
+- `cca74de refactor(dashboard): align layout to design spec`
+- `9a7707f chore(dashboard): record polish verification`
+
+Completed Dashboard scope from `doc/RefactorUI/Dashboard/ChinhSuaDashBoard.md`:
+
+- Phase 1: added `mealLog.service.ts` and wired `mealLogHistory` into `getDashboardOverview()`.
+- Phase 2: added `ComplianceCard` for Widget 2B with real meal-log data, 3/5 meal support, error state, empty state, progress bar, tooltips, and legend.
+- Phase 3: aligned `DashboardPage` layout to the design:
+  - hero full width;
+  - Constitution + Reminders;
+  - Weight chart full width;
+  - Compliance + Metric Summary;
+  - Health metrics details full width.
+- Phase 4: verified Dashboard spacing, radii, wrapper usage, and scoped build/lint checks.
+
+Verification summary:
+
+- `npx tsc -b --pretty false` passed for each Dashboard completion phase.
+- Scoped ESLint passed for the touched Dashboard service/page/widget files.
+- `npm run build` passed after Phase 2, Phase 3, and Phase 4. Vite still reports the existing large chunk warning.
+
+Current notes for next session:
+
+- No implementation phase remains in `ChinhSuaDashBoard.md`.
+- Manual browser responsive verification with real backend data has not been run in this session.
+- `doc/RefactorUI/Dashboard/ChinhSuaDashBoard.md` is still an untracked guide file and was intentionally not staged.
