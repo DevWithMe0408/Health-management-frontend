@@ -277,7 +277,7 @@ Commit:
 
 ### Step 11 - Loading And Empty States
 
-Status: completed, pending user review.
+Status: committed.
 
 Work done:
 - Added `src/components/states/MealPlanLoadingSkeleton.tsx`.
@@ -289,6 +289,30 @@ Work done:
   - Includes checklist for required health metrics.
 - Updated `src/index.css`.
   - Added `dbShimmer` keyframes and `.animate-db-shimmer` utility for skeleton loading.
+
+Verification:
+- `npm run build` passed.
+
+Commit:
+- `e99ce99 feat: add nutrition page states`
+
+### Step 12 - Main Page Assembly
+
+Status: completed, pending user review.
+
+Work done:
+- Added `src/pages/MealRecommendationPage.tsx`.
+  - Wires `useUserContext`, `useMealPreferences`, and `useMealPlan`.
+  - Shows loading skeleton, empty health data state, info strip, meal cards, footer summary, setup wizard, warning modal, score-drop banner, and swap drawer.
+  - Auto-generates a plan once after user context and preferences are available.
+  - Handles wizard completion by saving preferences and letting the page auto-generate afterward.
+  - Handles favorite add/remove with optimistic UI update and toast feedback.
+- Updated `src/hooks/useMealPlan.ts`.
+  - Added `setDishFavorite(dishId, favorite)` so page can update favorite state in current plan and alternatives after API calls.
+
+Implementation notes:
+- Route wiring is not done in this step; `App.tsx` still has the existing `/nutrition-plan` placeholder. Routing remains Step 13.
+- Auto-generate is guarded with a ref to avoid repeated generate loops if backend returns an error.
 
 Verification:
 - `npm run build` passed.

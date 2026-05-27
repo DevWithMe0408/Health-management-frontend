@@ -57,6 +57,7 @@ interface UseMealPlanResult {
   confirm: (mealType: MealType) => Promise<void>;
   skip: (mealType: MealType) => void;
   toggleExpand: (mealType: MealType) => void;
+  setDishFavorite: (dishId: string, favorite: boolean) => void;
   dismissScoreDropEvent: () => void;
   revertSwap: () => void;
 }
@@ -150,6 +151,31 @@ const buildPinnedDishes = (
       dishId: dish.dishId,
     }));
 };
+
+const updateFavoriteInPlan = (
+  currentPlan: DailyPlanResponse,
+  dishId: string,
+  favorite: boolean
+): DailyPlanResponse => ({
+  ...currentPlan,
+  meals: currentPlan.meals.map((meal) => ({
+    ...meal,
+    topCombination: {
+      ...meal.topCombination,
+      dishes: meal.topCombination.dishes.map((dish) =>
+        dish.dishId === dishId ? { ...dish, favorite } : dish
+      ),
+    },
+    slotAlternatives: Object.fromEntries(
+      Object.entries(meal.slotAlternatives).map(([slotKey, options]) => [
+        slotKey,
+        options.map((option) =>
+          option.dishId === dishId ? { ...option, favorite } : option
+        ),
+      ])
+    ),
+  })),
+});
 
 export const useMealPlan = ({
   userContext,
@@ -307,6 +333,17 @@ export const useMealPlan = ({
     persistPlan(plan, nextStates);
   }, [mealStates, persistPlan, plan]);
 
+  const setDishFavorite = useCallback((dishId: string, favorite: boolean) => {
+    if (!plan) return;
+
+    const nextPlan = updateFavoriteInPlan(plan, dishId, favorite);
+    const nextStates = mealStates.map((state) => ({
+      ...state,
+      meal: nextPlan.meals.find((meal) => meal.mealType === state.meal.mealType) ?? state.meal,
+    }));
+    persistPlan(nextPlan, nextStates);
+  }, [mealStates, persistPlan, plan]);
+
   const dismissScoreDropEvent = useCallback(() => {
     setScoreDropEvent(null);
     setSwapSnapshot(null);
@@ -334,8 +371,8 @@ export const useMealPlan = ({
     confirm,
     skip,
     toggleExpand,
+    setDishFavorite,
     dismissScoreDropEvent,
     revertSwap,
   };
 };
-
