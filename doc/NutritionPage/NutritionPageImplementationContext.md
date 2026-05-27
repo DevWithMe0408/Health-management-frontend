@@ -168,7 +168,7 @@ Commit:
 
 ### Step 6 - InfoStrip And FooterSummary
 
-Status: completed, pending user review.
+Status: committed.
 
 Work done:
 - Added `src/components/meal/InfoStrip.tsx`.
@@ -180,6 +180,28 @@ Work done:
   - Displays overall score via `ScoreBadge`.
   - Includes macro distribution donut using P*4, F*9, C*4.
 - Kept these components presentation-only; plan aggregation will happen in page assembly or helpers later.
+
+Verification:
+- `npm run build` passed.
+
+Commit:
+- `9f7af8f feat: add nutrition summary components`
+
+### Step 7 - MealCard And FoodRow
+
+Status: completed, pending user review.
+
+Work done:
+- Added `src/components/meal/FoodRow.tsx`.
+  - Renders dish thumbnail, name, favorite button, slot chip, food group chip, grams, kcal, serving multiplier, and swap button.
+- Added `src/components/meal/MealCard.tsx`.
+  - Renders meal header, collapse/expand state, score, status, food rows, macro bar, skip action, and confirm eaten action.
+  - Uses backend `MealType` labels/icons from constants.
+  - Uses BE macro targets directly: `proteinTarget`, `fatTarget`, `carbTarget`.
+
+Implementation notes:
+- Per-dish protein/fat/carb are not shown because current BE `DishSuggestionResponse` does not expose those fields.
+- Dish image URLs are not shown because current BE dish DTOs do not expose `imageUrl`; `FoodThumb` placeholder is used.
 
 Verification:
 - `npm run build` passed.
