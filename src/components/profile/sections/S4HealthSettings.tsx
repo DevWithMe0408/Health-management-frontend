@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { BeakerIcon, CpuChipIcon } from '@heroicons/react/24/outline';
 import { toast } from 'sonner';
+import { getApiErrorMessage } from '../../../services/apiResponse';
 import { updatePreference } from '../../../services/userPreferences.service';
 import type { PreferenceResponse } from '../../../services/userPreferences.service';
 import type { PbfMethod } from '../../../types/refactorUi.types';
@@ -86,8 +87,8 @@ const S4HealthSettings: React.FC<S4HealthSettingsProps> = ({
         `Đã đổi phương pháp tính PBF sang ${newMethod === 'FORMULA' ? 'Công thức Navy' : 'Model AI'}`,
       );
       await onPreferenceChanged();
-    } catch (error: any) {
-      toast.error(error.response?.data?.message || 'Không đổi được cài đặt, vui lòng thử lại');
+    } catch (error: unknown) {
+      toast.error(getApiErrorMessage(error, 'Không đổi được cài đặt, vui lòng thử lại'));
     } finally {
       setSaving(false);
     }

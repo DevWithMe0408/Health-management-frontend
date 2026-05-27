@@ -63,7 +63,8 @@ Manual can verify sau khi BE/dev server san sang:
 
 ## Cac step chua lam
 
-- FE-5: integration/manual test full flow.
+- Khong con step implementation bat buoc trong doc FE.
+- Con manual integration tren browser voi BE runtime/token that.
 
 ## Step FE-1 - Service layer cho Profile
 
@@ -356,3 +357,55 @@ Noi dung da them/sua:
 Verify da chay:
 - `npx tsc -b --pretty false`
 - Ket qua: PASS.
+
+## Step FE-5 - Verification
+
+Trang thai: DA THUC HIEN, CHUA COMMIT.
+
+Pham vi:
+- Verify bang command cho toan repo.
+- Sua cac loi lint thuoc pham vi Profile moi.
+- Khong sua hang loat cac lint issue co san ngoai Profile.
+- Chua chay manual browser flow voi BE runtime/token that.
+
+Files da sua them trong step nay:
+- `src/services/apiResponse.ts`
+- `src/components/profile/modals/GoalChangeModal.tsx`
+- `src/components/profile/sections/S2PersonalInfo.tsx`
+- `src/components/profile/sections/S4HealthSettings.tsx`
+- `src/components/profile/sections/S5Security.tsx`
+- `doc/RefactorUI/ProfilePage/ContextXayDungProfileFE.md`
+
+Noi dung da sua them:
+- Them `getApiErrorCode(error)` vao `apiResponse.ts`.
+- Thay `catch (error: any)` trong Profile UI bang `catch (error: unknown)`.
+- Dung `getApiErrorMessage()` cho toast error trong S2/S3 modal/S4.
+- Dung `getApiErrorCode()` trong S5 de handle `AUTH-011`, `AUTH-012`.
+
+Verify da chay:
+- `npx tsc -b --pretty false`: PASS.
+- `npm run build`: PASS.
+  - Vite co warning chunk lon hon 500 kB, khong fail build.
+- `npm run lint`: FAIL.
+  - Cac loi lint trong `src/components/profile/**` da duoc xu ly het.
+  - Lint con fail o cac file ngoai Profile hoac legacy service:
+    - `src/components/dashboard/TrendChart.tsx`
+    - `src/contexts/AuthContext.tsx`
+    - `src/contexts/OnboardingContext.tsx`
+    - `src/pages/HomePage.tsx`
+    - `src/pages/LoginPage.tsx`
+    - `src/pages/RegisterPage.tsx`
+    - `src/pages/SubmitHealthDataPage.tsx`
+    - `src/pages/adminPage/*ConfigPage.tsx`
+    - `src/services/auth.service.ts`
+    - `src/services/healthData.service.ts`
+
+Manual can verify sau khi chay FE + BE:
+- `/profile` render du 6 section.
+- Header hien name/email/joined date/constitution.
+- Personal info edit/save/clear phone.
+- Goal change modal chon 3 goal, duration mac dinh 6 thang.
+- Goal history expand/collapse.
+- PBF method toggle.
+- Change password success/error code.
+- Danger Zone chi toast, khong goi DELETE.

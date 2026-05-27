@@ -3,6 +3,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import type { UserProfileData } from '../../../services/auth.service';
+import { getApiErrorMessage } from '../../../services/apiResponse';
 import { updateUserProfile } from '../../../services/user.service';
 import type { Gender } from '../../../types/refactorUi.types';
 import {
@@ -87,8 +88,8 @@ const S2PersonalInfo: React.FC<S2PersonalInfoProps> = ({ user, onUpdated }) => {
       await onUpdated();
       toast.success('Đã cập nhật thông tin');
       setEditing(false);
-    } catch (error: any) {
-      toast.error(error.response?.data?.message || 'Có lỗi xảy ra, vui lòng thử lại');
+    } catch (error: unknown) {
+      toast.error(getApiErrorMessage(error, 'Có lỗi xảy ra, vui lòng thử lại'));
     } finally {
       setSaving(false);
     }

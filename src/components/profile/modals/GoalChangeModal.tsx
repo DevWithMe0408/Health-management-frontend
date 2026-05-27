@@ -6,6 +6,7 @@ import {
   XMarkIcon,
 } from '@heroicons/react/24/outline';
 import { toast } from 'sonner';
+import { getApiErrorMessage } from '../../../services/apiResponse';
 import { updateCurrentGoal } from '../../../services/userGoals.service';
 import type { GoalCode } from '../../../types/refactorUi.types';
 
@@ -60,8 +61,8 @@ const GoalChangeModal: React.FC<GoalChangeModalProps> = ({
       await updateCurrentGoal({ goalCode: selected, targetDurationMonths: 6 });
       toast.success('Đã đổi mục tiêu');
       await onConfirmed();
-    } catch (error: any) {
-      toast.error(error.response?.data?.message || 'Không đổi được mục tiêu');
+    } catch (error: unknown) {
+      toast.error(getApiErrorMessage(error, 'Không đổi được mục tiêu'));
     } finally {
       setSaving(false);
     }

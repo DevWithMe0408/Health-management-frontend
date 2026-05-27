@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
+import { getApiErrorCode, getApiErrorMessage } from '../../../services/apiResponse';
 import { changePassword } from '../../../services/password.service';
 import {
   changePasswordSchema,
@@ -45,14 +46,14 @@ const S5Security: React.FC = () => {
       });
       toast.success('Đã đổi mật khẩu thành công');
       reset();
-    } catch (error: any) {
-      const code = error.response?.data?.code;
+    } catch (error: unknown) {
+      const code = getApiErrorCode(error);
       if (code === 'AUTH-011') {
         setError('currentPassword', { message: 'Mật khẩu hiện tại không đúng' });
       } else if (code === 'AUTH-012') {
         setError('newPassword', { message: 'Mật khẩu mới phải khác mật khẩu hiện tại' });
       } else {
-        toast.error(error.response?.data?.message || 'Có lỗi xảy ra');
+        toast.error(getApiErrorMessage(error, 'Có lỗi xảy ra'));
       }
     } finally {
       setSaving(false);

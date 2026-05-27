@@ -32,3 +32,10 @@ export const getApiErrorMessage = (
   if (error instanceof Error) return error.message;
   return fallback;
 };
+
+export const getApiErrorCode = (error: unknown): string | null => {
+  if (!axios.isAxiosError(error)) return null;
+
+  const body = error.response?.data as Partial<DataResponse<unknown>> | undefined;
+  return body?.code ?? null;
+};
