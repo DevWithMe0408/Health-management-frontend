@@ -696,3 +696,41 @@ Notes:
 - Phase 2 is complete but not committed yet; waiting for user review.
 - Phase 3 should import `ComplianceCard` in `DashboardPage.tsx`, pass `overview?.mealLogHistory ?? []`, and reorganize the Dashboard layout.
 - `doc/RefactorUI/Dashboard/ChinhSuaDashBoard.md` remains an untracked guide file and was not staged.
+
+### Step 19 - Dashboard Completion Phase 3 Layout Alignment
+
+Status: completed
+
+Completed changes:
+
+- Committed Phase 2 `ComplianceCard` work in commit `67277ac feat(dashboard): build compliance card`.
+- Imported `ComplianceCard` into `DashboardPage.tsx`.
+- Reorganized Dashboard content to match the design guide layout:
+  - Greeting hero remains full width at the top.
+  - Row 1: `ConstitutionCard` left and `ReminderList` right with `xl:grid-cols-[minmax(0,1.2fr)_minmax(320px,1fr)]`.
+  - Row 2: `WeightChartCard` full width.
+  - Row 3: `ComplianceCard` left and `MetricSummaryGrid` right with `xl:grid-cols-[minmax(0,1.4fr)_minmax(280px,1fr)]`.
+  - Row 4: `HealthMetricsDetails` full width.
+- Wired `ComplianceCard` to real dashboard overview data:
+  - `data={overview?.mealLogHistory ?? []}`;
+  - `error={overview?.errors.mealLogHistory}`.
+- Updated `DashboardSkeleton` so loading state matches the new row structure and card radii.
+- Kept the outer Dashboard content spacing as `space-y-5`.
+
+Verification:
+
+- `npx tsc -b --pretty false` passed.
+- `npx eslint src\pages\DashboardPage.tsx src\components\dashboard\ComplianceCard.tsx` passed.
+- `npm run build` passed. Vite reported the existing large chunk warning.
+
+Files touched:
+
+- `src/pages/DashboardPage.tsx`
+- `doc/context.md`
+
+Notes:
+
+- Phase 3 is complete but not committed yet; waiting for user review.
+- Manual browser responsive verification was not run in this phase.
+- Phase 4 should do final spacing/polish verification and optional browser review.
+- `doc/RefactorUI/Dashboard/ChinhSuaDashBoard.md` remains an untracked guide file and was not staged.

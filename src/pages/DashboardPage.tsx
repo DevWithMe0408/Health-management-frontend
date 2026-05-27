@@ -7,6 +7,7 @@ import {
   type DashboardOverview,
 } from '../services/dashboard.service';
 import type { GoalCode } from '../types/refactorUi.types';
+import ComplianceCard from '../components/dashboard/ComplianceCard';
 import ConstitutionCard from '../components/dashboard/ConstitutionCard';
 import HealthMetricsDetails from '../components/dashboard/HealthMetricsDetails';
 import MetricSummaryGrid from '../components/dashboard/MetricSummaryGrid';
@@ -21,16 +22,17 @@ const goalLabels: Record<GoalCode, string> = {
 
 const DashboardSkeleton: React.FC = () => (
   <div className="space-y-5">
-    <div className="h-24 animate-pulse rounded-lg bg-gray-100" />
-    <div className="grid gap-4 sm:grid-cols-3">
-      <div className="h-32 animate-pulse rounded-lg bg-gray-100" />
-      <div className="h-32 animate-pulse rounded-lg bg-gray-100" />
-      <div className="h-32 animate-pulse rounded-lg bg-gray-100" />
+    <div className="h-24 animate-pulse rounded-3xl bg-gray-100" />
+    <div className="grid gap-5 xl:grid-cols-[minmax(0,1.2fr)_minmax(320px,1fr)]">
+      <div className="h-72 animate-pulse rounded-2xl bg-gray-100" />
+      <div className="h-72 animate-pulse rounded-2xl bg-gray-100" />
     </div>
-    <div className="grid gap-5 xl:grid-cols-[minmax(0,1.25fr)_minmax(320px,0.75fr)]">
-      <div className="h-96 animate-pulse rounded-lg bg-gray-100" />
-      <div className="h-96 animate-pulse rounded-lg bg-gray-100" />
+    <div className="h-64 animate-pulse rounded-2xl bg-gray-100" />
+    <div className="grid gap-5 xl:grid-cols-[minmax(0,1.4fr)_minmax(280px,1fr)]">
+      <div className="h-60 animate-pulse rounded-2xl bg-gray-100" />
+      <div className="h-60 animate-pulse rounded-2xl bg-gray-100" />
     </div>
+    <div className="h-14 animate-pulse rounded-2xl bg-gray-100" />
   </div>
 );
 
@@ -124,29 +126,13 @@ const DashboardPage: React.FC = () => {
         </div>
       </section>
 
-      <MetricSummaryGrid
-        metrics={overview?.metrics ?? null}
-        weightHistory={overview?.weightHistory ?? []}
-      />
-
-      <div className="grid gap-5 xl:grid-cols-[minmax(0,1.2fr)_minmax(320px,0.8fr)]">
-        <div className="space-y-5">
-          <ConstitutionCard
-            constitution={overview?.constitution ?? null}
-            bmiMetric={overview?.metrics?.bmi}
-            error={overview?.errors.constitution}
-            onRetry={loadDashboard}
-          />
-          <WeightChartCard
-            data={overview?.weightHistory ?? []}
-            error={overview?.errors.weightHistory}
-          />
-          <HealthMetricsDetails
-            metrics={overview?.metrics ?? null}
-            error={overview?.errors.metrics}
-          />
-        </div>
-
+      <div className="grid gap-5 xl:grid-cols-[minmax(0,1.2fr)_minmax(320px,1fr)]">
+        <ConstitutionCard
+          constitution={overview?.constitution ?? null}
+          bmiMetric={overview?.metrics?.bmi}
+          error={overview?.errors.constitution}
+          onRetry={loadDashboard}
+        />
         <ReminderList
           user={user}
           metrics={overview?.metrics ?? null}
@@ -154,6 +140,27 @@ const DashboardPage: React.FC = () => {
           currentGoal={overview?.currentGoal ?? null}
         />
       </div>
+
+      <WeightChartCard
+        data={overview?.weightHistory ?? []}
+        error={overview?.errors.weightHistory}
+      />
+
+      <div className="grid gap-5 xl:grid-cols-[minmax(0,1.4fr)_minmax(280px,1fr)]">
+        <ComplianceCard
+          data={overview?.mealLogHistory ?? []}
+          error={overview?.errors.mealLogHistory}
+        />
+        <MetricSummaryGrid
+          metrics={overview?.metrics ?? null}
+          weightHistory={overview?.weightHistory ?? []}
+        />
+      </div>
+
+      <HealthMetricsDetails
+        metrics={overview?.metrics ?? null}
+        error={overview?.errors.metrics}
+      />
     </div>
   );
 };
