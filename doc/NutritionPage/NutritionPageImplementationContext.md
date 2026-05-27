@@ -143,7 +143,7 @@ Commit:
 
 ### Step 5 - Common Spinner And Meal Atoms
 
-Status: completed, pending user review.
+Status: committed.
 
 Work done:
 - Added `src/components/common/Spinner.tsx`.
@@ -159,6 +159,27 @@ Work done:
 - Atoms use existing constants and backend-based types.
 - Kept dynamic inline styles only for score tier colors, food placeholder gradients, and macro progress colors.
 - Did not implement the ring macro variant because the MVP guide says to use the default bar variant only.
+
+Verification:
+- `npm run build` passed.
+
+Commit:
+- `f434f51 feat: add nutrition meal atoms`
+
+### Step 6 - InfoStrip And FooterSummary
+
+Status: completed, pending user review.
+
+Work done:
+- Added `src/components/meal/InfoStrip.tsx`.
+  - Displays goal, TDEE, constitution, date, change-goal action, and regenerate action.
+  - Uses `Spinner` when regenerate is loading.
+  - Accepts already-formatted labels from page/hook layer.
+- Added `src/components/meal/FooterSummary.tsx`.
+  - Displays daily kcal/protein/fat/carb totals against targets.
+  - Displays overall score via `ScoreBadge`.
+  - Includes macro distribution donut using P*4, F*9, C*4.
+- Kept these components presentation-only; plan aggregation will happen in page assembly or helpers later.
 
 Verification:
 - `npm run build` passed.
