@@ -63,7 +63,7 @@ Manual can verify sau khi BE/dev server san sang:
 
 ## Cac step chua lam
 
-- FE-3b: 6 sections.
+- FE-3b2: cac section con lai `S3Goal`, `S4HealthSettings`, `S5Security`, `S6DangerZone`.
 - FE-4: GoalChangeModal va ProfileSkeleton.
 - FE-5: integration/manual test full flow.
 
@@ -201,3 +201,44 @@ Verify da chay:
 - Lan 1 `npx tsc -b --pretty false`: FAIL do `Segmented.tsx` import `React` khong dung.
 - Da sua: bo import `React` thua trong `Segmented.tsx`.
 - Lan 2 `npx tsc -b --pretty false`: PASS.
+
+## Step FE-3b1 - S1 Profile Header va S2 Personal Info
+
+Trang thai: DA THUC HIEN, CHUA COMMIT.
+
+Pham vi:
+- Tao section Header va Personal Info.
+- Wire 2 section nay vao `ProfilePage`.
+- Chua tao `S3Goal`, `S4HealthSettings`, `S5Security`, `S6DangerZone`.
+- Chua tao `GoalChangeModal`.
+- Chua tao `ProfileSkeleton` that.
+
+Files moi:
+- `src/components/profile/sections/S1ProfileHeader.tsx`
+- `src/components/profile/sections/S2PersonalInfo.tsx`
+
+Files da sua:
+- `src/pages/ProfilePage.tsx`
+- `doc/RefactorUI/ProfilePage/ContextXayDungProfileFE.md`
+
+Noi dung da them/sua:
+- `S1ProfileHeader`:
+  - Nhan `user` tu `useAuth()`.
+  - Hien avatar initial, name/username, email neu co.
+  - Hien joined date tu `user.createdAt`, fallback `Khong xac dinh`.
+  - Hien `ConstitutionPill` tu `overview.constitution.constitution`.
+- `S2PersonalInfo`:
+  - View mode hien 4 field: name, birthDate, gender, phone.
+  - Edit mode dung `react-hook-form` + `zodResolver(personalInfoSchema)`.
+  - Save goi `updateUserProfile()` -> `PUT /api/user/profile`.
+  - Convert phone rong thanh `null` de clear phone o BE.
+  - Sau save goi `onUpdated()` de `refreshUser()`.
+  - UI copy/toast tieng Viet.
+- `ProfilePage`:
+  - Import va render `S1ProfileHeader`, `S2PersonalInfo`.
+  - Truyen `refreshUser` vao S2.
+  - Giu placeholder rieng cho cac section con lai de step sau thay the.
+
+Verify da chay:
+- `npx tsc -b --pretty false`
+- Ket qua: PASS.

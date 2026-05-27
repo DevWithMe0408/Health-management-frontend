@@ -1,11 +1,13 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { toast } from 'sonner';
+import S1ProfileHeader from '../components/profile/sections/S1ProfileHeader';
+import S2PersonalInfo from '../components/profile/sections/S2PersonalInfo';
 import { useAuth } from '../contexts/AuthContext';
 import { getProfileOverview } from '../services/profile.service';
 import type { ProfileOverview } from '../services/profile.service';
 
 const ProfilePage: React.FC = () => {
-  const { user } = useAuth();
+  const { user, refreshUser } = useAuth();
   const [overview, setOverview] = useState<ProfileOverview | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -51,21 +53,27 @@ const ProfilePage: React.FC = () => {
       </div>
 
       <div className="mx-auto flex w-full max-w-[880px] flex-col gap-5 pb-6">
-        <section className="rounded-2xl border border-gray-100 bg-white p-8 text-center shadow-sm">
-          {loading ? (
+        {loading || !overview ? (
+          <section className="rounded-2xl border border-gray-100 bg-white p-8 text-center shadow-sm">
             <div className="text-sm font-medium text-gray-400">Đang tải...</div>
-          ) : (
-            <div className="text-sm text-gray-500">
-              Profile shell đã sẵn sàng cho các section tiếp theo.
-              <div className="mt-2 text-xs text-gray-400">
-                {user?.username ? `Người dùng: ${user.username}` : 'Chưa có thông tin người dùng'}
-                {overview?.errors && Object.keys(overview.errors).length > 0
-                  ? ` · ${Object.keys(overview.errors).length} phần tải chưa thành công`
-                  : ''}
-              </div>
-            </div>
-          )}
-        </section>
+          </section>
+        ) : (
+          <>
+            <S1ProfileHeader
+              user={user}
+              constitution={overview.constitution?.constitution}
+            />
+            <S2PersonalInfo user={user} onUpdated={refreshUser} />
+            <section className="rounded-2xl border border-dashed border-gray-200 bg-white/70 p-6 text-center text-sm text-gray-400">
+              Các section mục tiêu, cài đặt sức khỏe, bảo mật và vùng nguy hiểm sẽ được thêm ở step tiếp theo.
+              {Object.keys(overview.errors).length > 0 && (
+                <div className="mt-2 text-xs text-amber-600">
+                  Có {Object.keys(overview.errors).length} phần dữ liệu chưa tải thành công.
+                </div>
+              )}
+            </section>
+          </>
+        )}
       </div>
     </div>
   );
