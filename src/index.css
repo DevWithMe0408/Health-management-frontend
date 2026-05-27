@@ -64,3 +64,12 @@
   60% { transform: scale(1.15); opacity: 1; }
   100% { transform: scale(1); opacity: 1; }
 }
+
+@keyframes dbShimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+.animate-db-shimmer {
+  animation: dbShimmer 1.4s ease-in-out infinite;
+}

@@ -254,7 +254,7 @@ Commit:
 
 ### Step 10 - Banners And Warning Modal
 
-Status: completed, pending user review.
+Status: committed.
 
 Work done:
 - Added `src/components/meal/banners/ScoreDropBanner.tsx`.
@@ -268,6 +268,27 @@ Work done:
 Implementation notes:
 - Components are not connected to page state yet.
 - `WarningGoalModal` includes an `open` prop because the page outline renders it conditionally as a modal.
+
+Verification:
+- `npm run build` passed.
+
+Commit:
+- `318fd28 feat: add nutrition banners`
+
+### Step 11 - Loading And Empty States
+
+Status: completed, pending user review.
+
+Work done:
+- Added `src/components/states/MealPlanLoadingSkeleton.tsx`.
+  - Supports skeleton layout and centered spinner variant.
+  - Includes meal card skeletons and footer skeleton.
+- Added `src/components/states/MealPlanEmptyState.tsx`.
+  - Shows empty health-data state with salad bowl illustration.
+  - CTA navigates to `/submit-data`.
+  - Includes checklist for required health metrics.
+- Updated `src/index.css`.
+  - Added `dbShimmer` keyframes and `.animate-db-shimmer` utility for skeleton loading.
 
 Verification:
 - `npm run build` passed.
