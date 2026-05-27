@@ -12,7 +12,7 @@ import MainLayout from './layouts/MainLayout';
 import ProtectedRoute from './components/common/ProtectedRoute';
 import OnboardingRoute from './components/common/OnboardingRoute';
 import { useAuth } from './contexts/AuthContext';
-import UserProfilePage from './pages/UserProfilePage';
+import ProfilePage from './pages/ProfilePage';
 import OnboardingWizardPage from './pages/OnboardingWizardPage';
 
 import AdminRoute from './components/common/AdminRoute';
@@ -94,7 +94,7 @@ const AppRoutes: React.FC = () => {
         path="/profile" 
         element={
           <ProtectedRoute>
-            <MainLayout><UserProfilePage /></MainLayout>
+            <MainLayout><ProfilePage /></MainLayout>
           </ProtectedRoute>
         } 
       />

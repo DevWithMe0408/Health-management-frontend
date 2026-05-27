@@ -75,14 +75,14 @@ const Header: React.FC<HeaderProps> = ({ onToggleMobileSidebar }) => {
                   onMouseLeave={() => setIsUserMenuOpen(false)} // Tự đóng khi chuột rời khỏi menu
                 >
                   <Link
-                    to="/profile" // Tạo trang profile sau này
+                    to="/profile"
                     className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900 w-full text-left"
                     role="menuitem"
                     tabIndex={-1}
                     id="user-menu-item-0"
                     onClick={() => setIsUserMenuOpen(false)}
                   >
-                    Thông tin tài khoản
+                    Hồ sơ của tôi
                   </Link>
                   <button
                     onClick={handleLogoutAndRedirect}

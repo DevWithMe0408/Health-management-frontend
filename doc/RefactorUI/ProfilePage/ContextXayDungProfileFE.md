@@ -63,7 +63,6 @@ Manual can verify sau khi BE/dev server san sang:
 
 ## Cac step chua lam
 
-- FE-2: route/page replacement va Header label.
 - FE-3: shared atoms va 6 sections.
 - FE-4: GoalChangeModal va ProfileSkeleton.
 - FE-5: integration/manual test full flow.
@@ -110,6 +109,47 @@ Noi dung da sua/them:
   - Load song song current goal, goal history, preferences, dashboard metrics, constitution.
   - Dung `Promise.allSettled()` de page co the render partial data.
   - Gom loi rieng vao `errors`.
+
+Verify da chay:
+- `npx tsc -b --pretty false`
+- Ket qua: PASS.
+
+## Step FE-2 - Route/page replacement va Header label
+
+Trang thai: DA THUC HIEN, CHUA COMMIT.
+
+Pham vi:
+- Thay `/profile` sang Profile page shell moi.
+- Xoa page profile cu khoi source.
+- Doi label user menu trong Header.
+- Chua tao shared atoms.
+- Chua tao 6 sections.
+- Chua tao modal/skeleton that.
+
+Files da sua:
+- `src/App.tsx`
+- `src/components/layout/Header.tsx`
+
+Files moi:
+- `src/pages/ProfilePage.tsx`
+
+Files da xoa:
+- `src/pages/UserProfilePage.tsx`
+
+Noi dung da sua/them:
+- `src/App.tsx`:
+  - Import `ProfilePage` thay cho `UserProfilePage`.
+  - Route `/profile` render `<ProfilePage />` trong `MainLayout`.
+- `src/components/layout/Header.tsx`:
+  - Link dropdown `/profile` doi label tu `Thong tin tai khoan` sang `Ho so cua toi`.
+- `src/pages/ProfilePage.tsx`:
+  - Tao shell toi thieu cho trang Profile moi.
+  - Dung `useAuth()` de lay user.
+  - Dung `getProfileOverview()` de pre-wire data loading cho cac section sau.
+  - Render breadcrumb/title/copy dung scope Profile.
+  - Hien placeholder "Profile shell da san sang..." sau loading.
+- `src/pages/UserProfilePage.tsx`:
+  - Xoa hoan toan vi user da chot thay bang Profile moi.
 
 Verify da chay:
 - `npx tsc -b --pretty false`
