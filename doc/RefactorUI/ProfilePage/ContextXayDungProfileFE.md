@@ -63,7 +63,6 @@ Manual can verify sau khi BE/dev server san sang:
 
 ## Cac step chua lam
 
-- FE-3b3: cac section con lai `S4HealthSettings`, `S5Security`, `S6DangerZone`.
 - FE-4: ProfileSkeleton va polish.
 - FE-5: integration/manual test full flow.
 
@@ -280,6 +279,50 @@ Noi dung da them/sua:
   - Render `S3Goal` sau S2.
   - Truyen `overview.currentGoal`, `overview.goalHistory`, `overview.metrics?.weight?.value`.
   - `onGoalChanged` goi lai `loadProfile()`.
+
+Verify da chay:
+- `npx tsc -b --pretty false`
+- Ket qua: PASS.
+
+## Step FE-3b3 - S4 Health Settings, S5 Security, S6 Danger Zone
+
+Trang thai: DA THUC HIEN, CHUA COMMIT.
+
+Pham vi:
+- Tao 3 section con lai cua Profile MVP.
+- Wire du 6 section vao `ProfilePage`.
+- Chua tao `ProfileSkeleton` that.
+- Chua chay manual integration tren browser.
+
+Files moi:
+- `src/components/profile/sections/S4HealthSettings.tsx`
+- `src/components/profile/sections/S5Security.tsx`
+- `src/components/profile/sections/S6DangerZone.tsx`
+
+Files da sua:
+- `src/pages/ProfilePage.tsx`
+- `doc/RefactorUI/ProfilePage/ContextXayDungProfileFE.md`
+
+Noi dung da them/sua:
+- `S4HealthSettings`:
+  - Lay current PBF method tu preference `pbf_method`, fallback `FORMULA`.
+  - Toggle `FORMULA` / `MODEL_1`.
+  - Submit goi `updatePreference('pbf_method', { prefValue, valueType: 'STRING' })`.
+  - Sau save goi `onPreferenceChanged()` de load lai overview.
+- `S5Security`:
+  - Dung `react-hook-form` + `zodResolver(changePasswordSchema)`.
+  - Submit chi gui `currentPassword`, `newPassword`, khong gui `confirmPassword`.
+  - Handle BE error `AUTH-011` vao field current password.
+  - Handle BE error `AUTH-012` vao field new password.
+  - Change password thanh cong thi toast va reset form, khong logout user.
+- `S6DangerZone`:
+  - Placeholder theo MVP.
+  - Button `Xoa tai khoan` chi toast info.
+  - Khong goi DELETE account endpoint.
+- `ProfilePage`:
+  - Render du S1-S6.
+  - Xoa placeholder section con lai.
+  - Giu warning section khi `overview.errors` co partial API failures.
 
 Verify da chay:
 - `npx tsc -b --pretty false`

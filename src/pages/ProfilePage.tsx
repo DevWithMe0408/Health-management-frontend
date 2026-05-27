@@ -3,6 +3,9 @@ import { toast } from 'sonner';
 import S1ProfileHeader from '../components/profile/sections/S1ProfileHeader';
 import S2PersonalInfo from '../components/profile/sections/S2PersonalInfo';
 import S3Goal from '../components/profile/sections/S3Goal';
+import S4HealthSettings from '../components/profile/sections/S4HealthSettings';
+import S5Security from '../components/profile/sections/S5Security';
+import S6DangerZone from '../components/profile/sections/S6DangerZone';
 import { useAuth } from '../contexts/AuthContext';
 import { getProfileOverview } from '../services/profile.service';
 import type { ProfileOverview } from '../services/profile.service';
@@ -71,14 +74,19 @@ const ProfilePage: React.FC = () => {
               currentWeight={overview.metrics?.weight?.value ?? null}
               onGoalChanged={loadProfile}
             />
-            <section className="rounded-2xl border border-dashed border-gray-200 bg-white/70 p-6 text-center text-sm text-gray-400">
-              Các section cài đặt sức khỏe, bảo mật và vùng nguy hiểm sẽ được thêm ở step tiếp theo.
-              {Object.keys(overview.errors).length > 0 && (
+            <S4HealthSettings
+              preferences={overview.preferences}
+              onPreferenceChanged={loadProfile}
+            />
+            <S5Security />
+            <S6DangerZone />
+            {Object.keys(overview.errors).length > 0 && (
+              <section className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-700">
                 <div className="mt-2 text-xs text-amber-600">
                   Có {Object.keys(overview.errors).length} phần dữ liệu chưa tải thành công.
                 </div>
-              )}
-            </section>
+              </section>
+            )}
           </>
         )}
       </div>
