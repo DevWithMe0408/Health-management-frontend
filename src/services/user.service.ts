@@ -1,4 +1,8 @@
 import axios from 'axios';
+import { apiClient } from './axios';
+import { unwrapDataResponse } from './apiResponse';
+import type { DataResponse as ApiDataResponse } from './apiResponse';
+import type { Gender } from '../types/refactorUi.types';
 
 const API_USER_SERVICE_URL = `${import.meta.env.VITE_API_GW_BASE_URL || 'http://localhost:8080'}/api/user`;
 
@@ -24,6 +28,13 @@ export interface UpdateUserAccountDetailsPayload {
   phoneNumber?: string | null;
   birthDate?: string | null;
   gender?: string | null;
+}
+
+export interface UpdateProfilePayload {
+  name: string;
+  birthDate: string;
+  gender: Gender;
+  phone?: string | null;
 }
 
 export const getUserAccountDetails = async (token: string): Promise<UserAccountDetails> => {
@@ -60,4 +71,9 @@ export const updateUserAccountDetails = async (
     }
     throw new Error('Đã xảy ra lỗi không mong muốn khi cập nhật thông tin tài khoản.');
   }
+};
+
+export const updateUserProfile = async (payload: UpdateProfilePayload): Promise<void> => {
+  const response = await apiClient.put<ApiDataResponse<unknown>>('/api/user/profile', payload);
+  unwrapDataResponse(response.data);
 };

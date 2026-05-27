@@ -33,6 +33,8 @@ export interface UserProfileData {
   gender?: 'MALE' | 'FEMALE' | 'OTHER' | null;
   phone?: string | null;
   profileCompleted: boolean;
+  email?: string | null;
+  createdAt?: string | null;
 }
 
 export const registerUser = async (data: RegisterFormData): Promise<void> => {

@@ -63,8 +63,54 @@ Manual can verify sau khi BE/dev server san sang:
 
 ## Cac step chua lam
 
-- FE-1: service layer profile/password/user goal/user profile.
 - FE-2: route/page replacement va Header label.
 - FE-3: shared atoms va 6 sections.
 - FE-4: GoalChangeModal va ProfileSkeleton.
 - FE-5: integration/manual test full flow.
+
+## Step FE-1 - Service layer cho Profile
+
+Trang thai: DA THUC HIEN, CHUA COMMIT.
+
+Pham vi:
+- Cap nhat type/service can cho Profile page.
+- Chua dung route `/profile`.
+- Chua thay `UserProfilePage.tsx`.
+- Chua tao UI components.
+
+Files da sua:
+- `src/services/auth.service.ts`
+- `src/services/userGoals.service.ts`
+- `src/services/user.service.ts`
+
+Files moi:
+- `src/services/password.service.ts`
+- `src/services/profile.service.ts`
+
+Noi dung da sua/them:
+- `UserProfileData` them:
+  - `email?: string | null`
+  - `createdAt?: string | null`
+- `UserGoalResponse` them:
+  - `startWeightKg: number | null`
+- `getCurrentGoal()`:
+  - Support response raw hoac `DataResponse<UserGoalResponse>`.
+  - Handle `404` hoac BE business code `GOAL-001` thanh `null` de Profile render empty state.
+- `getGoalHistory()`:
+  - Support response raw hoac `DataResponse<UserGoalResponse[]>`.
+- `user.service.ts`:
+  - Them `UpdateProfilePayload`.
+  - Them `updateUserProfile(payload)` goi `PUT /api/user/profile` bang `apiClient`.
+  - Giu nguyen API cu `getUserAccountDetails()` / `updateUserAccountDetails()` de tranh pha man hien tai trong step nay.
+- `password.service.ts`:
+  - Them `changePassword({ currentPassword, newPassword })`.
+  - Khong co `confirmPassword` trong service payload.
+- `profile.service.ts`:
+  - Them `getProfileOverview()`.
+  - Load song song current goal, goal history, preferences, dashboard metrics, constitution.
+  - Dung `Promise.allSettled()` de page co the render partial data.
+  - Gom loi rieng vao `errors`.
+
+Verify da chay:
+- `npx tsc -b --pretty false`
+- Ket qua: PASS.

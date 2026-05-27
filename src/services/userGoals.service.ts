@@ -11,6 +11,7 @@ export interface UserGoalResponse {
   endDate: string | null;
   isActive: boolean;
   targetWeightKg: number | null;
+  startWeightKg: number | null;
   targetDurationMonths: number | null;
   note: string | null;
 }
@@ -24,12 +25,15 @@ export interface UpdateGoalPayload {
 
 export const getCurrentGoal = async (): Promise<UserGoalResponse | null> => {
   try {
-    const response = await apiClient.get<DataResponse<UserGoalResponse>>(
+    const response = await apiClient.get<DataResponse<UserGoalResponse> | UserGoalResponse>(
       '/api/user-goals/current'
     );
     return unwrapDataResponse(response.data);
   } catch (error) {
-    if (axios.isAxiosError(error) && error.response?.status === 404) {
+    if (
+      axios.isAxiosError(error) &&
+      (error.response?.status === 404 || error.response?.data?.code === 'GOAL-001')
+    ) {
       return null;
     }
     throw error;
@@ -47,7 +51,7 @@ export const updateCurrentGoal = async (
 };
 
 export const getGoalHistory = async (): Promise<UserGoalResponse[]> => {
-  const response = await apiClient.get<DataResponse<UserGoalResponse[]>>(
+  const response = await apiClient.get<DataResponse<UserGoalResponse[]> | UserGoalResponse[]>(
     '/api/user-goals/history'
   );
   return unwrapDataResponse(response.data);
