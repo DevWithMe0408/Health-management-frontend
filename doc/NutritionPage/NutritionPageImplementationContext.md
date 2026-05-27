@@ -232,7 +232,7 @@ Commit:
 
 ### Step 9 - SetupWizard
 
-Status: completed, pending user review.
+Status: committed.
 
 Work done:
 - Added `src/components/meal/SetupWizard.tsx`.
@@ -245,6 +245,29 @@ Work done:
   - `5_BUA`: `SANG`, `PHU_SANG`, `TRUA`, `PHU_CHIEU`, `TOI`.
 - Emits `NutritionPreferences` through `onComplete(preferences)`.
 - Component does not save preferences directly; page/hook layer will call `useMealPreferences.savePreferences`.
+
+Verification:
+- `npm run build` passed.
+
+Commit:
+- `5ae7107 feat: add nutrition setup wizard`
+
+### Step 10 - Banners And Warning Modal
+
+Status: completed, pending user review.
+
+Work done:
+- Added `src/components/meal/banners/ScoreDropBanner.tsx`.
+  - Shows original score, new score, score delta, keep action, and revert action.
+- Added `src/components/meal/banners/SuggestionBanner.tsx`.
+  - Shows suggested replacement and expected score, with apply and dismiss actions.
+- Added `src/components/meal/banners/WarningGoalModal.tsx`.
+  - Modal for goal/constitution warning with change-goal and continue actions.
+  - Accepts either backend `DailyPlanWarningResponse` or a plain warning string.
+
+Implementation notes:
+- Components are not connected to page state yet.
+- `WarningGoalModal` includes an `open` prop because the page outline renders it conditionally as a modal.
 
 Verification:
 - `npm run build` passed.
