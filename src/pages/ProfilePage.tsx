@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { toast } from 'sonner';
+import ProfileSkeleton from '../components/profile/ProfileSkeleton';
 import S1ProfileHeader from '../components/profile/sections/S1ProfileHeader';
 import S2PersonalInfo from '../components/profile/sections/S2PersonalInfo';
 import S3Goal from '../components/profile/sections/S3Goal';
@@ -58,9 +59,7 @@ const ProfilePage: React.FC = () => {
 
       <div className="mx-auto flex w-full max-w-[880px] flex-col gap-5 pb-6">
         {loading || !overview ? (
-          <section className="rounded-2xl border border-gray-100 bg-white p-8 text-center shadow-sm">
-            <div className="text-sm font-medium text-gray-400">Đang tải...</div>
-          </section>
+          <ProfileSkeleton />
         ) : (
           <>
             <S1ProfileHeader
@@ -82,7 +81,7 @@ const ProfilePage: React.FC = () => {
             <S6DangerZone />
             {Object.keys(overview.errors).length > 0 && (
               <section className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-700">
-                <div className="mt-2 text-xs text-amber-600">
+                <div className="text-xs text-amber-600">
                   Có {Object.keys(overview.errors).length} phần dữ liệu chưa tải thành công.
                 </div>
               </section>

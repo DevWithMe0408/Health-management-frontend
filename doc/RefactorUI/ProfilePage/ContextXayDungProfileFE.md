@@ -63,7 +63,6 @@ Manual can verify sau khi BE/dev server san sang:
 
 ## Cac step chua lam
 
-- FE-4: ProfileSkeleton va polish.
 - FE-5: integration/manual test full flow.
 
 ## Step FE-1 - Service layer cho Profile
@@ -323,6 +322,36 @@ Noi dung da them/sua:
   - Render du S1-S6.
   - Xoa placeholder section con lai.
   - Giu warning section khi `overview.errors` co partial API failures.
+
+Verify da chay:
+- `npx tsc -b --pretty false`
+- Ket qua: PASS.
+
+## Step FE-4 - ProfileSkeleton va polish
+
+Trang thai: DA THUC HIEN, CHUA COMMIT.
+
+Pham vi:
+- Tao skeleton loading cho Profile page.
+- Wire skeleton vao loading state cua `ProfilePage`.
+- Polish nho warning partial API failures.
+- Chua chay manual integration tren browser.
+
+Files moi:
+- `src/components/profile/ProfileSkeleton.tsx`
+
+Files da sua:
+- `src/pages/ProfilePage.tsx`
+- `doc/RefactorUI/ProfilePage/ContextXayDungProfileFE.md`
+
+Noi dung da them/sua:
+- `ProfileSkeleton`:
+  - Render 6 block skeleton tuong ung 6 section profile.
+  - Dung Tailwind `animate-pulse`, khong them dependency.
+- `ProfilePage`:
+  - Thay loading text bang `<ProfileSkeleton />`.
+  - Giu layout max-width 880px va gap 5.
+  - Polish warning partial errors: bo margin thua trong warning text.
 
 Verify da chay:
 - `npx tsc -b --pretty false`
