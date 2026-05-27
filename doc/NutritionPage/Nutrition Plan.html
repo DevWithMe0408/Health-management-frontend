@@ -1,0 +1,328 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8" />
+<title>HealthCare — Đề xuất Thực đơn</title>
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link
+  href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap"
+  rel="stylesheet"
+/>
+<style>
+  html, body { margin: 0; padding: 0; height: 100%; background: #f3f5f4; font-family: "Be Vietnam Pro", system-ui, sans-serif; }
+  *, *::before, *::after { box-sizing: border-box; }
+  button, input { font-family: inherit; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+<script type="text/babel" src="design-canvas.jsx"></script>
+<script type="text/babel" src="dashboard-shared.jsx"></script>
+<script type="text/babel" src="nutrition-shared.jsx"></script>
+<script type="text/babel" src="nutrition-strip-footer.jsx"></script>
+<script type="text/babel" src="nutrition-meal-card.jsx"></script>
+<script type="text/babel" src="nutrition-page.jsx"></script>
+<script type="text/babel" src="nutrition-swap-drawer.jsx"></script>
+<script type="text/babel" src="nutrition-wizard.jsx"></script>
+<script type="text/babel" src="nutrition-states.jsx"></script>
+
+<script type="text/babel">
+function App() {
+  return (
+    <DesignCanvas
+      title="HealthCare — /nutrition-plan · Đề xuất Thực đơn"
+      subtitle="Lần 1 — Phần A · Trang đầy đủ (Desktop + Mobile) · Zoom 1 meal card · 1 variation alternative (ring chart)"
+    >
+      <DCSection
+        id="full"
+        title="Trang đầy đủ"
+        subtitle="3 phần: Info Strip + 3 meal cards (1 collapsed, 2 expanded) + Footer Summary"
+      >
+        <DCArtboard
+          id="desktop"
+          label="Desktop · 1280px — default scenario (Sáng đã ăn, Trưa + Tối đề xuất)"
+          width={1280}
+          height={1900}
+        >
+          <NutritionPlanDesktop collapsedSang={true} />
+        </DCArtboard>
+
+        <DCArtboard
+          id="mobile"
+          label="Mobile · 375px — same scenario stacked"
+          width={375}
+          height={2200}
+        >
+          <NutritionPlanMobile />
+        </DCArtboard>
+      </DCSection>
+
+      <DCSection
+        id="card-zoom"
+        title="Phóng to 1 meal card — chi tiết typography & spacing"
+        subtitle="Bữa Trưa expanded · 3 món · macro bar 4 cột · action buttons"
+      >
+        <DCArtboard id="zoom-default" label="MealCard · default (progress-bar macro)" width={920} height={620}>
+          <IsolatedMeal variant="default" />
+        </DCArtboard>
+
+        <DCArtboard id="zoom-loading" label="MealCard · Đang đánh dấu đã ăn (loading state)" width={920} height={620}>
+          <IsolatedMeal variant="default" confirmLoading={true} />
+        </DCArtboard>
+      </DCSection>
+
+      <DCSection
+        id="card-variation"
+        title="Variation Alternative — Ring chart thay vì progress bar"
+        subtitle="Macro hiển thị bằng ring chart cho mỗi cột thay vì thanh ngang. Mục đích: dễ scan độ lệch tương đối, tốn ít chiều ngang hơn nên hợp cho mobile."
+      >
+        <DCArtboard id="zoom-ring" label="MealCard · ring-chart variation" width={920} height={620}>
+          <IsolatedMeal variant="ring" />
+        </DCArtboard>
+
+        <DCArtboard
+          id="ring-side-by-side"
+          label="So sánh — cả page dùng ring variant"
+          width={1280}
+          height={1900}
+        >
+          <NutritionPlanDesktop collapsedSang={true} mealVariant="ring" />
+        </DCArtboard>
+      </DCSection>
+
+      <DCSection
+        id="drawer"
+        title="Drawer ‘Đổi món’ — Phần B.1"
+        subtitle="Slide-in từ phải (desktop) · Bottom sheet 75%h (mobile) · 10 lựa chọn thay thế Gà luộc · option #1 selected mặc định"
+      >
+        <DCArtboard
+          id="drawer-desktop"
+          label="Desktop · drawer open · Mực xào sa tế selected (+1.7)"
+          width={1280}
+          height={900}
+        >
+          <NutritionWithDrawerDesktop selectedIndex={0} />
+        </DCArtboard>
+
+        <DCArtboard
+          id="drawer-desktop-suggest"
+          label="Desktop · drawer open + suggestion banner"
+          width={1280}
+          height={900}
+        >
+          <NutritionWithDrawerDesktop selectedIndex={1} showSuggestion={true} />
+        </DCArtboard>
+
+        <DCArtboard
+          id="drawer-mobile"
+          label="Mobile · bottom sheet 75%"
+          width={375}
+          height={812}
+        >
+          <NutritionWithDrawerMobile selectedIndex={0} />
+        </DCArtboard>
+
+        <DCArtboard
+          id="drawer-isolated"
+          label="Drawer cô lập — chi tiết option card · selected state"
+          width={520}
+          height={900}
+        >
+          <div style={{ position: 'relative', width: '100%', height: '100%', background: '#fafafa' }}>
+            <SwapDrawer open selectedIndex={0} showSuggestion={true} />
+          </div>
+        </DCArtboard>
+      </DCSection>
+
+      <DCSection
+        id="wizard"
+        title="Setup Wizard — Phần B.2"
+        subtitle="Modal first-run khi user chưa có user_preferences · 3 bước · Desktop + Mobile"
+      >
+        <DCArtboard id="wiz-d1" label="Desktop · Bước 1 — Chọn số bữa" width={1280} height={820}>
+          <WizardSceneDesktop step={0} />
+        </DCArtboard>
+
+        <DCArtboard id="wiz-d2" label="Desktop · Bước 2 — Cấu hình từng bữa" width={1280} height={820}>
+          <WizardSceneDesktop step={1} />
+        </DCArtboard>
+
+        <DCArtboard id="wiz-d3" label="Desktop · Bước 3 — Xác nhận" width={1280} height={820}>
+          <WizardSceneDesktop step={2} />
+        </DCArtboard>
+
+        <DCArtboard id="wiz-m1" label="Mobile · Bước 1 (bottom sheet style)" width={375} height={812}>
+          <WizardSceneMobile step={0} />
+        </DCArtboard>
+      </DCSection>
+
+      <DCSection
+        id="states"
+        title="Special States — Phần B.3"
+        subtitle="5 trạng thái đặc biệt: Loading · Empty · Warning modal · Score-drop banner · Suggestion banner"
+      >
+        <DCArtboard id="st-load-skel"  label="Loading · Skeleton — Desktop"   width={1280} height={1700}>
+          <LoadingState variant="skeleton" />
+        </DCArtboard>
+
+        <DCArtboard id="st-load-spin"  label="Loading · Spinner variant — Desktop"   width={1280} height={820}>
+          <LoadingState variant="spinner" />
+        </DCArtboard>
+
+        <DCArtboard id="st-load-mob"   label="Loading · Skeleton — Mobile"    width={375}  height={1280}>
+          <LoadingState variant="skeleton" mobile />
+        </DCArtboard>
+
+        <DCArtboard id="st-empty"      label="Empty · chưa có health data — Desktop" width={1280} height={820}>
+          <EmptyState />
+        </DCArtboard>
+
+        <DCArtboard id="st-empty-mob"  label="Empty — Mobile"                    width={375}  height={812}>
+          <EmptyState mobile />
+        </DCArtboard>
+
+        <DCArtboard id="st-warn"       label="Warning modal — thể trạng không hợp mục tiêu" width={1280} height={820}>
+          <WarningGoalModal />
+        </DCArtboard>
+
+        <DCArtboard id="st-drop"       label="Score-drop warning banner (trên trang sau khi swap)" width={1280} height={680}>
+          <PlanWithScoreDropBanner />
+        </DCArtboard>
+
+        <DCArtboard id="st-sugg"       label="Suggestion banner — BE gợi ý đổi món"        width={1280} height={680}>
+          <PlanWithSuggestionBanner />
+        </DCArtboard>
+
+        <DCArtboard id="st-banners-iso" label="Cả 2 banner cô lập — chi tiết" width={920} height={300}>
+          <div style={{ ...dbFont, background: DB.bg, padding: 20, display: 'flex', flexDirection: 'column', gap: 14 }}>
+            <ScoreDropBanner />
+            <SuggestionBanner />
+          </div>
+        </DCArtboard>
+      </DCSection>
+
+      <DCSection
+        id="notes"
+        title="Ghi chú thiết kế"
+        subtitle="Một số quyết định khác spec — vui lòng review trước khi paste Phần B"
+      >
+        <DCArtboard id="notes-content" label="Decisions & deltas vs spec" width={760} height={1100}>
+          <DesignNotes />
+        </DCArtboard>
+      </DCSection>
+    </DesignCanvas>
+  );
+}
+
+function DesignNotes() {
+  const items = [
+    {
+      h: 'Font: Be Vietnam Pro (không phải Inter)',
+      b: 'Codebase đã migrate sang Be Vietnam Pro — match với Dashboard + Profile hiện có. Inter giữ làm fallback trong dbFont. Nếu muốn đổi lại Inter, sửa 1 chỗ trong dashboard-shared.jsx.',
+    },
+    {
+      h: 'Info Strip — đặt sau page header, không phải đầu trang',
+      b: 'Page có heading "Thực đơn hôm nay" để khớp với pattern Dashboard ("Xin chào, Chiến!"). Info Strip nằm ngay dưới, bám sát spec: bg green-light + border-left 4px, 1 hàng compact.',
+    },
+    {
+      h: 'Status pill dùng Heroicons outline, không emoji',
+      b: 'Giữ emoji cho meal types ☀️🍽🌙 (header card + wizard step 1) — đây là decorative, friendly. InfoStrip + StatusPill chuyển sang Heroicons outline (flag / bolt / chart-bar / sparkles / check-circle / forward) cho consistency cross-platform (web + iOS + Android sẽ render đồng nhất, emoji thì mỗi OS một kiểu).',
+    },
+    {
+      h: 'Macro bar: thêm % bên cạnh progress bar ở Footer',
+      b: 'Spec yêu cầu "label phần trăm 97% target bên cạnh bar" — đã implement. Trong meal card thì chỉ hiển thị bar (không có %) để giữ density thấp hơn footer.',
+    },
+    {
+      h: 'Donut chart phân bổ P/F/C bằng kcal',
+      b: 'Tính theo: P×4 / F×9 / C×4 → quy ra phần trăm tổng kcal. Đúng convention dinh dưỡng (không phải gram). Stroke arcs thuần SVG, không cần Recharts.',
+    },
+    {
+      h: 'Variation alternative — ring chart',
+      b: 'Mỗi cột macro thành 1 ring nhỏ với số ở giữa. Ưu: scan nhanh, đẹp về mặt thị giác. Nhược: khó so sánh chính xác giữa các macro hơn bar. Mình thiên về bản default cho desktop, ring cho mobile.',
+    },
+    {
+      h: 'Drawer footer — preview swap câu xác nhận',
+      b: 'Dưới nút "Xác nhận đổi món" thêm 1 dòng nhỏ "Sẽ đổi Gà luộc → Mực xào sa tế". User thấy rõ action sẽ xảy ra trước khi click. Không có trong spec nhưng đáng làm.',
+    },
+    {
+      h: 'Wizard — progress dots + “Bước N/3” redundant',
+      b: 'Spec chỉ có 3 dot indicator. Mình thêm text “Bước 1/3” góc phải + dot active dài ra (28px) thay vì tòn hơn 10px — user accessibility-conscious sẽ rõ mình đang ở bước nào, không chỉ dựa vào màu.',
+    },
+    {
+      h: 'Wizard — bữa Sáng default đặt “1 món combo”',
+      b: 'Theo ngữ cảnh người Việt, bữa sáng thường là 1 tô (phở, bún, xôi). Default này tốt hơn yêu cầu user luôn config 3 stepper. Trưa + Tối default “Nhiều món” với 1/1/1.',
+    },
+    {
+      h: 'Wizard step 3 — banner TDEE',
+      b: 'Thêm banner xanh nhạt hiển thị TDEE = 2100 kcal sẽ được tính, không để user “nhảy vào màn hình mới” mà không biết con số từ đâu ra.',
+    },
+    {
+      h: 'Loading — cả skeleton và spinner',
+      b: 'Spec nói "hoặc". Mình làm cả 2: skeleton phù hợp lần đầu vào trang (giữ layout), spinner phù hợp khi user nhấn "Gen lại cả ngày" từ info strip (action ngắn, không cần giự layout). + status pill "Đang gen thực đơn…" ở bổ sung bản skeleton.',
+    },
+    {
+      h: 'Empty — checklist 3 chip',
+      b: 'Dưới nút CTA mình thêm checklist: cân nặng / chiều cao / vòng eo (optional). User nắm được cụ thể cần nhập gì, không bị “nhát” vì form quá dài. Salad bowl draw tối thiểu bằng SVG shape cơ bản (không có gì phức tạp).',
+    },
+    {
+      h: 'Warning modal — BMI risk indicator',
+      b: 'Thêm 1 banner vàng nhạt hiển thị “BMI hiện tại: 27.8” để user thấy cổ dữ liệu cụ thể — không phải chỉ văn bản cảnh báo trống rỗng. Đúng spirit “đáng tin vì algorithm có dữ liệu”.',
+    },
+    {
+      h: 'Score drop banner — visual phải thấy cả from & to',
+      b: 'Không chỉ viết text “giảm từ 87.5 xuống 62.3”. Mình dùng 2 mini score-pill màu khác nhau + delta “−5.2” để visual cùng nhịp. Nút "Quay lại" highlight mạnh hơn (filled brown) vì đây là action khuyến nghị.',
+    },
+    {
+      h: 'Suggestion banner — inline score pill',
+      b: 'Score mới (82.5) hiển thị bằng pill xanh inline trong text, không phải text thường. Mắt user bắt cñ được con số quan trọng nhanh hơn.',
+    },
+    {
+      h: 'Macro target lấy từ BE, không hardcode tỉ lệ',
+      b: 'Macro target hiển thị trên macro bar đến từ BE field mealKcalTarget + proteinTarget + fatTarget + carbTarget (mới bổ sung trong MealSuggestionResponse), KHÔNG hardcode tỉ lệ 20/27/53 ở FE nữa.',
+    },
+  ];
+  return (
+    <div style={{ ...dbFont, background: '#fff', height: '100%', padding: '24px 28px', overflowY: 'auto' }}>
+      <h2 style={{ margin: 0, fontSize: 16, fontWeight: 700, color: DB.ink, letterSpacing: '-0.01em' }}>
+        Ghi chú từ Junior Designer →
+      </h2>
+      <p style={{ margin: '4px 0 18px', fontSize: 12.5, color: DB.textMute }}>
+        Một số chỗ mình diverge khỏi spec — anh review trước khi mình code thật vào codebase nhé.
+      </p>
+      <ol style={{ margin: 0, padding: 0, listStyle: 'none', display: 'flex', flexDirection: 'column', gap: 14 }}>
+        {items.map((it, i) => (
+          <li key={i} style={{ display: 'flex', gap: 12 }}>
+            <div style={{
+              flexShrink: 0, width: 22, height: 22, borderRadius: 6,
+              background: DB.green50, color: DB.greenDark, fontSize: 12, fontWeight: 700,
+              display: 'grid', placeItems: 'center',
+            }}>{i + 1}</div>
+            <div style={{ minWidth: 0 }}>
+              <div style={{ fontSize: 13.5, fontWeight: 600, color: DB.ink }}>{it.h}</div>
+              <div style={{ fontSize: 12.5, color: DB.textMid, marginTop: 3, lineHeight: 1.55 }}>{it.b}</div>
+            </div>
+          </li>
+        ))}
+      </ol>
+      <div style={{
+        marginTop: 18, padding: '10px 14px',
+        background: DB.green50, borderLeft: `3px solid ${DB.green}`, borderRadius: '0 8px 8px 0',
+        fontSize: 12.5, color: DB.greenDark, lineHeight: 1.5,
+      }}>
+        <b>Next:</b> Sau khi anh OK lần 1 này, paste tiếp Phần B.1 (Drawer "Đổi món"), B.2 (Setup Wizard), B.3 (Special states).
+      </div>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+</script>
+</body>
+</html>

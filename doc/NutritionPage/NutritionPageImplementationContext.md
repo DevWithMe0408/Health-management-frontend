@@ -298,7 +298,7 @@ Commit:
 
 ### Step 12 - Main Page Assembly
 
-Status: completed, pending user review.
+Status: committed.
 
 Work done:
 - Added `src/pages/MealRecommendationPage.tsx`.
@@ -313,6 +313,21 @@ Work done:
 Implementation notes:
 - Route wiring is not done in this step; `App.tsx` still has the existing `/nutrition-plan` placeholder. Routing remains Step 13.
 - Auto-generate is guarded with a ref to avoid repeated generate loops if backend returns an error.
+
+Verification:
+- `npm run build` passed.
+
+Commit:
+- `a553216 feat: assemble nutrition plan page`
+
+### Step 13 - Routing
+
+Status: completed, pending user review.
+
+Work done:
+- Updated `src/App.tsx`.
+- Replaced `/nutrition-plan` placeholder with protected `MealRecommendationPage`.
+- Sidebar already pointed to `/nutrition-plan`; no sidebar change was required.
 
 Verification:
 - `npm run build` passed.

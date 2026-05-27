@@ -14,6 +14,7 @@ import OnboardingRoute from './components/common/OnboardingRoute';
 import { useAuth } from './contexts/AuthContext';
 import ProfilePage from './pages/ProfilePage';
 import OnboardingWizardPage from './pages/OnboardingWizardPage';
+import MealRecommendationPage from './pages/MealRecommendationPage';
 
 import AdminRoute from './components/common/AdminRoute';
 import AdminLayout from './layouts/AdminLayout';
@@ -107,7 +108,7 @@ const AppRoutes: React.FC = () => {
         } 
       />
       {/* Placeholder routes cho các chức năng khác */}
-      <Route path="/nutrition-plan" element={<ProtectedRoute><MainLayout><div>Nutrition Plan Page (Coming Soon)</div></MainLayout></ProtectedRoute>} />
+      <Route path="/nutrition-plan" element={<ProtectedRoute><MainLayout><MealRecommendationPage /></MainLayout></ProtectedRoute>} />
       <Route path="/notifications" element={<ProtectedRoute><MainLayout><div>Notifications Page (Coming Soon)</div></MainLayout></ProtectedRoute>} />
       
       <Route path="*" element={<MainLayout><NotFoundPage /></MainLayout>} />
