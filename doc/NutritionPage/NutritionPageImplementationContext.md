@@ -111,7 +111,7 @@ Commit:
 
 ### Step 4 - Hooks
 
-Status: completed, pending user review.
+Status: committed.
 
 Work done:
 - Added `src/hooks/useUserContext.ts`.
@@ -134,6 +134,31 @@ Implementation notes:
 - Hooks are logic-only and not connected to any page yet.
 - `useMealPreferences` uses user-facing preference keys from the FE guide, then maps configs to backend `MealType` keys for recommendation requests.
 - `useUserContext` still depends on current `healthData.service.ts`, which converts some API errors into plain `Error`; true 404 handling may need refinement if backend unavailable errors must be distinguished from missing health data.
+
+Verification:
+- `npm run build` passed.
+
+Commit:
+- `736db7b feat: add nutrition hooks`
+
+### Step 5 - Common Spinner And Meal Atoms
+
+Status: completed, pending user review.
+
+Work done:
+- Added `src/components/common/Spinner.tsx`.
+- Added meal atom components:
+  - `DeltaPill`
+  - `FoodGroupChip`
+  - `FoodThumb`
+  - `HeartButton`
+  - `MacroBar`
+  - `ScoreBadge`
+  - `SlotChip`
+  - `StatusPill`
+- Atoms use existing constants and backend-based types.
+- Kept dynamic inline styles only for score tier colors, food placeholder gradients, and macro progress colors.
+- Did not implement the ring macro variant because the MVP guide says to use the default bar variant only.
 
 Verification:
 - `npm run build` passed.
