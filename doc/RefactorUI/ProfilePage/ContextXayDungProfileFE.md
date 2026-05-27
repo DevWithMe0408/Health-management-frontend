@@ -63,7 +63,7 @@ Manual can verify sau khi BE/dev server san sang:
 
 ## Cac step chua lam
 
-- FE-3: shared atoms va 6 sections.
+- FE-3b: 6 sections.
 - FE-4: GoalChangeModal va ProfileSkeleton.
 - FE-5: integration/manual test full flow.
 
@@ -154,3 +154,50 @@ Noi dung da sua/them:
 Verify da chay:
 - `npx tsc -b --pretty false`
 - Ket qua: PASS.
+
+## Step FE-3a - Validation schemas va shared atoms
+
+Trang thai: DA THUC HIEN, CHUA COMMIT.
+
+Pham vi:
+- Tao validation schema dung cho cac form Profile.
+- Tao shared atoms dung chung cho cac section Profile.
+- Chua noi cac atoms vao `ProfilePage`.
+- Chua tao 6 section.
+- Chua tao modal/skeleton.
+
+Files moi:
+- `src/types/profile.schemas.ts`
+- `src/components/profile/shared/SectionCard.tsx`
+- `src/components/profile/shared/Avatar.tsx`
+- `src/components/profile/shared/ConstitutionPill.tsx`
+- `src/components/profile/shared/FieldRow.tsx`
+- `src/components/profile/shared/Segmented.tsx`
+- `src/components/profile/shared/ProgressBar.tsx`
+- `src/components/profile/shared/EditIconButton.tsx`
+
+Noi dung da them:
+- `profile.schemas.ts`:
+  - `computeAge(birthDate)`.
+  - `personalInfoSchema` validate name, birthDate age 13-100, gender, phone.
+  - `changePasswordSchema` validate current password, new password policy, confirm password match, new password khac current password.
+  - Export `PersonalInfoData`, `ChangePasswordData`.
+- `SectionCard`:
+  - Shell card dung chung, ho tro `title`, `subtitle`, `rightSlot`, `variant='danger'`.
+- `Avatar`:
+  - Initial avatar tu ten/username.
+- `ConstitutionPill`:
+  - Nhan enum code `GAY | CAN_DOI | THUA_CAN | BEO_PHI`, map ra label hien thi.
+- `FieldRow`:
+  - Readonly label/value/help, co empty placeholder `Chua cap nhat`.
+- `Segmented`:
+  - Generic segmented control co `options`, `value`, `onChange`, `disabled`.
+- `ProgressBar`:
+  - Clamp progress 0-100, co aria progressbar.
+- `EditIconButton`:
+  - Dung Heroicons `PencilSquareIcon`, khong them dependency.
+
+Verify da chay:
+- Lan 1 `npx tsc -b --pretty false`: FAIL do `Segmented.tsx` import `React` khong dung.
+- Da sua: bo import `React` thua trong `Segmented.tsx`.
+- Lan 2 `npx tsc -b --pretty false`: PASS.
