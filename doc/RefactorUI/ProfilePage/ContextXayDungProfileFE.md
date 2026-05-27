@@ -63,8 +63,8 @@ Manual can verify sau khi BE/dev server san sang:
 
 ## Cac step chua lam
 
-- FE-3b2: cac section con lai `S3Goal`, `S4HealthSettings`, `S5Security`, `S6DangerZone`.
-- FE-4: GoalChangeModal va ProfileSkeleton.
+- FE-3b3: cac section con lai `S4HealthSettings`, `S5Security`, `S6DangerZone`.
+- FE-4: ProfileSkeleton va polish.
 - FE-5: integration/manual test full flow.
 
 ## Step FE-1 - Service layer cho Profile
@@ -238,6 +238,48 @@ Noi dung da them/sua:
   - Import va render `S1ProfileHeader`, `S2PersonalInfo`.
   - Truyen `refreshUser` vao S2.
   - Giu placeholder rieng cho cac section con lai de step sau thay the.
+
+Verify da chay:
+- `npx tsc -b --pretty false`
+- Ket qua: PASS.
+
+## Step FE-3b2 - S3 Goal va GoalChangeModal
+
+Trang thai: DA THUC HIEN, CHUA COMMIT.
+
+Pham vi:
+- Tao `GoalChangeModal` theo MVP.
+- Tao `S3Goal`.
+- Wire `S3Goal` vao `ProfilePage`.
+- Chua tao `S4HealthSettings`, `S5Security`, `S6DangerZone`.
+- Chua tao `ProfileSkeleton` that.
+
+Files moi:
+- `src/components/profile/modals/GoalChangeModal.tsx`
+- `src/components/profile/sections/S3Goal.tsx`
+
+Files da sua:
+- `src/pages/ProfilePage.tsx`
+- `doc/RefactorUI/ProfilePage/ContextXayDungProfileFE.md`
+
+Noi dung da them/sua:
+- `GoalChangeModal`:
+  - Chi cho chon `GIAM`, `DUY_TRI`, `TANG`.
+  - Submit goi `updateCurrentGoal({ goalCode: selected, targetDurationMonths: 6 })`.
+  - Khong them input `targetWeightKg`, dung dung MVP user da chot.
+  - Neu chon lai goal hien tai thi chi dong modal.
+  - UI copy/toast tieng Viet.
+- `S3Goal`:
+  - Hien current goal card voi icon Heroicons, label, startDate, duration.
+  - Button `Doi muc tieu` mo `GoalChangeModal`.
+  - Progress bar chi tinh cho `GIAM` va `TANG`.
+  - Khong tinh progress cho `DUY_TRI`.
+  - Fallback khi thieu `startWeightKg`, `targetWeightKg`, hoac `currentWeight`.
+  - History collapsible, empty state khong render table rong.
+- `ProfilePage`:
+  - Render `S3Goal` sau S2.
+  - Truyen `overview.currentGoal`, `overview.goalHistory`, `overview.metrics?.weight?.value`.
+  - `onGoalChanged` goi lai `loadProfile()`.
 
 Verify da chay:
 - `npx tsc -b --pretty false`
