@@ -189,7 +189,7 @@ Commit:
 
 ### Step 7 - MealCard And FoodRow
 
-Status: completed, pending user review.
+Status: committed.
 
 Work done:
 - Added `src/components/meal/FoodRow.tsx`.
@@ -202,6 +202,27 @@ Work done:
 Implementation notes:
 - Per-dish protein/fat/carb are not shown because current BE `DishSuggestionResponse` does not expose those fields.
 - Dish image URLs are not shown because current BE dish DTOs do not expose `imageUrl`; `FoodThumb` placeholder is used.
+
+Verification:
+- `npm run build` passed.
+
+Commit:
+- `59b81e7 feat: add nutrition meal card`
+
+### Step 8 - SwapDrawer And AlternateCard
+
+Status: completed, pending user review.
+
+Work done:
+- Added `src/components/meal/AlternateCard.tsx`.
+  - Renders a replacement dish option with placeholder thumbnail, food group, expected grams/serving, expected score, score delta, favorite button, and selected radio state.
+- Added `src/components/meal/SwapDrawer.tsx`.
+  - Desktop drawer slides from right with Framer Motion.
+  - Mobile drawer behaves as a bottom sheet.
+  - Supports empty alternatives state.
+  - Supports suggestion banner and apply action.
+  - Confirms by calling `onConfirm(newDishId)`.
+- Kept sort UI non-interactive; BE already returns alternatives sorted by expected score.
 
 Verification:
 - `npm run build` passed.
