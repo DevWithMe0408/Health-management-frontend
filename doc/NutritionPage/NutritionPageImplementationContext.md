@@ -322,12 +322,27 @@ Commit:
 
 ### Step 13 - Routing
 
-Status: completed, pending user review.
+Status: committed.
 
 Work done:
 - Updated `src/App.tsx`.
 - Replaced `/nutrition-plan` placeholder with protected `MealRecommendationPage`.
 - Sidebar already pointed to `/nutrition-plan`; no sidebar change was required.
+
+Verification:
+- `npm run build` passed.
+
+Commit:
+- `bc2b89d update`
+
+### Final Integration Fix
+
+Status: completed, pending commit.
+
+Work done:
+- Updated `src/hooks/useUserContext.ts`.
+- Uses `getDashboardMetrics()` as the source for TDEE, weight, and height.
+- Removed stale `getLatestHealthData` import and commented helper code.
 
 Verification:
 - `npm run build` passed.

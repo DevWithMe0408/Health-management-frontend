@@ -1,10 +1,10 @@
 import { useCallback, useEffect, useState } from 'react';
 import axios from 'axios';
 import { getConstitution } from '../services/constitution.service';
-import { getLatestHealthData } from '../services/healthData.service';
 import { getCurrentGoal } from '../services/userGoals.service';
 import { useAuth } from '../contexts/AuthContext';
 import type { ConstitutionCode, GoalCode } from '../types/meal.types';
+import { getDashboardMetrics } from '../services/dashboard.service';
 
 export interface NutritionUserContextData {
   goalCode: GoalCode;
@@ -23,11 +23,6 @@ interface UseUserContextResult {
   emptyHealthData: boolean;
   reload: () => Promise<void>;
 }
-
-const getMetric = (metrics: Record<string, number | null>, key: string): number | null => {
-  const value = metrics[key];
-  return typeof value === 'number' && Number.isFinite(value) ? value : null;
-};
 
 export const useUserContext = (): UseUserContextResult => {
   const { accessToken } = useAuth();
@@ -49,15 +44,15 @@ export const useUserContext = (): UseUserContextResult => {
     setEmptyHealthData(false);
 
     try {
-      const [latestHealthData, currentGoal, constitution] = await Promise.all([
-        getLatestHealthData(accessToken),
+      const [dashboardMetrics, currentGoal, constitution] = await Promise.all([
+        getDashboardMetrics(),
         getCurrentGoal(),
         getConstitution(),
       ]);
 
-      const tdee = getMetric(latestHealthData.baseMetrics, 'TDEE');
-      const weight = getMetric(latestHealthData.baseMetrics, 'WEIGHT');
-      const height = getMetric(latestHealthData.baseMetrics, 'HEIGHT');
+      const tdee = dashboardMetrics.tdee?.value ?? null;
+      const weight = dashboardMetrics.weight?.value ?? null;
+      const height = dashboardMetrics.height?.value ?? null;
 
       if (!tdee || !weight || !height) {
         setData(null);
@@ -106,4 +101,3 @@ export const useUserContext = (): UseUserContextResult => {
     reload: loadUserContext,
   };
 };
-
