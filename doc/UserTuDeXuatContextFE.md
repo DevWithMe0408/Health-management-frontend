@@ -456,7 +456,7 @@ Review can user xac nhan:
 
 ### Step 8 - Sua `useMealPlan.ts`: pin tich luy + applyPin + unpin + lastWarnings
 
-Status: DONE — cho user review.
+Status: DONE. Committed: `07b1939 feat(meal): add cumulative pin state and applyPin to useMealPlan`.
 
 Noi dung da lam:
 
@@ -531,6 +531,70 @@ Review can user xac nhan:
 
 ### Step 9 - Sua `MealRecommendationPage.tsx`: wire pin state vao SwapDrawer va MealCard
 
+Status: DONE — cho user review.
+
+Noi dung da lam:
+
+**Bo sung tweak hook `useMealPlan.ts` (Step 9 wiring):**
+
+- Doi return type cua `applyPin`: tu `Promise<DailyPlanResponse | null>` -> `Promise<SwapResultResponse | null>`. Ly do: page can doc `result.warnings` ngay sau await de quyet dinh dong drawer hay khong (state React async, khong the doc `lastWarnings` ngay sau setState).
+- Them method `dismissSuggestion()`: clear ca `lastSwapSuggestion` lan `lastSwapSuggestionMealType`. Page wire vao nut X dismiss banner suggestion o MealCard.
+- Expose `dismissSuggestion` trong return.
+
+**Sua page `MealRecommendationPage.tsx`:**
+
+- Import: them `PinnedItem` tu `PinnedStrip`, `SwapSuggestion` tu types, `useCallback` tu react.
+- `closeSwapDrawer`: dung `useCallback`, them goi `mealPlan.dismissWarnings()` -> dong drawer cung clear warnings (trang thai tieng vang khi mo lai slot khac).
+- `openSwapDrawer(mealType, slotKey, currentDish)`: helper tap trung viec set state drawer.
+- `getOtherPins(mealType, currentSlotKey): PinnedItem[]`:
+  - Doc `pinsByMeal.get(mealType)`, loc bo `currentSlotKey`.
+  - Loop pin, lookup dish info tu `topCombination.dishes`.
+  - Skip khi `dish.unit` hoac `dish.baseServingG` null (history fallback).
+  - Compute `serving = pin.overrideGrams / dish.baseServingG`.
+- `getKeepNames(mealType, currentSlotKey): string`: join ten cua 2 mon con lai bang `' + '`.
+- `handleApplySuggestion(mealType, suggestion)`: tim dish o slot `targetSlotKey` cua mealType, mo drawer voi dish do. Drawer se auto-select goi y theo `suggestion` prop.
+- Render `MealCard`:
+  - `pinnedSlotKeys = new Set(mealPlan.pinsByMeal.get(meal.mealType)?.keys() ?? [])`.
+  - `onTogglePin = (slot) => mealPlan.unpin(meal.mealType, slot)`.
+  - `suggestion = lastSwapSuggestionMealType === meal.mealType ? lastSwapSuggestion : null`. (Filter theo bua.)
+  - `onApplySuggestion = (s) => handleApplySuggestion(meal.mealType, s)`.
+  - `onDismissSuggestion = mealPlan.dismissSuggestion`.
+- Render `SwapDrawer`:
+  - Wire `slotKcalTarget = currentDish.dishKcal` (proxy theo §16.3).
+  - Wire `pins = getOtherPins(...)`, `keepDishNames = getKeepNames(...)`.
+  - Wire `warning = lastWarnings.find(w => w.type === 'CARB_BOMB') ?? null`.
+  - `onConfirm` doi sang goi `applyPin(...)`. Sau await, check `result.warnings`. Neu khong co warning -> `closeSwapDrawer()`. Neu co warning -> giu drawer mo (mode B).
+  - `onUnpin = (slot) => mealPlan.unpin(swapDrawerState.mealType, slot)`.
+  - `onDismissWarning = mealPlan.dismissWarnings`.
+  - Bo callsite cu `mealPlan.swap(...)`. Hook `swap()` thanh dead code (cleanup sau, ngoai scope).
+
+Files changed:
+
+- `src/hooks/useMealPlan.ts` (tweak `applyPin` return type, them `dismissSuggestion`)
+- `src/pages/MealRecommendationPage.tsx`
+
+Verification:
+
+- `npx tsc -b` -> pass.
+- `npx eslint src/pages/MealRecommendationPage.tsx src/hooks/useMealPlan.ts` -> 1 warning duy nhat o `MealRecommendationPage.tsx` line 181 (`react-hooks/exhaustive-deps` cua useEffect auto-generate). Da verify warning nay co san tu Phase 1 (tech debt), khong phai do Step 9 gay ra. Reverted code stash de confirm: warning xuat hien tai line 179 trong file goc, line 181 sau khi them imports/helpers.
+
+Ghi chu cho cac step sau:
+
+- Step 10: smoke test UI manual khi BE chay (dev server + login).
+- `swap()` legacy giu lai trong hook nhung khong con callsite. Cleanup PR rieng neu can.
+- Warning `react-hooks/exhaustive-deps` o useEffect auto-generate la tech debt, khong nen fix trong scope nay (rui ro infinite loop neu add `mealPlan` whole object vao dep).
+
+Review can user xac nhan:
+
+- Doi `applyPin` return tu `DailyPlanResponse` -> `SwapResultResponse` chap nhan duoc?
+- Them `dismissSuggestion` o hook (cho MealCard banner) hop ly?
+- `onApplySuggestion` mo drawer voi slot dich -> drawer auto-select goi y. UX nay dung mong muon?
+- "Vẫn áp dụng" (drawer mode B) -> `onClose()` -> page goi `dismissWarnings()` -> drawer dong. OK?
+
+---
+
+### Step 10 - Kiem tra tong the: tsc + eslint + smoke test UI
+
 Status: PENDING.
 
-(Se cap nhat sau khi user xac nhan Step 8.)
+(Se cap nhat sau khi user xac nhan Step 9.)

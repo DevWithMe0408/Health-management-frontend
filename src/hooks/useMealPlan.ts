@@ -12,6 +12,7 @@ import type {
   DishSuggestionResponse,
   MealType,
   PinnedDish,
+  SwapResultResponse,
   SwapSuggestion,
   UIMealState,
   WarningResponse,
@@ -72,16 +73,19 @@ interface UseMealPlanResult {
   ) => Promise<DailyPlanResponse | null>;
   // Phase 2 entry point: applies (or updates) a pin for `swappedSlot` and
   // re-sends every pin of the same meal so the BE engine keeps them fixed.
+  // Returns the raw SwapResultResponse so callers can inspect warnings
+  // before deciding whether to close the swap drawer.
   applyPin: (
     mealType: MealType,
     swappedSlot: string,
     newDishId: string,
     overrideGrams: number
-  ) => Promise<DailyPlanResponse | null>;
+  ) => Promise<SwapResultResponse | null>;
   // Local-only unpin: drops the slot from `pinsByMeal` without calling BE.
   // Next applyPin for this meal will not include the dropped pin.
   unpin: (mealType: MealType, slotKey: string) => void;
   dismissWarnings: () => void;
+  dismissSuggestion: () => void;
   confirm: (mealType: MealType) => Promise<void>;
   skip: (mealType: MealType) => void;
   toggleExpand: (mealType: MealType) => void;
@@ -400,7 +404,7 @@ export const useMealPlan = ({
           : null
       );
 
-      return nextPlan;
+      return result;
     } catch (applyError) {
       setSwapSnapshot(null);
       setError(applyError instanceof Error ? applyError.message : 'Không thể đổi món.');
@@ -423,6 +427,11 @@ export const useMealPlan = ({
 
   const dismissWarnings = useCallback(() => {
     setLastWarnings([]);
+  }, []);
+
+  const dismissSuggestion = useCallback(() => {
+    setLastSwapSuggestion(null);
+    setLastSwapSuggestionMealType(null);
   }, []);
 
   const confirm = useCallback(async (mealType: MealType) => {
@@ -510,6 +519,7 @@ export const useMealPlan = ({
     applyPin,
     unpin,
     dismissWarnings,
+    dismissSuggestion,
     confirm,
     skip,
     toggleExpand,

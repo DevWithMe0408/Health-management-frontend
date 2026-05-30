@@ -1,9 +1,10 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import FooterSummary from '../components/meal/FooterSummary';
 import InfoStrip from '../components/meal/InfoStrip';
 import MealCard from '../components/meal/MealCard';
+import type { PinnedItem } from '../components/meal/PinnedStrip';
 import SetupWizard from '../components/meal/SetupWizard';
 import SwapDrawer from '../components/meal/SwapDrawer';
 import ScoreDropBanner from '../components/meal/banners/ScoreDropBanner';
@@ -19,6 +20,7 @@ import type {
   DishOptionResponse,
   DishSuggestionResponse,
   MealType,
+  SwapSuggestion,
   UIMealState,
 } from '../types/meal.types';
 
@@ -185,9 +187,71 @@ const MealRecommendationPage = () => {
     userContext.data,
   ]);
 
-  const closeSwapDrawer = () => {
+  const closeSwapDrawer = useCallback(() => {
     setSwapDrawerState(EMPTY_SWAP_DRAWER_STATE);
-  };
+    mealPlan.dismissWarnings();
+  }, [mealPlan]);
+
+  const openSwapDrawer = useCallback(
+    (mealType: MealType, slotKey: string, currentDish: DishSuggestionResponse) => {
+      setSwapDrawerState({ open: true, mealType, slotKey, currentDish });
+    },
+    []
+  );
+
+  // Build the PinnedStrip list for the currently open slot.
+  const getOtherPins = useCallback(
+    (mealType: MealType, currentSlotKey: string): PinnedItem[] => {
+      const meal = mealPlan.plan?.meals.find((m) => m.mealType === mealType);
+      if (!meal) return [];
+      const pins = mealPlan.pinsByMeal.get(mealType);
+      if (!pins) return [];
+
+      const items: PinnedItem[] = [];
+      for (const [slotKey, pin] of pins) {
+        if (slotKey === currentSlotKey) continue;
+        const dish = meal.topCombination.dishes.find((d) => d.slotKey === slotKey);
+        if (!dish || !dish.unit || !dish.baseServingG) continue;
+        items.push({
+          slotKey,
+          dishId: pin.dishId,
+          dishName: dish.dishName ?? 'Món ăn',
+          foodGroup: dish.foodGroupCode,
+          serving: pin.overrideGrams / dish.baseServingG,
+          unit: dish.unit,
+          grams: pin.overrideGrams,
+        });
+      }
+      return items;
+    },
+    [mealPlan.plan, mealPlan.pinsByMeal]
+  );
+
+  // Names of the dishes that are NOT being swapped, used in the apply caption.
+  const getKeepNames = useCallback(
+    (mealType: MealType, currentSlotKey: string): string => {
+      const meal = mealPlan.plan?.meals.find((m) => m.mealType === mealType);
+      if (!meal) return '';
+      return meal.topCombination.dishes
+        .filter((d) => d.slotKey !== currentSlotKey)
+        .map((d) => d.dishName ?? 'Món ăn')
+        .join(' + ');
+    },
+    [mealPlan.plan]
+  );
+
+  const handleApplySuggestion = useCallback(
+    (mealType: MealType, suggestion: SwapSuggestion) => {
+      const meal = mealPlan.plan?.meals.find((m) => m.mealType === mealType);
+      if (!meal) return;
+      const targetDish = meal.topCombination.dishes.find(
+        (d) => d.slotKey === suggestion.targetSlotKey
+      );
+      if (!targetDish) return;
+      openSwapDrawer(mealType, suggestion.targetSlotKey, targetDish);
+    },
+    [mealPlan.plan, openSwapDrawer]
+  );
 
   const handleToggleFavorite = async (dishId: string, currentFavorite: boolean) => {
     const nextFavorite = !currentFavorite;
@@ -284,28 +348,39 @@ const MealRecommendationPage = () => {
         </div>
       ) : (
         <div className="mb-6 flex flex-col gap-4">
-          {mealPlan.mealStates.map(({ meal, status, expanded }) => (
-            <MealCard
-              key={meal.mealType}
-              meal={meal}
-              status={status}
-              expanded={expanded}
-              score={meal.topCombination.finalScore}
-              confirmLoading={mealPlan.confirmLoading === meal.mealType}
-              onToggleExpand={() => mealPlan.toggleExpand(meal.mealType)}
-              onSwapClick={(slotKey, currentDish) =>
-                setSwapDrawerState({
-                  open: true,
-                  mealType: meal.mealType,
-                  slotKey,
-                  currentDish,
-                })
-              }
-              onConfirm={() => void mealPlan.confirm(meal.mealType)}
-              onSkip={() => mealPlan.skip(meal.mealType)}
-              onToggleFavorite={handleToggleFavorite}
-            />
-          ))}
+          {mealPlan.mealStates.map(({ meal, status, expanded }) => {
+            const mealPins = mealPlan.pinsByMeal.get(meal.mealType);
+            const pinnedSlotKeys = mealPins
+              ? new Set(mealPins.keys())
+              : new Set<string>();
+            const mealSuggestion =
+              mealPlan.lastSwapSuggestionMealType === meal.mealType
+                ? mealPlan.lastSwapSuggestion
+                : null;
+
+            return (
+              <MealCard
+                key={meal.mealType}
+                meal={meal}
+                status={status}
+                expanded={expanded}
+                score={meal.topCombination.finalScore}
+                confirmLoading={mealPlan.confirmLoading === meal.mealType}
+                onToggleExpand={() => mealPlan.toggleExpand(meal.mealType)}
+                onSwapClick={(slotKey, currentDish) =>
+                  openSwapDrawer(meal.mealType, slotKey, currentDish)
+                }
+                onConfirm={() => void mealPlan.confirm(meal.mealType)}
+                onSkip={() => mealPlan.skip(meal.mealType)}
+                onToggleFavorite={handleToggleFavorite}
+                pinnedSlotKeys={pinnedSlotKeys}
+                onTogglePin={(slotKey) => mealPlan.unpin(meal.mealType, slotKey)}
+                suggestion={mealSuggestion}
+                onApplySuggestion={(s) => handleApplySuggestion(meal.mealType, s)}
+                onDismissSuggestion={mealPlan.dismissSuggestion}
+              />
+            );
+          })}
         </div>
       )}
 
@@ -331,23 +406,54 @@ const MealRecommendationPage = () => {
         onContinue={() => setWarningModalOpen(false)}
       />
 
-      {swapDrawerState.open && swapDrawerState.currentDish && selectedMealState && (
-        <SwapDrawer
-          open={swapDrawerState.open}
-          currentDish={swapDrawerState.currentDish}
-          currentMealScore={selectedMealState.meal.topCombination.finalScore}
-          alternatives={alternatives}
-          suggestion={mealPlan.lastSwapSuggestion}
-          confirmLoading={mealPlan.swapLoading}
-          onClose={closeSwapDrawer}
-          onConfirm={async (newDishId) => {
-            if (!swapDrawerState.mealType || !swapDrawerState.slotKey) return;
-            await mealPlan.swap(swapDrawerState.mealType, swapDrawerState.slotKey, newDishId);
-            closeSwapDrawer();
-          }}
-          onToggleFavorite={handleToggleFavorite}
-        />
-      )}
+      {swapDrawerState.open &&
+        swapDrawerState.currentDish &&
+        selectedMealState &&
+        swapDrawerState.mealType &&
+        swapDrawerState.slotKey && (
+          <SwapDrawer
+            open={swapDrawerState.open}
+            currentDish={swapDrawerState.currentDish}
+            currentMealScore={selectedMealState.meal.topCombination.finalScore}
+            slotKcalTarget={swapDrawerState.currentDish.dishKcal}
+            alternatives={alternatives}
+            suggestion={
+              mealPlan.lastSwapSuggestionMealType === swapDrawerState.mealType
+                ? mealPlan.lastSwapSuggestion
+                : null
+            }
+            pins={getOtherPins(swapDrawerState.mealType, swapDrawerState.slotKey)}
+            keepDishNames={getKeepNames(
+              swapDrawerState.mealType,
+              swapDrawerState.slotKey
+            )}
+            warning={
+              mealPlan.lastWarnings.find((w) => w.type === 'CARB_BOMB') ?? null
+            }
+            confirmLoading={mealPlan.swapLoading}
+            onClose={closeSwapDrawer}
+            onConfirm={async (newDishId, overrideGrams) => {
+              if (!swapDrawerState.mealType || !swapDrawerState.slotKey) return;
+              const result = await mealPlan.applyPin(
+                swapDrawerState.mealType,
+                swapDrawerState.slotKey,
+                newDishId,
+                overrideGrams
+              );
+              // Keep the drawer open in mode B if BE returned any warning;
+              // otherwise the swap is done and we close.
+              if (result && (result.warnings ?? []).length === 0) {
+                closeSwapDrawer();
+              }
+            }}
+            onUnpin={(slotKey) => {
+              if (!swapDrawerState.mealType) return;
+              mealPlan.unpin(swapDrawerState.mealType, slotKey);
+            }}
+            onDismissWarning={mealPlan.dismissWarnings}
+            onToggleFavorite={handleToggleFavorite}
+          />
+        )}
     </div>
   );
 };
