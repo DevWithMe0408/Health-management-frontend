@@ -17,6 +17,17 @@
 </style>
 </head>
 <body>
+<template id="__bundler_thumbnail" data-bg-color="#059669">
+  <svg viewBox="0 0 1200 800" xmlns="http://www.w3.org/2000/svg">
+    <rect width="1200" height="800" fill="#059669"/>
+    <g transform="translate(600 400)" fill="none" stroke="#ffffff" stroke-width="22" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="0" cy="0" r="150"/>
+      <path d="M0 -150 A150 150 0 0 1 130 75" stroke="#bbf7d0"/>
+      <path d="M-70 0 h140 M-70 -55 h110 M-70 55 h90" stroke-width="16"/>
+    </g>
+    <text x="600" y="660" text-anchor="middle" font-family="system-ui, sans-serif" font-size="56" font-weight="700" fill="#ffffff">Thực đơn hôm nay</text>
+  </svg>
+</template>
 <div id="root"></div>
 
 <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
@@ -30,6 +41,7 @@
 <script type="text/babel" src="nutrition-meal-card.jsx"></script>
 <script type="text/babel" src="nutrition-page.jsx"></script>
 <script type="text/babel" src="nutrition-swap-drawer.jsx"></script>
+<script type="text/babel" src="nutrition-phase2.jsx"></script>
 <script type="text/babel" src="nutrition-wizard.jsx"></script>
 <script type="text/babel" src="nutrition-states.jsx"></script>
 
@@ -138,6 +150,61 @@ function App() {
           <div style={{ position: 'relative', width: '100%', height: '100%', background: '#fafafa' }}>
             <SwapDrawer open selectedIndex={0} showSuggestion={true} />
           </div>
+        </DCArtboard>
+      </DCSection>
+
+      <DCSection
+        id="drawer-p2"
+        title="Drawer ‘Đổi món’ — Phase 2 · Search + Ghim + Stepper khẩu phần"
+        subtitle="Mô hình C: ghim 1 slot → hệ thống GIỮ NGUYÊN 2 món còn lại, chỉ tự cân đối khẩu phần. 7 state × Desktop + Mobile."
+      >
+        <DCArtboard id="p2-s1-d" label="S1 · Drawer initial — slot Món chính · search rỗng · chưa chọn (Desktop)" width={1280} height={900}>
+          <P2_S1 />
+        </DCArtboard>
+        <DCArtboard id="p2-s1-m" label="S1 · Mobile bottom sheet" width={375} height={812}>
+          <P2_S1 mobile />
+        </DCArtboard>
+
+        <DCArtboard id="p2-s2-d" label="S2 · Search ‘cơm’ — slot Tinh bột · Cơm trắng selected · stepper 2 bát (Desktop)" width={1280} height={900}>
+          <P2_S2 />
+        </DCArtboard>
+        <DCArtboard id="p2-s2-m" label="S2 · Mobile" width={375} height={812}>
+          <P2_S2 mobile />
+        </DCArtboard>
+
+        <DCArtboard id="p2-s3-d" label="S3 · Strip ‘Đang ghim’ (Cơm trắng) · slot Món chính · search ‘cá’ (Desktop)" width={1280} height={900}>
+          <P2_S3 />
+        </DCArtboard>
+        <DCArtboard id="p2-s3-m" label="S3 · Mobile" width={375} height={812}>
+          <P2_S3 mobile />
+        </DCArtboard>
+
+        <DCArtboard id="p2-s4-d" label="S4 · Search empty ‘xyzabc’ — no results (Desktop)" width={1280} height={900}>
+          <P2_S4 />
+        </DCArtboard>
+        <DCArtboard id="p2-s4-m" label="S4 · Mobile" width={375} height={812}>
+          <P2_S4 mobile />
+        </DCArtboard>
+
+        <DCArtboard id="p2-s5-d" label="S5 · Soft warning kcal (3 bát cơm) · banner mode B (Desktop)" width={1280} height={900}>
+          <P2_S5 />
+        </DCArtboard>
+        <DCArtboard id="p2-s5-m" label="S5 · Mobile" width={375} height={812}>
+          <P2_S5 mobile />
+        </DCArtboard>
+
+        <DCArtboard id="p2-s6-d" label="S6 · Carb-bomb warning (78% carb) · banner mode B (Desktop)" width={1280} height={900}>
+          <P2_S6 />
+        </DCArtboard>
+        <DCArtboard id="p2-s6-m" label="S6 · Mobile" width={375} height={812}>
+          <P2_S6 mobile />
+        </DCArtboard>
+
+        <DCArtboard id="p2-s7-d" label="S7 · MealCard sau apply — 2 món 📌 ghim · banner gợi ý · 73.2đ (Desktop)" width={920} height={720}>
+          <P2_S7 />
+        </DCArtboard>
+        <DCArtboard id="p2-s7-m" label="S7 · Mobile" width={375} height={760}>
+          <P2_S7 mobile />
         </DCArtboard>
       </DCSection>
 
@@ -286,6 +353,26 @@ function DesignNotes() {
     {
       h: 'Macro target lấy từ BE, không hardcode tỉ lệ',
       b: 'Macro target hiển thị trên macro bar đến từ BE field mealKcalTarget + proteinTarget + fatTarget + carbTarget (mới bổ sung trong MealSuggestionResponse), KHÔNG hardcode tỉ lệ 20/27/53 ở FE nữa.',
+    },
+    {
+      h: 'Phase 2 · Mô hình C — ghim slot, giữ nguyên 2 món còn lại',
+      b: 'Sau khi áp dụng 1 món, hệ thống KHÔNG tự đổi 2 slot còn lại — chỉ tối ưu lại khẩu phần (serving). Nút footer đổi thành “Áp dụng & cân đối lại bữa” + phụ đề liệt kê đúng 2 món sẽ giữ. Đa pin tích lũy: pin món mới không reset món đã pin trước (strip “Đang ghim” thể hiện điều này).',
+    },
+    {
+      h: 'Phase 2 · Search thay thế Sort',
+      b: 'Bỏ dropdown “Sắp xếp” clickable → còn caption tĩnh “Điểm cao → thấp”. Thêm search bar (tìm theo tên cùng slot). Tránh 2 cơ chế khám phá song song trên list ngắn. Heading đổi động: “n lựa chọn thay thế” ↔ “n kết quả cho ‘cơm’”.',
+    },
+    {
+      h: 'Phase 2 · Stepper khẩu phần đơn vị Việt',
+      b: 'Khẩu phần hiển thị bằng đơn vị thật từ DB (bát, tô, đĩa, phần, chén, khúc…) kèm gram quy đổi “≈ 200g”. Bước 0.5, min 0.5, max = round(1.5 × expectedServing). Số nguyên bỏ “.0”, giữ 0.5/1.5. Stepper chỉ hiện khi đã chọn 1 món.',
+    },
+    {
+      h: 'Phase 2 · Soft warning amber, không đỏ',
+      b: 'Khi khó cân kcal / carb-bomb (≥ ~75% carb), banner amber mode B (#fef3c7 + border-left #f59e0b) thay nút Áp dụng, cho 2 lối: “Vẫn áp dụng” (outline) + “Điều chỉnh lại” (ghost). Không escalate sang đỏ vì đây là gợi ý, không phải lỗi chặn.',
+    },
+    {
+      h: 'Phase 2 · 📌 là emoji được phép',
+      b: 'Badge ghim dùng emoji 📌 (consistent với meal icon ☀️🍽🌙). FoodRow ghim thêm viền trái 4px xanh; header MealCard có chip “📌 n món đã ghim” giữa StatusPill và ScoreBadge.',
     },
   ];
   return (

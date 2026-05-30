@@ -3,7 +3,7 @@
 // =========================================================================
 // FOOD ROW — one item inside the topCombination
 // =========================================================================
-function FoodRow({ food, last = false, dense = false }) {
+function FoodRow({ food, last = false, dense = false, pinned = false }) {
   return (
     <div
       style={{
@@ -11,6 +11,8 @@ function FoodRow({ food, last = false, dense = false }) {
         alignItems: 'center',
         gap: 14,
         padding: dense ? '12px 0' : '14px 0',
+        paddingLeft: pinned ? 12 : 0,
+        borderLeft: pinned ? `4px solid ${DB.green}` : 'none',
         borderBottom: last ? 'none' : `1px solid ${DB.borderSoft}`,
       }}
     >
@@ -21,6 +23,19 @@ function FoodRow({ food, last = false, dense = false }) {
           <span style={{ fontSize: 15, fontWeight: 600, color: DB.ink, letterSpacing: '-0.005em' }}>
             {food.name}
           </span>
+          {pinned && (
+            <span
+              title="Đã ghim - bấm để bỏ ghim"
+              onClick={(e) => e.stopPropagation()}
+              style={{
+                width: 22, height: 22, display: 'grid', placeItems: 'center',
+                background: DB.green50, border: `1px solid ${DB.green}`, borderRadius: 6,
+                cursor: 'pointer', fontSize: 13, lineHeight: 1, flexShrink: 0,
+              }}
+            >
+              📌
+            </span>
+          )}
           <button
             style={{
               background: 'transparent',
@@ -42,7 +57,11 @@ function FoodRow({ food, last = false, dense = false }) {
         </div>
 
         <div style={{ fontSize: 12.5, color: DB.textMid, marginTop: 7, fontVariantNumeric: 'tabular-nums' }}>
-          <b style={{ color: DB.text }}>{food.grams}g</b>
+          {food.serving != null ? (
+            <b style={{ color: DB.text }}>{fmtServing(food.serving)} {food.unit} ({food.grams}g)</b>
+          ) : (
+            <b style={{ color: DB.text }}>{food.grams}g</b>
+          )}
           <Sep />
           <b style={{ color: DB.text }}>{food.kcal} kcal</b>
           <Sep />
@@ -75,8 +94,9 @@ function Sep() {
 //   variant   — 'default' | 'ring'
 //   collapsed — boolean
 // =========================================================================
-function MealCard({ meal, variant = 'default', collapsed = false, mobile = false, confirmLoading = false }) {
+function MealCard({ meal, variant = 'default', collapsed = false, mobile = false, confirmLoading = false, suggestion = null }) {
   const isOpen = !collapsed;
+  const pinnedCount = (meal.foods || []).filter((f) => f.pinned).length;
 
   return (
     <div
@@ -129,6 +149,20 @@ function MealCard({ meal, variant = 'default', collapsed = false, mobile = false
         {/* Status pill */}
         <StatusPill status={meal.status} />
 
+        {/* Pinned-count chip */}
+        {pinnedCount > 0 && (
+          <span style={{
+            display: 'inline-flex', alignItems: 'center', gap: 5,
+            padding: '4px 11px', borderRadius: 999,
+            background: DB.green50, color: DB.greenDark,
+            fontSize: 12.5, fontWeight: 600,
+            boxShadow: 'inset 0 0 0 1px #bbf7d0', whiteSpace: 'nowrap',
+          }}>
+            <span style={{ fontSize: 12, lineHeight: 1 }}>📌</span>
+            {pinnedCount} món đã ghim
+          </span>
+        )}
+
         {/* Score + chevron */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
           <ScoreBadge score={meal.score} />
@@ -165,10 +199,42 @@ function MealCard({ meal, variant = 'default', collapsed = false, mobile = false
       {/* ───── Expanded body ───── */}
       {isOpen && (
         <div style={{ padding: mobile ? '4px 16px 16px' : '8px 24px 22px' }}>
+          {/* A5 — suggestion banner (sau apply, điểm thấp) */}
+          {suggestion && (
+            <div style={{
+              background: '#fef3c7', borderLeft: '4px solid #f59e0b',
+              borderRadius: '0 10px 10px 0', padding: '12px 14px',
+              margin: '4px 0 16px', display: 'flex', alignItems: 'center', gap: 10,
+            }}>
+              <span style={{ fontSize: 16, flexShrink: 0 }}>💡</span>
+              <div style={{ flex: 1, minWidth: 0, fontSize: 12.5, color: '#78350f', lineHeight: 1.5 }}>
+                {suggestion.text}
+              </div>
+              <button style={{
+                background: '#f59e0b', color: '#fff', border: 'none',
+                padding: '6px 12px', borderRadius: 8, fontSize: 12, fontWeight: 700,
+                cursor: 'pointer', fontFamily: 'inherit', flexShrink: 0,
+              }}>
+                Áp dụng gợi ý
+              </button>
+              <button
+                title="Bỏ qua gợi ý"
+                style={{
+                  background: 'transparent', border: 'none', padding: 2, cursor: 'pointer',
+                  color: '#78350f', opacity: 0.5, display: 'flex', flexShrink: 0,
+                }}
+              >
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M18 6L6 18M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+          )}
+
           {/* Food list */}
           <div>
             {meal.foods.map((f, i) => (
-              <FoodRow key={i} food={f} last={i === meal.foods.length - 1} />
+              <FoodRow key={i} food={f} last={i === meal.foods.length - 1} pinned={!!f.pinned} />
             ))}
           </div>
 

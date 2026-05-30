@@ -5,6 +5,7 @@
 // PageFrame — same shell as dashboard, with 'nutrition' active
 // =========================================================================
 function NutritionPageFrame({ children, mobile = false, userName = 'Chiến' }) {
+  const [sidebarOpen, setSidebarOpen] = React.useState(true);
   if (mobile) {
     return (
       <div
@@ -63,9 +64,18 @@ function NutritionPageFrame({ children, mobile = false, userName = 'Chiến' }) 
 
   return (
     <div style={{ ...dbFont, background: DB.bg, width: '100%', height: '100%', display: 'flex', overflow: 'hidden' }}>
-      <Sidebar active="nutrition" />
+      <div
+        style={{
+          width: sidebarOpen ? 256 : 0,
+          flexShrink: 0,
+          overflow: 'hidden',
+          transition: 'width .25s ease',
+        }}
+      >
+        <Sidebar active="nutrition" />
+      </div>
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0 }}>
-        <TopHeader userName={userName} />
+        <TopHeader userName={userName} onMenuToggle={() => setSidebarOpen((v) => !v)} />
         <main style={{ flex: 1, overflowY: 'auto', padding: '28px 36px 40px', background: DB.bg }}>
           {children}
         </main>
@@ -104,7 +114,7 @@ const MEAL_DATA = {
     score: 84.5,
     targets: { p: 26, f: 15, c: 75 },
     foods: [
-      { name: 'Phở bò tái', slot: 'Combo', group: 'COMBO', groupLabel: 'PHỞ / COMBO', grams: 350, kcal: 525, p: 22, f: 14, c: 72 },
+      { name: 'Phở bò tái', slot: 'Combo', group: 'COMBO', groupLabel: 'PHỞ / COMBO', serving: 1, unit: 'tô', grams: 350, kcal: 525, p: 22, f: 14, c: 72 },
     ],
     totals: { kcal: 525, p: 22, f: 14, c: 72 },
   },
@@ -118,9 +128,9 @@ const MEAL_DATA = {
     score: 87.5,
     targets: { p: 42, f: 25, c: 95 },
     foods: [
-      { name: 'Gà luộc',             slot: 'Món chính', group: 'GIA_CAM',      groupLabel: 'GIA CẦM',     grams: 280, kcal: 380, p: 35, f: 10, c: 0, favorite: true },
-      { name: 'Canh rau dền nấu tôm', slot: 'Rau',       group: 'RAU_LA',       groupLabel: 'RAU LÁ',      grams: 250, kcal: 85,  p: 6,  f: 3,  c: 8 },
-      { name: 'Cơm trắng',           slot: 'Tinh bột',   group: 'TINH_BOT_GAO', groupLabel: 'TINH BỘT',   grams: 200, kcal: 385, p: 7,  f: 0,  c: 87 },
+      { name: 'Gà luộc',             slot: 'Món chính', group: 'GIA_CAM',      groupLabel: 'GIA CẦM',     serving: 1, unit: 'đĩa', grams: 280, kcal: 380, p: 35, f: 10, c: 0, favorite: true },
+      { name: 'Canh rau dền nấu tôm', slot: 'Rau',       group: 'RAU_LA',       groupLabel: 'RAU LÁ',      serving: 1, unit: 'tô',  grams: 250, kcal: 85,  p: 6,  f: 3,  c: 8 },
+      { name: 'Cơm trắng',           slot: 'Tinh bột',   group: 'TINH_BOT_GAO', groupLabel: 'TINH BỘT',   serving: 2, unit: 'bát', grams: 200, kcal: 385, p: 7,  f: 0,  c: 87 },
     ],
     totals: { kcal: 850, p: 48, f: 13, c: 95 },
   },
@@ -134,9 +144,9 @@ const MEAL_DATA = {
     score: 76.2,
     targets: { p: 37, f: 22, c: 83 },
     foods: [
-      { name: 'Cá kho tộ',           slot: 'Món chính', group: 'CA',           groupLabel: 'CÁ',          grams: 220, kcal: 320, p: 28, f: 18, c: 5 },
-      { name: 'Rau muống xào tỏi',    slot: 'Rau',       group: 'RAU_LA',       groupLabel: 'RAU LÁ',      grams: 200, kcal: 65,  p: 4,  f: 2,  c: 8 },
-      { name: 'Bún tươi',            slot: 'Tinh bột',   group: 'TINH_BOT_GAO', groupLabel: 'TINH BỘT',   grams: 180, kcal: 340, p: 8,  f: 1,  c: 75 },
+      { name: 'Cá kho tộ',           slot: 'Món chính', group: 'CA',           groupLabel: 'CÁ',          serving: 1, unit: 'phần', grams: 220, kcal: 320, p: 28, f: 18, c: 5 },
+      { name: 'Rau muống xào tỏi',    slot: 'Rau',       group: 'RAU_LA',       groupLabel: 'RAU LÁ',      serving: 1, unit: 'đĩa',  grams: 200, kcal: 65,  p: 4,  f: 2,  c: 8 },
+      { name: 'Bún tươi',            slot: 'Tinh bột',   group: 'TINH_BOT_GAO', groupLabel: 'TINH BỘT',   serving: 1, unit: 'tô',   grams: 180, kcal: 340, p: 8,  f: 1,  c: 75 },
     ],
     totals: { kcal: 725, p: 40, f: 21, c: 88 },
   },
