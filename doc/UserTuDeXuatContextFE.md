@@ -330,7 +330,7 @@ Review can user xac nhan:
 
 ### Step 6 - Sua `MealCard.tsx`: chip pinnedCount + banner suggestion + truyen pin xuong FoodRow
 
-Status: DONE — cho user review.
+Status: DONE. Committed: `7b2fef6 feat(meal): add pin count chip and suggestion banner to MealCard`.
 
 Noi dung da lam:
 
@@ -370,6 +370,92 @@ Review can user xac nhan:
 
 ### Step 7 - Sua `SwapDrawer.tsx`: search + pin strip + stepper + warning + reset state
 
+Status: DONE — cho user review.
+
+Noi dung da lam:
+
+**Props moi (tat ca optional, page chua phai sua o Step 7):**
+
+- `slotKcalTarget?: number` — fallback `currentDish.dishKcal` neu khong truyen (proxy theo §16.3).
+- `pins?: PinnedItem[]` — default `[]`. Caller phai loc bo slot dang mo truoc khi truyen.
+- `keepDishNames?: string` — default `''`. Chuoi 2 mon con lai cho cum "Giữ nguyên X + Y".
+- `warning?: WarningResponse | null` — default `null`. Khi co warning -> render banner mode B thay nut apply.
+- `onUnpin?: (slotKey) => void` — neu khong truyen, `PinnedStrip` khong render (bao ve case page chua wire).
+- `onDismissWarning?: () => void` — handler khi user click "Điều chỉnh lại" trong mode B.
+
+**Signature `onConfirm` thay doi:**
+
+- Cu: `(newDishId) => void | Promise<void>`.
+- Moi: `(newDishId, overrideGrams) => void | Promise<void>`.
+- TypeScript chap nhan callsite cu vi function fewer-params assignable to more-params. Page cu se nhan `newDishId` va bo qua `overrideGrams` cho den khi Step 9 wire.
+
+**State noi bo:**
+
+- `query`, `debouncedQuery`, `searchResults`, `searchLoading`, `selectedDishId`, `serving`.
+- Reset toan bo khi `open` chuyen false (§16.8).
+- Khi `open` chuyen true, pick initial selection theo `findInitialDishId(alternatives, suggestion)`; set `serving = expectedServing` cua mon do.
+- Debounce 300ms qua `setTimeout` -> `debouncedQuery`. Effect fetch su dung co `cancelled` de tranh race khi user go nhanh.
+- `displayList = debouncedQuery ? searchResults : alternatives`. `selectedOption` lookup tu `displayList`.
+- Khong dung `useEffect` de sync serving theo `selectedOption` (de tranh exhaustive-deps warning va loop). Thay vao do, `handleSelect(option)` set ca `selectedDishId` lan `serving` cung luc.
+
+**Layout (top -> bottom):**
+
+1. Header (giu nguyen).
+2. `PinnedStrip` (chi render khi co `onUnpin`).
+3. `SearchBar`.
+4. Section heading -> hien thi "X kết quả cho '...'" hoac "X lựa chọn thay thế".
+5. Scrollable list `AlternateCard` (loading spinner, empty state co nut "Xoá tìm kiếm").
+6. Footer:
+   - `ServingStepper` (chi khi `selectedOption.unit && baseServingG`).
+   - Mode A (no warning): nut "Áp dụng & cân đối lại bữa" + caption "Giữ nguyên X" (neu co `keepDishNames`) hoac "Khẩu phần áp dụng: ..." fallback.
+   - Mode B (warning): banner amber + "Vẫn áp dụng" (goi `onClose`) + "Điều chỉnh lại" (goi `onDismissWarning`).
+
+**Bo suggestion banner khoi drawer footer:**
+
+- Phase 1 drawer co banner suggestion o footer. Phase 2 (Step 6) da chuyen banner suggestion vao `MealCard`. Drawer chi giu prop `suggestion` de auto-select mon goi y khi mo. Khong render banner.
+
+**Quyet dinh "Vẫn áp dụng":**
+
+- Huong dan §15 step 20 ghi "applyPin lan nua voi cung payload" — hieu la goi BE lan 2. Tuy nhien plan da update tu lan 1 (warning hien ra SAU swap thanh cong). Goi lai BE la lang phi.
+- Thay vao do: "Vẫn áp dụng" = `onClose()` -> page se clear warning state va dong drawer. Tiet kiem 1 API call, behavior identical tu goc nhin nguoi dung.
+
+**Icon thay emoji (de nhat quan voi rule trong context, Step 4):**
+
+- Banner warning: `ExclamationTriangleIcon` outline thay 💡 (vi warning, khong phai suggestion).
+- Empty state search: `MagnifyingGlassIcon` outline.
+
+Files changed:
+
+- `src/components/meal/SwapDrawer.tsx`
+
+Verification:
+
+- `npx tsc -b` -> pass.
+- `npx eslint src/components/meal/SwapDrawer.tsx` -> pass (sau khi refactor `useEffect[selectedOption]` sang inline `handleSelect`).
+
+Ghi chu cho cac step sau:
+
+- `useMealPlan` (Step 8) phai expose `pinsByMeal`, `applyPin`, `unpin`, `lastWarnings`, va `dismissWarnings`. Cap nhat `lastSwapSuggestion` luu kem `mealType` de page filter dung bua.
+- `MealRecommendationPage` (Step 9) phai:
+  - Build `pins = getOtherPins(mealType, swappedSlot)` -> `PinnedItem[]`.
+  - Build `keepDishNames = getKeepNames(mealType, swappedSlot)` -> `string`.
+  - Wire `onConfirm(dishId, grams) => applyPin(...)`.
+  - Wire `onUnpin(slotKey) => unpin(mealType, slotKey)`.
+  - Wire `onDismissWarning => dismissWarnings()`.
+  - Trong `closeSwapDrawer`, clear `lastWarnings` va `lastSwapSuggestion` neu can.
+- Smoke test khi xong: mo drawer, search "com", chon mon, chinh stepper, click apply -> kiem tra grams gui qua BE dung.
+
+Review can user xac nhan:
+
+- Quyet dinh "Vẫn áp dụng" = `onClose()` (khong goi BE lai) co dung mo hinh UX user mong muon, hay phai re-call BE nhu §15 step 20 noi?
+- Suggestion banner da chuyen sang `MealCard` -> drawer khong co banner suggestion nua, chap nhan?
+- Layout footer (stepper o tren cung khi co selectedOption) dung thiet ke?
+- `onConfirm(newDishId, overrideGrams)` signature thay doi nhung TypeScript chap nhan callsite cu, OK?
+
+---
+
+### Step 8 - Sua `useMealPlan.ts`: pin tich luy + applyPin + unpin + lastWarnings
+
 Status: PENDING.
 
-(Se cap nhat sau khi user xac nhan Step 6.)
+(Se cap nhat sau khi user xac nhan Step 7.)

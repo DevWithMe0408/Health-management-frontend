@@ -1,17 +1,25 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import {
   ArrowPathIcon,
-  LightBulbIcon,
+  ExclamationTriangleIcon,
+  MagnifyingGlassIcon,
   XMarkIcon,
 } from '@heroicons/react/24/outline';
 import AlternateCard from './AlternateCard';
+import PinnedStrip from './PinnedStrip';
+import type { PinnedItem } from './PinnedStrip';
+import SearchBar from './SearchBar';
+import ServingStepper from './ServingStepper';
 import Spinner from '../common/Spinner';
 import { SLOT_CODE_LABEL } from '../../constants/slotCode.constants';
+import { searchDishes } from '../../services/dish.service';
+import { formatServing } from '../../utils/format';
 import type {
   DishOptionResponse,
   DishSuggestionResponse,
   SwapSuggestion,
+  WarningResponse,
 } from '../../types/meal.types';
 
 interface SwapDrawerProps {
@@ -19,30 +27,40 @@ interface SwapDrawerProps {
   mobile?: boolean;
   currentDish: DishSuggestionResponse;
   currentMealScore: number;
+  // Used by the search endpoint to snap expectedServing toward the slot's
+  // calorie budget. Falls back to the current dish kcal as a proxy.
+  slotKcalTarget?: number;
   alternatives: DishOptionResponse[];
+  // Optional auto-selection target on open.
   suggestion?: SwapSuggestion | null;
+  // Pinned dishes from OTHER slots of the same meal. The caller is
+  // responsible for excluding the slot that is currently being swapped.
+  pins?: PinnedItem[];
+  // Display string "X + Y" for the kept dishes in the apply caption.
+  keepDishNames?: string;
   confirmLoading: boolean;
+  warning?: WarningResponse | null;
   onClose: () => void;
-  onConfirm: (newDishId: string) => void | Promise<void>;
+  onConfirm: (newDishId: string, overrideGrams: number) => void | Promise<void>;
+  onUnpin?: (slotKey: string) => void;
+  // Called when the user picks "Điều chỉnh lại" inside the warning banner.
+  // The page should clear the warning state but keep the drawer open.
+  onDismissWarning?: () => void;
   onToggleFavorite: (dishId: string, currentFavorite: boolean) => void | Promise<void>;
 }
 
-const formatNumber = (value: number) => {
-  return Number.isInteger(value) ? value.toString() : value.toFixed(1);
-};
+const formatKcal = (value: number) =>
+  Number.isInteger(value) ? value.toString() : value.toFixed(1);
 
-const findInitialIndex = (
-  alternatives: DishOptionResponse[],
+const findInitialDishId = (
+  options: DishOptionResponse[],
   suggestion?: SwapSuggestion | null
-) => {
+): string | null => {
   if (suggestion?.suggestedDishId) {
-    const suggestionIndex = alternatives.findIndex(
-      (option) => option.dishId === suggestion.suggestedDishId
-    );
-    if (suggestionIndex >= 0) return suggestionIndex;
+    const target = options.find((option) => option.dishId === suggestion.suggestedDishId);
+    if (target) return target.dishId;
   }
-
-  return alternatives.length > 0 ? 0 : -1;
+  return options[0]?.dishId ?? null;
 };
 
 const SwapDrawer = ({
@@ -50,38 +68,98 @@ const SwapDrawer = ({
   mobile = false,
   currentDish,
   currentMealScore,
+  slotKcalTarget,
   alternatives,
   suggestion = null,
+  pins = [],
+  keepDishNames = '',
   confirmLoading,
+  warning = null,
   onClose,
   onConfirm,
+  onUnpin,
+  onDismissWarning,
   onToggleFavorite,
 }: SwapDrawerProps) => {
-  const [selectedIndex, setSelectedIndex] = useState(-1);
-  const currentDishName = currentDish.dishName ?? 'Món ăn';
-  const selectedOption = selectedIndex >= 0 ? alternatives[selectedIndex] : null;
-  const suggestionIndex = useMemo(
-    () =>
-      suggestion?.suggestedDishId
-        ? alternatives.findIndex((option) => option.dishId === suggestion.suggestedDishId)
-        : -1,
-    [alternatives, suggestion?.suggestedDishId]
-  );
+  const [query, setQuery] = useState('');
+  const [debouncedQuery, setDebouncedQuery] = useState('');
+  const [searchResults, setSearchResults] = useState<DishOptionResponse[]>([]);
+  const [searchLoading, setSearchLoading] = useState(false);
+  const [selectedDishId, setSelectedDishId] = useState<string | null>(null);
+  const [serving, setServing] = useState(0);
 
+  const currentDishName = currentDish.dishName ?? 'Món ăn';
+  const effectiveSlotKcalTarget = slotKcalTarget ?? currentDish.dishKcal;
+
+  // Reset internal state when the drawer closes so the next open starts fresh.
+  useEffect(() => {
+    if (open) return;
+    setQuery('');
+    setDebouncedQuery('');
+    setSearchResults([]);
+    setSearchLoading(false);
+    setSelectedDishId(null);
+    setServing(0);
+  }, [open]);
+
+  // Pick the initial option (suggestion-aware) every time the drawer opens or
+  // the alternative list refreshes for a different slot. The serving stepper
+  // is seeded from the picked option's expectedServing.
   useEffect(() => {
     if (!open) return;
-    setSelectedIndex(findInitialIndex(alternatives, suggestion));
-  }, [alternatives, open, suggestion]);
+    const initialId = findInitialDishId(alternatives, suggestion);
+    setSelectedDishId(initialId);
+    const initialOption = alternatives.find((option) => option.dishId === initialId);
+    if (initialOption) setServing(initialOption.expectedServing);
+  }, [open, alternatives, suggestion]);
 
-  const handleConfirm = () => {
-    if (!selectedOption || confirmLoading) return;
-    void onConfirm(selectedOption.dishId);
+  // Debounce the search query.
+  useEffect(() => {
+    const id = setTimeout(() => setDebouncedQuery(query.trim()), 300);
+    return () => clearTimeout(id);
+  }, [query]);
+
+  // Fetch search results whenever the debounced query changes.
+  useEffect(() => {
+    if (!debouncedQuery) {
+      setSearchResults([]);
+      return;
+    }
+    let cancelled = false;
+    setSearchLoading(true);
+    searchDishes({
+      slotCode: currentDish.slotCode,
+      q: debouncedQuery,
+      slotKcalTarget: effectiveSlotKcalTarget,
+    })
+      .then((results) => {
+        if (!cancelled) setSearchResults(results);
+      })
+      .catch(() => {
+        if (!cancelled) setSearchResults([]);
+      })
+      .finally(() => {
+        if (!cancelled) setSearchLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [debouncedQuery, currentDish.slotCode, effectiveSlotKcalTarget]);
+
+  const displayList = debouncedQuery ? searchResults : alternatives;
+  const selectedOption = displayList.find((option) => option.dishId === selectedDishId) ?? null;
+  const canApply =
+    Boolean(selectedOption) && Boolean(selectedOption?.baseServingG) && !confirmLoading;
+
+  const handleSelect = (option: DishOptionResponse) => {
+    setSelectedDishId(option.dishId);
+    setServing(option.expectedServing);
   };
 
-  const handleApplySuggestion = () => {
-    if (suggestionIndex < 0) return;
-    setSelectedIndex(suggestionIndex);
-    void onConfirm(alternatives[suggestionIndex].dishId);
+  const handleConfirm = () => {
+    if (!selectedOption?.baseServingG || confirmLoading) return;
+    const overrideGrams = Math.round(serving * selectedOption.baseServingG);
+    void onConfirm(selectedOption.dishId, overrideGrams);
   };
 
   const panelClass = mobile
@@ -127,9 +205,9 @@ const SwapDrawer = ({
                   Đang là:{' '}
                   <b className="font-semibold text-gray-700">{currentDishName}</b>
                   <span className="mx-1.5 text-gray-300">·</span>
-                  {formatNumber(currentDish.actualGrams)}g
+                  {Math.round(currentDish.actualGrams)}g
                   <span className="mx-1.5 text-gray-300">·</span>
-                  {formatNumber(currentDish.dishKcal)} kcal
+                  {formatKcal(currentDish.dishKcal)} kcal
                 </p>
               </div>
 
@@ -143,26 +221,52 @@ const SwapDrawer = ({
               </button>
             </header>
 
-            <div className="flex shrink-0 items-center justify-between gap-3 px-5 py-3">
+            {onUnpin && <PinnedStrip pins={pins} onUnpin={onUnpin} mobile={mobile} />}
+
+            <SearchBar value={query} onChange={setQuery} mobile={mobile} />
+
+            <div className="flex shrink-0 items-center justify-between gap-3 px-5 py-2">
               <div className="text-sm font-bold text-gray-700">
-                {alternatives.length} lựa chọn thay thế
+                {debouncedQuery
+                  ? `${displayList.length} kết quả cho "${debouncedQuery}"`
+                  : `${displayList.length} lựa chọn thay thế`}
               </div>
-              <div className="text-xs text-gray-400">Điểm cao → thấp</div>
+              {!debouncedQuery && (
+                <div className="text-xs text-gray-400">Điểm cao → thấp</div>
+              )}
             </div>
 
             <div className="flex flex-1 flex-col gap-2.5 overflow-y-auto px-5 pb-4">
-              {alternatives.length === 0 ? (
-                <div className="rounded-xl border border-dashed border-gray-200 bg-gray-50 px-4 py-8 text-center text-sm text-gray-500">
-                  Không có lựa chọn thay thế phù hợp.
+              {searchLoading ? (
+                <div className="grid place-items-center py-10">
+                  <Spinner size={20} />
+                </div>
+              ) : displayList.length === 0 ? (
+                <div className="flex flex-1 flex-col items-center justify-center gap-3.5 px-5 py-10 text-center">
+                  <MagnifyingGlassIcon className="h-10 w-10 text-gray-300" />
+                  <div className="text-sm text-gray-500">
+                    {debouncedQuery
+                      ? `Không tìm thấy món nào với "${debouncedQuery}"`
+                      : 'Không có lựa chọn thay thế phù hợp.'}
+                  </div>
+                  {debouncedQuery && (
+                    <button
+                      type="button"
+                      onClick={() => setQuery('')}
+                      className="rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-xs font-semibold text-gray-700 transition hover:bg-gray-50"
+                    >
+                      Xoá tìm kiếm
+                    </button>
+                  )}
                 </div>
               ) : (
-                alternatives.map((option, index) => (
+                displayList.map((option) => (
                   <AlternateCard
                     key={option.dishId}
                     option={option}
                     currentScore={currentMealScore}
-                    selected={index === selectedIndex}
-                    onSelect={() => setSelectedIndex(index)}
+                    selected={option.dishId === selectedDishId}
+                    onSelect={() => handleSelect(option)}
                     onToggleFavorite={onToggleFavorite}
                     mobile={mobile}
                   />
@@ -171,47 +275,80 @@ const SwapDrawer = ({
             </div>
 
             <footer className="shrink-0 border-t border-gray-100 bg-white px-5 py-4">
-              {suggestion && (
-                <div className="mb-3 flex items-center gap-3 rounded-r-xl border-l-4 border-amber-400 bg-amber-50 px-3 py-2.5">
-                  <LightBulbIcon className="h-5 w-5 shrink-0 text-amber-600" />
-                  <div className="min-w-0 flex-1 text-xs leading-5 text-amber-900">
-                    <b>Gợi ý:</b> {suggestion.message}
-                  </div>
-                  <button
-                    type="button"
-                    disabled={suggestionIndex < 0 || confirmLoading}
-                    className="shrink-0 rounded-lg bg-amber-500 px-3 py-1.5 text-xs font-bold text-white transition hover:bg-amber-600 disabled:cursor-not-allowed disabled:opacity-50"
-                    onClick={handleApplySuggestion}
-                  >
-                    Áp dụng
-                  </button>
-                </div>
+              {selectedOption && selectedOption.unit && selectedOption.baseServingG && (
+                <ServingStepper
+                  name={selectedOption.dishName}
+                  serving={serving}
+                  unit={selectedOption.unit}
+                  baseServingG={selectedOption.baseServingG}
+                  expectedServing={selectedOption.expectedServing}
+                  onChange={setServing}
+                />
               )}
 
-              <button
-                type="button"
-                disabled={!selectedOption || confirmLoading}
-                className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-brand-green px-4 py-3 text-sm font-bold text-white shadow-sm transition hover:bg-brand-green-dark disabled:cursor-not-allowed disabled:bg-gray-300 disabled:shadow-none"
-                onClick={handleConfirm}
-              >
-                {confirmLoading ? (
-                  <>
-                    <Spinner size={14} thin />
-                    Đang lưu...
-                  </>
-                ) : (
-                  <>
-                    <ArrowPathIcon className="h-4 w-4" />
-                    Xác nhận đổi món
-                  </>
-                )}
-              </button>
+              {warning ? (
+                <div className="flex items-start gap-2.5 rounded-r-lg border-l-4 border-amber-500 bg-amber-50 px-3 py-2.5">
+                  <ExclamationTriangleIcon className="h-5 w-5 shrink-0 text-amber-600" />
+                  <div className="min-w-0 flex-1 text-[12.5px] leading-snug text-amber-900">
+                    {warning.message}
+                  </div>
+                  <div className="flex shrink-0 gap-2">
+                    <button
+                      type="button"
+                      onClick={onClose}
+                      className="rounded-lg border border-amber-500 bg-white px-3 py-1.5 text-xs font-semibold text-amber-800 transition hover:bg-amber-50"
+                    >
+                      Vẫn áp dụng
+                    </button>
+                    {onDismissWarning && (
+                      <button
+                        type="button"
+                        onClick={onDismissWarning}
+                        className="rounded-lg px-2.5 py-1.5 text-xs font-semibold text-amber-800 transition hover:bg-amber-100"
+                      >
+                        Điều chỉnh lại
+                      </button>
+                    )}
+                  </div>
+                </div>
+              ) : (
+                <>
+                  <button
+                    type="button"
+                    disabled={!canApply}
+                    onClick={handleConfirm}
+                    className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-brand-green px-4 py-3 text-sm font-bold text-white shadow-sm transition hover:bg-brand-green-dark disabled:cursor-not-allowed disabled:bg-gray-300 disabled:shadow-none"
+                  >
+                    {confirmLoading ? (
+                      <>
+                        <Spinner size={14} thin />
+                        Đang cân đối...
+                      </>
+                    ) : (
+                      <>
+                        <ArrowPathIcon className="h-4 w-4" />
+                        Áp dụng & cân đối lại bữa
+                      </>
+                    )}
+                  </button>
 
-              {selectedOption && (
-                <p className="mt-2 text-center text-xs text-gray-500">
-                  Sẽ đổi <b>{currentDishName}</b> →{' '}
-                  <b className="text-gray-700">{selectedOption.dishName}</b>
-                </p>
+                  {selectedOption && keepDishNames && (
+                    <p className="mt-2 text-center text-xs leading-snug text-gray-500">
+                      Giữ nguyên <b className="text-gray-700">{keepDishNames}</b>, hệ thống tự cân đối khẩu phần
+                    </p>
+                  )}
+
+                  {selectedOption && !keepDishNames && (
+                    <p className="mt-2 text-center text-xs text-gray-500 tabular-nums">
+                      Khẩu phần áp dụng:{' '}
+                      <b className="text-gray-700">
+                        {selectedOption.unit && selectedOption.baseServingG
+                          ? `${formatServing(serving)} ${selectedOption.unit} (${Math.round(serving * selectedOption.baseServingG)}g)`
+                          : `${Math.round(selectedOption.expectedActualGrams)}g`}
+                      </b>
+                    </p>
+                  )}
+                </>
               )}
             </footer>
           </motion.aside>
@@ -222,4 +359,3 @@ const SwapDrawer = ({
 };
 
 export default SwapDrawer;
-
