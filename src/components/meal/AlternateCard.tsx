@@ -14,8 +14,10 @@ interface AlternateCardProps {
   mobile?: boolean;
 }
 
-const formatNumber = (value: number) => {
-  return Number.isInteger(value) ? value.toString() : value.toFixed(1);
+// Format serving multiplier without truncating non-half steps (e.g. 0.75 must not become 0.8).
+const formatServing = (value: number) => {
+  if (Number.isInteger(value)) return value.toString();
+  return value.toFixed(2).replace(/\.?0+$/, '');
 };
 
 const AlternateCard = ({
@@ -26,7 +28,9 @@ const AlternateCard = ({
   onToggleFavorite,
   mobile = false,
 }: AlternateCardProps) => {
-  const delta = option.expectedScore - currentScore;
+  // Search results have null expectedScore. Treat delta as 0 to keep DeltaPill stable,
+  // but the whole score block is hidden when expectedScore is null.
+  const delta = (option.expectedScore ?? 0) - currentScore;
 
   return (
     <button
@@ -52,19 +56,21 @@ const AlternateCard = ({
         <span className="mt-2 block text-xs text-gray-500 tabular-nums">
           Khẩu phần:{' '}
           <b className="font-semibold text-gray-700">
-            {formatNumber(option.expectedActualGrams)}g
+            {option.unit
+              ? `${formatServing(option.expectedServing)} ${option.unit} (${Math.round(option.expectedActualGrams)}g)`
+              : `${Math.round(option.expectedActualGrams)}g`}
           </b>
-          <span className="mx-1.5 text-gray-300">·</span>
-          Serving x{formatNumber(option.expectedServing)}
         </span>
-        <span className="mt-2 flex items-center gap-2">
-          <span className="inline-flex items-center gap-1 text-xs font-bold text-gray-900 tabular-nums">
-            <StarIcon className="h-3 w-3 text-amber-500" />
-            {option.expectedScore.toFixed(1)}
+        {option.expectedScore !== null && (
+          <span className="mt-2 flex items-center gap-2">
+            <span className="inline-flex items-center gap-1 text-xs font-bold text-gray-900 tabular-nums">
+              <StarIcon className="h-3 w-3 text-amber-500" />
+              {option.expectedScore.toFixed(1)}
+            </span>
+            <DeltaPill value={delta} />
+            <span className="text-[11px] text-gray-400">so với hiện tại</span>
           </span>
-          <DeltaPill value={delta} />
-          <span className="text-[11px] text-gray-400">so với hiện tại</span>
-        </span>
+        )}
       </span>
 
       <span className="flex shrink-0 flex-col items-center gap-2">

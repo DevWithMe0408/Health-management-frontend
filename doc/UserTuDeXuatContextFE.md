@@ -149,7 +149,7 @@ Review can user xac nhan:
 
 ### Step 2 - Them service `dish.service.ts`
 
-Status: DONE — cho user review.
+Status: DONE. Committed: `3a4a429 feat(meal): add dish search service for swap drawer`. Da push len remote.
 
 Noi dung da lam:
 
@@ -185,6 +185,43 @@ Review can user xac nhan:
 
 ### Step 3 - Sua `AlternateCard.tsx`: don vi Viet + xu ly `expectedScore` null
 
+Status: DONE — cho user review.
+
+Noi dung da lam:
+
+- Sua dong khau phan: render don vi Viet truoc, gram trong ngoac. Vi du `1.5 bat (215g)`. Khi `unit` null thi fallback `215g`.
+- Dung `Math.round(option.expectedActualGrams)` thay vi `formatNumber(...)g`. Gram khong can decimal.
+- Doi helper `formatNumber` -> `formatServing` voi `toFixed(2).replace(/\.?0+$/, '')`. Ly do: BE serving steps co `0.75`, neu dung `toFixed(1)` se ra `0.8` sai. Format moi:
+  - `0.5` -> `'0.5'`
+  - `0.75` -> `'0.75'`
+  - `1.0` -> `'1'`
+  - `1.5` -> `'1.5'`
+- Score block: an toan bo `<span>` chua star + DeltaPill + "so voi hien tai" khi `option.expectedScore === null` (search ket qua). Khi co score, render binh thuong.
+- `delta` calc: dung `(option.expectedScore ?? 0) - currentScore`. Khi score null, delta khong duoc render vi toan bo block bi an, nhung `??` van giu type-safe.
+
+Files changed:
+
+- `src/components/meal/AlternateCard.tsx`
+
+Verification:
+
+- `npx tsc -b` -> pass, khong loi nao.
+- `npx eslint src/components/meal/AlternateCard.tsx src/types/meal.types.ts src/services/dish.service.ts` -> pass, khong warning.
+
+Ghi chu cho cac step sau:
+
+- Tat ca cho render serving khac (vd `FoodRow`, `PinnedStrip`, `ServingStepper`) nen dung pattern format `0.75`-safe tuong tu. Co the cancel scope: refactor helper ra `src/utils/format.ts` neu tai nhieu noi. Tam thoi giu cuc bo theo file.
+- Khi search ket qua tra ve, user co the click chon mon ma chua co score -> cardselected style van work, OK.
+
+Review can user xac nhan:
+
+- Format `formatServing` 2 decimals strip zero chap nhan duoc khong, hay user muon hardcode `toFixed(1)`?
+- An toan bo block score khi null (thay vi render `—`) la lua chon thiet ke duoc khong?
+
+---
+
+### Step 4 - Sua `FoodRow.tsx`: prop pinned + badge + vien trai + don vi Viet
+
 Status: PENDING.
 
-(Se cap nhat sau khi user xac nhan Step 2.)
+(Se cap nhat sau khi user xac nhan Step 3.)
