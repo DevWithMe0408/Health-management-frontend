@@ -185,7 +185,7 @@ Review can user xac nhan:
 
 ### Step 3 - Sua `AlternateCard.tsx`: don vi Viet + xu ly `expectedScore` null
 
-Status: DONE — cho user review.
+Status: DONE. Committed: `290a5e6 feat(meal): show Vietnamese serving unit and handle null score`.
 
 Noi dung da lam:
 
@@ -222,6 +222,40 @@ Review can user xac nhan:
 
 ### Step 4 - Sua `FoodRow.tsx`: prop pinned + badge + vien trai + don vi Viet
 
+Status: DONE — cho user review.
+
+Noi dung da lam:
+
+- Them props `pinned?: boolean` va `onTogglePin?: (slotKey: string) => void`. Mac dinh `pinned = false`, nen call site cu khong can sua.
+- Container ngoai: them class `border-l-4 border-l-brand-green pl-3` khi `pinned = true`. Build class qua mang -> `filter(Boolean).join(' ')` cho de doc.
+- Badge pin: render sau `HeartButton` khi `pinned = true`. La button click vao se goi `onTogglePin(dish.slotKey)`. Style `bg-brand-green-light` + `border-brand-green` theo convention brand token (Tailwind v4 doc tu `@theme` trong `src/index.css`). User yeu cau dung Heroicon thay vi emoji 📌 -> chon `MapPinIcon` solid tu `@heroicons/react/24/solid` cho nhat quan voi cac icon Heroicon khac trong project. Hover: `bg-brand-green text-white` de feedback ro hon.
+- Sua dong khau phan: render `1.5 bat (215g) · 525 kcal` khi `unit && baseServingG`, fallback `215g · 525 kcal`. Bo phan "Khau phan x{serving}" vi serving da nam trong cum dau tien.
+- Them helper local `formatServing` (giong AlternateCard, giu chinh xac 0.75) va `formatKcal` (lam tron 1 decimal cho kcal).
+- Giu prop ten `dish` (khong doi sang `food` nhu huong dan) -> `MealCard` callsite khong can sua.
+
+Files changed:
+
+- `src/components/meal/FoodRow.tsx`
+
+Verification:
+
+- `npx tsc -b` -> pass.
+- `npx eslint src/components/meal/FoodRow.tsx` -> pass.
+
+Ghi chu cho cac step sau:
+
+- `MealCard` chua truyen `pinned` va `onTogglePin` xuong `FoodRow`. Vi 2 prop deu optional, hien tai `FoodRow` se render nhu cu (khong co badge / vien). Step 6 se truyen prop xuong.
+- Helper `formatServing` da xuat hien o 2 file (`AlternateCard`, `FoodRow`). Neu can dung them lan nua (Step 5 `PinnedStrip` / `ServingStepper`), nen refactor ra `src/utils/format.ts`. Tam thoi keep cuc bo theo file.
+
+Review da xac nhan:
+
+- Dong khau phan giu giong thiet ke design (`{serving} {unit} ({grams}g) · {kcal} kcal`), khop voi design jsx `nutrition-meal-card.jsx` va `nutrition-phase2.jsx`.
+- Badge pin dung Heroicon `MapPinIcon` solid (user yeu cau).
+
+---
+
+### Step 5 - Tao SearchBar.tsx, PinnedStrip.tsx, ServingStepper.tsx
+
 Status: PENDING.
 
-(Se cap nhat sau khi user xac nhan Step 3.)
+(Se cap nhat sau khi user xac nhan Step 4.)
