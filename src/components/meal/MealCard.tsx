@@ -2,7 +2,10 @@ import {
   CheckIcon,
   ChevronDownIcon,
   ForwardIcon,
+  LightBulbIcon,
+  XMarkIcon,
 } from '@heroicons/react/24/outline';
+import { MapPinIcon } from '@heroicons/react/24/solid';
 import Spinner from '../common/Spinner';
 import { MEAL_TYPE_ICON, MEAL_TYPE_ICON_BG, MEAL_TYPE_LABEL } from '../../constants/mealType.constants';
 import FoodRow from './FoodRow';
@@ -12,6 +15,7 @@ import StatusPill from './atoms/StatusPill';
 import type {
   DishSuggestionResponse,
   MealSuggestionResponse,
+  SwapSuggestion,
   UIMealStatus,
 } from '../../types/meal.types';
 
@@ -26,6 +30,14 @@ interface MealCardProps {
   onConfirm: () => void;
   onSkip: () => void;
   onToggleFavorite: (dishId: string, currentFavorite: boolean) => void | Promise<void>;
+  // Pin state for this meal. Optional so existing call sites keep working
+  // before MealRecommendationPage wires the full state in Step 9.
+  pinnedSlotKeys?: Set<string>;
+  onTogglePin?: (slotKey: string) => void;
+  // Suggestion banner rendered above the food list after a swap.
+  suggestion?: SwapSuggestion | null;
+  onApplySuggestion?: (suggestion: SwapSuggestion) => void;
+  onDismissSuggestion?: () => void;
   mobile?: boolean;
 }
 
@@ -34,6 +46,8 @@ const formatNumber = (value: number) => {
     maximumFractionDigits: 1,
   });
 };
+
+const EMPTY_PINNED_SLOTS: Set<string> = new Set();
 
 const MealCard = ({
   meal,
@@ -46,12 +60,18 @@ const MealCard = ({
   onConfirm,
   onSkip,
   onToggleFavorite,
+  pinnedSlotKeys = EMPTY_PINNED_SLOTS,
+  onTogglePin,
+  suggestion = null,
+  onApplySuggestion,
+  onDismissSuggestion,
   mobile = false,
 }: MealCardProps) => {
   const dishes = meal.topCombination.dishes;
   const mealName = MEAL_TYPE_LABEL[meal.mealType];
   const icon = MEAL_TYPE_ICON[meal.mealType];
   const iconBg = MEAL_TYPE_ICON_BG[meal.mealType];
+  const pinnedCount = pinnedSlotKeys.size;
 
   return (
     <article className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
@@ -86,6 +106,13 @@ const MealCard = ({
 
         {status !== 'suggested' && <StatusPill status={status} />}
 
+        {pinnedCount > 0 && (
+          <span className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-full bg-brand-green-light px-3 py-[5px] text-[12.5px] font-semibold text-brand-green-darker ring-1 ring-brand-green/30">
+            <MapPinIcon className="h-3 w-3" />
+            {pinnedCount} món đã ghim
+          </span>
+        )}
+
         <div className="flex items-center gap-2">
           <ScoreBadge score={score} />
           <button
@@ -115,14 +142,45 @@ const MealCard = ({
 
       {expanded && (
         <div className={mobile ? 'px-4 pb-4' : 'px-5 pb-5'}>
+          {suggestion && (
+            <div className="mx-1 mb-4 mt-1 flex items-center gap-2.5 rounded-r-lg border-l-4 border-amber-500 bg-amber-50 px-3.5 py-3">
+              <LightBulbIcon className="h-5 w-5 shrink-0 text-amber-600" />
+              <div className="min-w-0 flex-1 text-[12.5px] leading-snug text-amber-900">
+                <b>Gợi ý:</b> {suggestion.message}
+              </div>
+              {onApplySuggestion && (
+                <button
+                  type="button"
+                  onClick={() => onApplySuggestion(suggestion)}
+                  className="shrink-0 rounded-lg bg-amber-500 px-3 py-1.5 text-xs font-bold text-white transition hover:bg-amber-600"
+                >
+                  Áp dụng gợi ý
+                </button>
+              )}
+              {onDismissSuggestion && (
+                <button
+                  type="button"
+                  onClick={onDismissSuggestion}
+                  title="Bỏ qua gợi ý"
+                  aria-label="Bỏ qua gợi ý"
+                  className="shrink-0 p-0.5 text-amber-900 opacity-50 transition hover:opacity-100"
+                >
+                  <XMarkIcon className="h-4 w-4" />
+                </button>
+              )}
+            </div>
+          )}
+
           <div>
             {dishes.map((dish, index) => (
               <FoodRow
                 key={dish.slotKey ?? `${dish.dishId}-${index}`}
                 dish={dish}
                 isLast={index === dishes.length - 1}
+                pinned={dish.slotKey ? pinnedSlotKeys.has(dish.slotKey) : false}
                 onSwapClick={onSwapClick}
                 onToggleFavorite={onToggleFavorite}
+                onTogglePin={onTogglePin}
               />
             ))}
           </div>

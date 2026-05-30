@@ -256,7 +256,7 @@ Review da xac nhan:
 
 ### Step 5 - Tao SearchBar.tsx, PinnedStrip.tsx, ServingStepper.tsx
 
-Status: DONE — cho user review.
+Status: DONE. Committed: `18f7420 feat(meal): add search, pinned strip and serving stepper components`.
 
 Noi dung da lam:
 
@@ -330,6 +330,46 @@ Review can user xac nhan:
 
 ### Step 6 - Sua `MealCard.tsx`: chip pinnedCount + banner suggestion + truyen pin xuong FoodRow
 
+Status: DONE — cho user review.
+
+Noi dung da lam:
+
+- Them 5 props moi, tat ca **optional** de callsite `MealRecommendationPage.tsx` chua phai sua o Step 6:
+  - `pinnedSlotKeys?: Set<string>` (default `EMPTY_PINNED_SLOTS` = `new Set()`).
+  - `onTogglePin?: (slotKey: string) => void` (no-op khi khong truyen).
+  - `suggestion?: SwapSuggestion | null` (default `null`).
+  - `onApplySuggestion?: (suggestion) => void` (chi render nut "Áp dụng gợi ý" khi co handler).
+  - `onDismissSuggestion?: () => void` (chi render nut X khi co handler).
+- Chip "X mon da ghim" trong header, render khi `pinnedSlotKeys.size > 0`. Dat giua `StatusPill` va `<div>` chua `ScoreBadge`. Style brand convention: `bg-brand-green-light`, `text-brand-green-darker`, `ring-brand-green/30`. Icon dung `MapPinIcon` solid de dong bo voi badge trong `FoodRow`.
+- Banner suggestion render trong expanded body, **truoc** list food. Style amber (giu theo design vi nghia "gợi ý"). Icon dung `LightBulbIcon` outline thay emoji 💡. Nut "Áp dụng gợi ý" + nut X dismiss render co dieu kien khi handler co.
+- Truyen `pinned` va `onTogglePin` xuong moi `FoodRow`. `pinned` tinh tu `dish.slotKey ? pinnedSlotKeys.has(dish.slotKey) : false`.
+- Dat const `EMPTY_PINNED_SLOTS` o module-level (khong tao Set moi moi render).
+
+Files changed:
+
+- `src/components/meal/MealCard.tsx`
+
+Verification:
+
+- `npx tsc -b` -> pass.
+- `npx eslint src/components/meal/MealCard.tsx` -> pass.
+
+Ghi chu cho cac step sau:
+
+- Step 9 se wire `pinnedSlotKeys`, `onTogglePin`, `suggestion`, `onApplySuggestion`, `onDismissSuggestion` o `MealRecommendationPage.tsx`.
+- Suggestion sau swap dang luu o `lastSwapSuggestion` (single value). Step 8 se mo rong de gan kem `mealType` -> page se filter `suggestion={lastSwapSuggestion?.mealType === meal.mealType ? lastSwapSuggestion.value : null}`.
+- `onApplySuggestion` o page co the de no-op tam thoi (user chu dong mo drawer lai); huong dan §14 cung note nhu vay.
+
+Review can user xac nhan:
+
+- Lam props optional thay vi required (huong dan §11 ghi required) chap nhan duoc? Co the giam friction cho Step 6 nhung tang nguy co quen wire o Step 9.
+- Chip dung `bg-brand-green-light` + `ring-brand-green/30` (thay vi `bg-emerald-50` + `ring-emerald-300/60` nhu huong dan) co dung brand convention?
+- Banner suggestion dung `LightBulbIcon` thay 💡 OK?
+
+---
+
+### Step 7 - Sua `SwapDrawer.tsx`: search + pin strip + stepper + warning + reset state
+
 Status: PENDING.
 
-(Se cap nhat sau khi user xac nhan Step 5.)
+(Se cap nhat sau khi user xac nhan Step 6.)
