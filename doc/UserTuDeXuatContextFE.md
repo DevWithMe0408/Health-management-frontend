@@ -82,7 +82,7 @@ KHA THI — co. BE da xong, FE chi can mo rong contract va component.
 
 ### Step 0 - Tao file context FE
 
-Status: DONE — cho user review.
+Status: DONE. Committed: `664039c docs(nutrition): add user proposed meal FE context`.
 
 Noi dung da lam:
 
@@ -111,6 +111,44 @@ Review can user xac nhan:
 
 ### Step 1 - Cap nhat `meal.types.ts`
 
+Status: DONE — cho user review.
+
+Noi dung da lam:
+
+- `DishSuggestionResponse`: them `unit: string | null`, `baseServingG: number | null`. Nullable de fallback voi data history.
+- `DishOptionResponse`: them `unit: string | null`, `baseServingG: number | null`; doi `expectedScore: number` -> `number | null` (search endpoint khong tinh score).
+- `PinnedDish`: them `overrideGrams?: number` optional. Khong gui hoac null = engine tu toi uu serving; co gia tri = ep fixed grams.
+- Tao moi `WarningType = 'CARB_BOMB' | (string & {})` va `WarningResponse { type, message }`. Dung pattern `string & {}` de giu autocomplete `'CARB_BOMB'` ma van chap nhan type khac tu BE tuong lai.
+- `SwapResultResponse`: them `warnings: WarningResponse[]` (BE tra `[]` khi khong co warning).
+
+Files changed:
+
+- `src/types/meal.types.ts`
+
+Anh huong predictable:
+
+- `AlternateCard.tsx:29,63` se fail typecheck vi `expectedScore` gio nullable. Day la cho da biet truoc, se fix o Step 3 cung voi viec doi hien thi don vi Viet.
+
+Verification:
+
+- Chay `npx tsc -b` -> chi co dung 2 loi predictable o `AlternateCard.tsx:29,63`. Khong file nao khac bi anh huong.
+- Khong chay lint vi build hien tai dang fail typecheck cho den khi Step 3 xong.
+
+Ghi chu cho cac step sau:
+
+- Tat ca callsite render `unit` / `baseServingG` phai check null va fallback gram.
+- Khi build `PinnedDish` o hook, neu user khong ep gram thi bo qua field `overrideGrams` thay vi gui `null` (giu request goi).
+- Khi nhan `warnings` tu `SwapResultResponse`, neu BE lo tra null thi normalize sang `[]` o boundary service.
+
+Review can user xac nhan:
+
+- Cach pattern hoa `WarningType = 'CARB_BOMB' | (string & {})` chap nhan duoc khong, hay user muon enum cung `type WarningType = 'CARB_BOMB'` thuan?
+- Chap nhan 2 loi typecheck tam thoi o `AlternateCard.tsx` cho den khi Step 3 fix?
+
+---
+
+### Step 2 - Them service `dish.service.ts`
+
 Status: PENDING.
 
-(Se cap nhat sau khi user xac nhan Step 0.)
+(Se cap nhat sau khi user xac nhan Step 1.)

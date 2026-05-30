@@ -50,6 +50,10 @@ export interface DishSuggestionResponse {
   servingMultiplier: number;
   actualGrams: number;
   dishKcal: number;
+  // Vietnamese serving unit (e.g. 'bat', 'to', 'dia'). Nullable for history records.
+  unit: string | null;
+  // Gram per 1 serving unit. Nullable for history records.
+  baseServingG: number | null;
   favorite: boolean;
 }
 
@@ -69,9 +73,14 @@ export interface DishOptionResponse {
   dishName: string;
   slotCode: SlotCode;
   foodGroupCode: FoodGroup;
-  expectedScore: number;
+  // Null when option comes from search endpoint (BE does not score search results).
+  expectedScore: number | null;
   expectedServing: number;
   expectedActualGrams: number;
+  // Vietnamese serving unit. Nullable for history records.
+  unit: string | null;
+  // Gram per 1 serving unit. Nullable for history records.
+  baseServingG: number | null;
   favorite: boolean;
 }
 
@@ -101,12 +110,21 @@ export interface SwapSuggestion {
   suggestedScore: number;
 }
 
+export type WarningType = 'CARB_BOMB' | (string & {});
+
+export interface WarningResponse {
+  type: WarningType;
+  message: string;
+}
+
 export interface SwapResultResponse {
   updatedMeal: MealSuggestionResponse;
   newFinalScore: number;
   originalFinalScore: number;
   scoreDropTriggered: boolean;
   suggestion: SwapSuggestion | null;
+  // BE returns empty list when no warning. UI renders banner for known types (e.g. CARB_BOMB).
+  warnings: WarningResponse[];
 }
 
 export interface PerMealConfigRequest {
@@ -131,6 +149,8 @@ export interface RecommendFullDayRequest {
 export interface PinnedDish {
   slotKey: string;
   dishId: string;
+  // Optional gram override. Null/undefined lets the engine optimize serving freely.
+  overrideGrams?: number;
 }
 
 export interface SwapDishRequest {
