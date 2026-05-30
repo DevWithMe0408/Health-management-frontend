@@ -111,7 +111,7 @@ Review can user xac nhan:
 
 ### Step 1 - Cap nhat `meal.types.ts`
 
-Status: DONE — cho user review.
+Status: DONE. Committed: `737dfe3 feat(meal): extend types for user proposed meal feature`.
 
 Noi dung da lam:
 
@@ -149,6 +149,42 @@ Review can user xac nhan:
 
 ### Step 2 - Them service `dish.service.ts`
 
+Status: DONE — cho user review.
+
+Noi dung da lam:
+
+- Tao moi file `src/services/dish.service.ts`.
+- Export `SearchDishesParams { slotCode, q, slotKcalTarget }`.
+- Export `searchDishes(params)` -> `Promise<DishOptionResponse[]>`:
+  - Goi `apiClient.get('/api/nutrition/dishes/search', { params })`.
+  - Trim `q` truoc khi gui (mac du BE cung trim, FE trim de chac chan).
+  - Unwrap `DataResponse<List<DishOptionResponse>>` qua helper `unwrapDataResponse`.
+- Khong tu gan header `X-User-Id`. `apiClient` da co interceptor gan Bearer token; gateway/BE resolve userId tu JWT.
+- Khong them debounce o service. Debounce 300ms se nam o caller (`SwapDrawer`) theo huong dan.
+
+Files changed:
+
+- `src/services/dish.service.ts` (file moi)
+
+Verification:
+
+- `npx tsc -b` -> chi co 2 loi predictable o `AlternateCard.tsx:29,63` (con tu Step 1). Service moi compile sach.
+
+Ghi chu cho cac step sau:
+
+- Caller phai chu dong debounce 300ms va huy request cu khi co query moi (de tranh race khi user go nhanh).
+- BE tra `expectedScore = null` cho moi item; `AlternateCard` se phai an phan render score khi `null` (Step 3).
+- BE gioi han 20 ket qua, FE khong can paginate.
+
+Review can user xac nhan:
+
+- Pattern dung `apiClient` + `unwrapDataResponse` dung convention hien co?
+- Khong them retry / cancel o service-layer, chap nhan?
+
+---
+
+### Step 3 - Sua `AlternateCard.tsx`: don vi Viet + xu ly `expectedScore` null
+
 Status: PENDING.
 
-(Se cap nhat sau khi user xac nhan Step 1.)
+(Se cap nhat sau khi user xac nhan Step 2.)
