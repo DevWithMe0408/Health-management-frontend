@@ -2,13 +2,25 @@
 import React, { useState } from 'react'; // Thêm useState nếu cần cho dropdown
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
-import { UserCircleIcon, Bars3Icon, ChevronDownIcon } from '@heroicons/react/24/outline';
+import {
+  UserCircleIcon,
+  Bars3Icon,
+  ChevronDoubleLeftIcon,
+  ChevronDoubleRightIcon,
+  ChevronDownIcon,
+} from '@heroicons/react/24/outline';
 
 interface HeaderProps {
   onToggleMobileSidebar?: () => void;
+  onToggleDesktopSidebar?: () => void;
+  isSidebarCollapsed?: boolean;
 }
 
-const Header: React.FC<HeaderProps> = ({ onToggleMobileSidebar }) => {
+const Header: React.FC<HeaderProps> = ({
+  onToggleMobileSidebar,
+  onToggleDesktopSidebar,
+  isSidebarCollapsed = false,
+}) => {
   const { isAuthenticated, user, isLoading, logout } = useAuth(); // Thêm logout
   const navigate = useNavigate(); // Thêm navigate
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
@@ -34,11 +46,11 @@ const Header: React.FC<HeaderProps> = ({ onToggleMobileSidebar }) => {
     <header className="bg-white text-brand-gray-dark shadow-sm sticky top-0 z-30">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
-          {/* Nút mở Sidebar cho mobile */}
+          {/* Mobile sidebar toggle (hidden on md+) */}
           <div className="md:hidden">
             <button
               onClick={onToggleMobileSidebar}
-              type="button" // Thêm type="button"
+              type="button"
               className="p-2 rounded-md text-gray-500 hover:text-gray-700 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-brand-green"
             >
               <span className="sr-only">Open sidebar</span>
@@ -46,10 +58,28 @@ const Header: React.FC<HeaderProps> = ({ onToggleMobileSidebar }) => {
             </button>
           </div>
 
-          {/* Phần giữa Header (có thể để trống hoặc tiêu đề trang) */}
-          <div className="flex-1 text-center md:text-left">
-            {/* Ví dụ: <h1 className="text-xl font-semibold">Dashboard</h1> */}
-          </div>
+          {/* Desktop sidebar collapse/expand toggle (hidden on mobile) */}
+          {onToggleDesktopSidebar && (
+            <div className="hidden md:block">
+              <button
+                onClick={onToggleDesktopSidebar}
+                type="button"
+                aria-label={isSidebarCollapsed ? 'Mở rộng sidebar' : 'Thu gọn sidebar'}
+                title={isSidebarCollapsed ? 'Mở rộng sidebar' : 'Thu gọn sidebar'}
+                className="p-2 rounded-md text-gray-500 hover:text-gray-700 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-brand-green"
+              >
+                {isSidebarCollapsed ? (
+                  <ChevronDoubleRightIcon className="h-5 w-5" aria-hidden="true" />
+                ) : (
+                  <ChevronDoubleLeftIcon className="h-5 w-5" aria-hidden="true" />
+                )}
+              </button>
+            </div>
+          )}
+
+          {/* Header middle area (intentionally empty / page title slot) */}
+          <div className="flex-1 text-center md:text-left" />
+
 
           {/* User Menu ở góc phải */}
           {user && (

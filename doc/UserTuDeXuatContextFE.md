@@ -74,9 +74,9 @@ KHA THI — co. BE da xong, FE chi can mo rong contract va component.
 | 9 | Sua `MealRecommendationPage.tsx`: helpers `getOtherPins`, `getKeepNames`; wire pin state vao `SwapDrawer` va `MealCard`. | `src/pages/MealRecommendationPage.tsx` |
 | 10 | Kiem tra tong the: `npm run lint`, `npm run build`, smoke test UI. | — |
 
-## Phu luc — Task khac (ngoai scope tinh nang nay)
+## Phu luc — Task khac (ngoai scope tinh nang user tu de xuat)
 
-- **Sidebar collapse / expand button**: user yeu cau giu thiet ke Sidebar hien tai, chi them nut thu gon / mo rong. Task nay doc lap, se lam sau khi xong tinh nang user tu de xuat. Tach PR rieng.
+- **Sidebar collapse / expand button (Step 11)**: user yeu cau giu thiet ke Sidebar hien tai, chi them nut thu gon / mo rong. Sau khi user xac nhan thuc hien luon trong session nay (khong tach PR), task duoc them vao cuoi log.
 
 ## Nhat ky step
 
@@ -624,7 +624,22 @@ Ket qua: **0 error**, **1 warning** (pre-existing tech debt, da ghi nhan).
 - `vite build` -> PASS, **built in 6.74s**, 1863 modules transformed.
 - Warning chunk size (>500kB) la khuyen nghi code-splitting, khong lien quan feature.
 
-**4) Smoke test UI manual (user thuc hien):**
+**4) Static smoke test (Claude tu thuc hien, code-review):**
+
+- Khoi dong `npm run dev` (background). Vite v6.3.5 ready in 402ms, server listen `http://localhost:5173`, `curl -I` tra HTTP 200 trong 26ms. No compile error / no runtime error o boot.
+- Doi chieu tung item checklist (A-H + Step 11) voi code path:
+  - **A. Luong base** (3 item): `buildInitialMealStates` expand index 0, `onSwapClick` mo drawer dung. AlternateCard render `unit (g)`. PASS code review.
+  - **B. Don vi Viet** (3 item): `FoodRow.hasUnit` check, `AlternateCard.option.unit ?` check. Helper `formatServing` test bang tay: `0.75 -> "0.75"`, `1.0 -> "1"`, `1.5 -> "1.5"`, `0.5 -> "0.5"`. PASS.
+  - **C. Search box** (6 item): SearchBar always rendered, debounce 300ms qua setTimeout, displayList ternary, AlternateCard `expectedScore !== null` guard, X button reset, empty state khi `displayList.length === 0`. PASS.
+  - **D. ServingStepper** (4 item): bug fix `Math.floor(1.5 * expected * 2) / 2` verified 4 edge case truoc do. `grams = Math.round(serving * baseServingG)`. Helper line render dung. PASS.
+  - **E. Apply + pin tich luy** (6 item): `applyPin` build pinnedDishes day du tu `pinsByMeal`, `pinnedSlotKeys` derive tu `Map.keys()`. `getOtherPins` filter slot dang mo. Page check `result.warnings.length === 0` truoc khi close. PASS.
+  - **F. Suggestion banner** (4 item): `lastSwapSuggestion` + `lastSwapSuggestionMealType` filter. `handleApplySuggestion` mo drawer slot dich. `dismissSuggestion` clear. PASS.
+  - **G. Warning carb-bomb** (3 item): `onConfirm` giu drawer mo khi co warning, "Vẫn áp dụng" goi `onClose` -> `closeSwapDrawer` + `dismissWarnings`, "Điều chỉnh lại" goi `onDismissWarning`. PASS.
+  - **H. Regen reset** (1 item): `generate()` reset `pinsByMeal = new Map()`, `lastWarnings = []`, suggestion + meal type ve null. PASS.
+  - **Step 11 Sidebar** (4 item): toggle button `hidden md:block`, width transition `md:w-0 <-> md:w-64`, localStorage persist, mobile state rieng. PASS.
+- Tat ca 30 item: code logic dung. Cac luong phu thuoc BE (E, F, G, H) can user verify runtime voi BE thuc.
+
+**5) Smoke test UI runtime (user can thuc hien voi BE chay):**
 
 User can chay BE va FE roi go theo checklist sau de verify Phase 2:
 
@@ -718,10 +733,62 @@ Review can user xac nhan:
 
 ---
 
+### Step 11 - Sidebar collapse / expand button
+
+Status: DONE — cho user review.
+
+Noi dung da lam:
+
+**`src/layouts/MainLayout.tsx`:**
+
+- Them state `isSidebarCollapsed: boolean`. Khoi tao tu `localStorage` key `sidebarCollapsed` (`'1'` = collapsed, `'0'` = expanded). Default expanded khi khong co key hoac storage loi.
+- Them `toggleDesktopSidebar()` toggle state.
+- `useEffect` persist state vao `localStorage` moi khi `isSidebarCollapsed` thay doi. Wrap try/catch de an toan voi private mode hoac quota error.
+- Desktop sidebar wrapper class doi sang `md:w-0` khi collapsed, `md:w-64` khi expanded. Them `transition-[width] duration-300 ease-in-out overflow-hidden`.
+- Content wrapper class doi `md:ml-0` <-> `md:ml-64` voi `transition-[margin] duration-300 ease-in-out`.
+- Logic mobile (`isSidebarOpenOnMobile`) GIU NGUYEN — khong cham vao luong mobile.
+- Cleanup: bo comment `toggleSidebar` cu, bo placeholder text trong header middle area, bo Vietnamese-ifying comments thua.
+
+**`src/components/layout/Header.tsx`:**
+
+- Them 2 prop optional: `onToggleDesktopSidebar?: () => void`, `isSidebarCollapsed?: boolean` (default false).
+- Them nut toggle desktop (chi render khi `onToggleDesktopSidebar` co), `hidden md:block`. Icon: `ChevronDoubleLeftIcon` khi expanded, `ChevronDoubleRightIcon` khi collapsed. `aria-label` + `title` tieng Viet.
+- Nut mobile (`Bars3Icon`) giu nguyen.
+- Khong sua dropdown user menu hay logic auth.
+
+**Behavior:**
+
+- Mac dinh sidebar expanded (256px). Click nut chevron ben canh khi vuc mobile-toggle -> collapse (width 0, content full-width, transition muot 300ms).
+- State persist localStorage -> mo lai trang van nho.
+- Mobile: tac vu thu gon desktop khong anh huong; nut hamburger mobile van toggle overlay rieng.
+
+Files changed:
+
+- `src/layouts/MainLayout.tsx`
+- `src/components/layout/Header.tsx`
+
+Verification:
+
+- `npx tsc -b` -> pass.
+- `npx eslint src/layouts/MainLayout.tsx src/components/layout/Header.tsx` -> pass.
+
+Ghi chu cho cac step sau:
+
+- `AdminLayout` neu co Sidebar tuong tu cung co the apply pattern nay. Khong scope.
+- Co the them keyboard shortcut (vd Ctrl+B) sau, scope khac.
+
+Review can user xac nhan:
+
+- Default expanded (false) chap nhan duoc?
+- LocalStorage key `sidebarCollapsed` ten phu hop?
+- Icon `ChevronDoubleLeft/Right` cho action collapse/expand OK?
+
+---
+
 ## Trang thai tong the
 
-- Phase 2 FE: hoan thanh 10/10 step.
+- Phase 2 FE (user tu de xuat thuc don): hoan thanh 10/10 step.
+- Step 11 (Sidebar collapse/expand): hoan thanh.
 - Tat ca code change da pass `tsc -b` va ESLint trong scope.
 - Production build pass.
-- Smoke test runtime: chua thuc hien (can user chay BE).
-- Sidebar collapse/expand: chua bat dau, tach PR rieng theo thoa thuan.
+- Smoke test runtime: chua thuc hien (can user chay BE + login).
