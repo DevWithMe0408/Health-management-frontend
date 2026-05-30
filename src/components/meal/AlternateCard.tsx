@@ -3,6 +3,7 @@ import DeltaPill from './atoms/DeltaPill';
 import FoodGroupChip from './atoms/FoodGroupChip';
 import FoodThumb from './atoms/FoodThumb';
 import HeartButton from './atoms/HeartButton';
+import { formatServing } from '../../utils/format';
 import type { DishOptionResponse } from '../../types/meal.types';
 
 interface AlternateCardProps {
@@ -13,12 +14,6 @@ interface AlternateCardProps {
   onToggleFavorite: (dishId: string, currentFavorite: boolean) => void | Promise<void>;
   mobile?: boolean;
 }
-
-// Format serving multiplier without truncating non-half steps (e.g. 0.75 must not become 0.8).
-const formatServing = (value: number) => {
-  if (Number.isInteger(value)) return value.toString();
-  return value.toFixed(2).replace(/\.?0+$/, '');
-};
 
 const AlternateCard = ({
   option,

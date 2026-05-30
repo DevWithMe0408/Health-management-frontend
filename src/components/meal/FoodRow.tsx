@@ -4,6 +4,7 @@ import FoodGroupChip from './atoms/FoodGroupChip';
 import FoodThumb from './atoms/FoodThumb';
 import HeartButton from './atoms/HeartButton';
 import SlotChip from './atoms/SlotChip';
+import { formatServing } from '../../utils/format';
 import type { DishSuggestionResponse } from '../../types/meal.types';
 
 interface FoodRowProps {
@@ -14,12 +15,6 @@ interface FoodRowProps {
   onToggleFavorite: (dishId: string, currentFavorite: boolean) => void | Promise<void>;
   onTogglePin?: (slotKey: string) => void;
 }
-
-// Keep non-half serving steps (e.g. 0.75) accurate when rendered.
-const formatServing = (value: number) => {
-  if (Number.isInteger(value)) return value.toString();
-  return value.toFixed(2).replace(/\.?0+$/, '');
-};
 
 const formatKcal = (value: number) => {
   return Number.isInteger(value) ? value.toString() : value.toFixed(1);

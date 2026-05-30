@@ -222,7 +222,7 @@ Review can user xac nhan:
 
 ### Step 4 - Sua `FoodRow.tsx`: prop pinned + badge + vien trai + don vi Viet
 
-Status: DONE — cho user review.
+Status: DONE. Committed: `a714d5d feat(meal): add pin indicator and Vietnamese serving to FoodRow`.
 
 Noi dung da lam:
 
@@ -256,6 +256,80 @@ Review da xac nhan:
 
 ### Step 5 - Tao SearchBar.tsx, PinnedStrip.tsx, ServingStepper.tsx
 
+Status: DONE — cho user review.
+
+Noi dung da lam:
+
+**Refactor — `src/utils/format.ts` (file moi):**
+
+- Tao `formatServing(value: number): string` dung chung cho moi component.
+- `AlternateCard` va `FoodRow` da import tu day, bo `formatServing` cuc bo.
+- `src/utils/` truoc do la folder rong; tao file dau tien.
+
+**`src/components/meal/SearchBar.tsx` (file moi):**
+
+- Props: `value: string`, `onChange: (next) => void`, `mobile?: boolean`.
+- Local state mirror `value` qua `useEffect(() => setLocal(value), [value])` de typing khong giat khi parent re-render.
+- Debounce KHONG nam o day; parent (`SwapDrawer`) chu dong debounce 300ms.
+- Icon `MagnifyingGlassIcon` ben trai, nut `XCircleIcon` ben phai khi co value.
+- Class style theo huong dan: `h-10`, ring `brand-green`, padding `px-[38px]` chua icon 2 ben.
+
+**`src/components/meal/PinnedStrip.tsx` (file moi):**
+
+- Export `PinnedItem { slotKey, dishId, dishName, foodGroup, serving, unit, grams }`.
+- Props: `pins: PinnedItem[]`, `onUnpin`, `mobile?`.
+- Return `null` khi `pins.length === 0`. Caller khong can guard.
+- Render header `Đang ghim · sẽ giữ nguyên khi áp dụng` + horizontal scroll cac chip.
+- Moi chip co `FoodThumb size={28}`, ten + serving, nut `XMarkIcon` bo ghim.
+- Dung `bg-brand-green-light` cho strip background theo brand convention (#16.9).
+- Caller (`SwapDrawer`) phai tu loc bo pin cua slot dang mo truoc khi truyen vao day.
+
+**`src/components/meal/ServingStepper.tsx` (file moi):**
+
+- Props: `name`, `serving`, `unit`, `baseServingG`, `expectedServing`, `onChange`.
+- Const: `STEP = 0.5`, `MIN = 0.5`.
+- **Bug fix §16.1:** `max = Math.floor(1.5 * expectedServing * 2) / 2` — KHONG dung `Math.round(...)/10`. Snap ve boi 0.5. Verified manually:
+  - `expectedServing=1.5` -> max=2.0
+  - `expectedServing=1.0` -> max=1.5
+  - `expectedServing=0.75` -> max=1.0
+  - `expectedServing=0.5` -> max=0.5 (= MIN, button + disabled ngay tu dau)
+- 2 nut +/- `MinusIcon`, `PlusIcon`, disable khi cham bien.
+- Render `{formatServing(serving)} {unit}` (kich thuoc lon) + `≈ {grams}g` (nho).
+- Helper line: `Bước 0.5 {unit} · Min 0.5 · Max {max}`.
+- Dung `bg-brand-green-light`, `border-brand-green`, `text-brand-green-dark` / `darker`. Border ngoai dung `border-brand-green/30` cho shade nhat (tailwind opacity utility) vi brand token khong co alias rieng cho shade 200/300.
+
+Files changed:
+
+- `src/utils/format.ts` (file moi)
+- `src/components/meal/AlternateCard.tsx` (refactor: import `formatServing` tu utils)
+- `src/components/meal/FoodRow.tsx` (refactor: import `formatServing` tu utils)
+- `src/components/meal/SearchBar.tsx` (file moi)
+- `src/components/meal/PinnedStrip.tsx` (file moi)
+- `src/components/meal/ServingStepper.tsx` (file moi)
+
+Verification:
+
+- `npx tsc -b` -> pass, khong loi nao.
+- `npx eslint` 6 file -> pass, khong warning.
+
+Ghi chu cho cac step sau:
+
+- `SwapDrawer` (Step 7) phai:
+  - Truyen `pins` (loc bo slot dang mo) vao `PinnedStrip`.
+  - Reset `serving` ve `expectedServing` khi user chon mon moi.
+  - Khi nhan `onConfirm`, tinh `overrideGrams = serving * baseServingG`, lam tron.
+- `useMealPlan` (Step 8) chua thay doi.
+
+Review can user xac nhan:
+
+- Format `formatServing` o utils du dung, hay can them helper khac (formatKcal, formatGram)?
+- Bug fix snap 0.5 da verify dung cac edge case, OK?
+- 3 component moi style dung brand convention (`bg-brand-green-light`, `text-brand-green-dark`)?
+
+---
+
+### Step 6 - Sua `MealCard.tsx`: chip pinnedCount + banner suggestion + truyen pin xuong FoodRow
+
 Status: PENDING.
 
-(Se cap nhat sau khi user xac nhan Step 4.)
+(Se cap nhat sau khi user xac nhan Step 5.)
