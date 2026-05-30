@@ -531,7 +531,7 @@ Review can user xac nhan:
 
 ### Step 9 - Sua `MealRecommendationPage.tsx`: wire pin state vao SwapDrawer va MealCard
 
-Status: DONE — cho user review.
+Status: DONE. Committed: `6097430 feat(meal): wire pin state and warning banner into MealRecommendationPage`.
 
 Noi dung da lam:
 
@@ -593,8 +593,135 @@ Review can user xac nhan:
 
 ---
 
-### Step 10 - Kiem tra tong the: tsc + eslint + smoke test UI
+### Step 10 - Kiem tra tong the: tsc + eslint + production build + smoke test plan
 
-Status: PENDING.
+Status: DONE — cho user review (smoke test runtime do user thuc hien).
 
-(Se cap nhat sau khi user xac nhan Step 9.)
+Noi dung da lam:
+
+**1) Lint full project (`npm run lint`):**
+
+- Tong: 25 problems (19 errors, 6 warnings).
+- TAT CA error nam ngoai scope tinh nang nay (`RegisterPage`, `SubmitHealthDataPage`, `adminPage/*`, `services/auth.service.ts`, `services/healthData.service.ts`). Day la tech debt co san tu truoc.
+- File trong scope (12 file): 0 error, 1 warning (`MealRecommendationPage.tsx:181` `react-hooks/exhaustive-deps` — da verify pre-existing).
+
+**2) Lint files trong scope (12 file):**
+
+```
+src/types/meal.types.ts
+src/services/dish.service.ts
+src/components/meal/{AlternateCard,FoodRow,SearchBar,PinnedStrip,ServingStepper,MealCard,SwapDrawer}.tsx
+src/hooks/useMealPlan.ts
+src/pages/MealRecommendationPage.tsx
+src/utils/format.ts
+```
+
+Ket qua: **0 error**, **1 warning** (pre-existing tech debt, da ghi nhan).
+
+**3) Production build (`npm run build`):**
+
+- `tsc -b` (project TypeScript references) -> PASS.
+- `vite build` -> PASS, **built in 6.74s**, 1863 modules transformed.
+- Warning chunk size (>500kB) la khuyen nghi code-splitting, khong lien quan feature.
+
+**4) Smoke test UI manual (user thuc hien):**
+
+User can chay BE va FE roi go theo checklist sau de verify Phase 2:
+
+**Setup:**
+- BE: chay `eureka-server`, `gateway`, `nutrition-service`, va cac service phu thuoc (`user-service` cho auth/profile).
+- FE: `npm run dev` -> mo `http://localhost:5173`.
+- Login bang account co data (cac chi so suc khoe va plan).
+
+**A. Luong base (Phase 1 khong regression):**
+
+- [ ] Vao `/nutrition-plan`. 3 MealCard hien thi, mac dinh expand bua sang.
+- [ ] Click "Đổi món" mot slot -> drawer mo. Header hien ten slot + mon hien tai.
+- [ ] List alternatives hien thi, co `unit (g)` o moi card neu BE da seed du lieu.
+
+**B. Don vi Viet (Step 3, 4):**
+
+- [ ] `FoodRow` o `MealCard`: dong khau phan hien dang `1 bát (200g) · 220 kcal` khi du lieu co `unit/baseServingG`.
+- [ ] `AlternateCard` trong drawer: khau phan hien dang `1 bát (200g)` khi co `unit`.
+- [ ] Format `0.75` o ket qua search hien thi `0.75` (KHONG ra `0.8`).
+
+**C. Search box (Step 5, 7):**
+
+- [ ] Drawer hien SearchBar (icon kinh lup trai, nut X phai khi co value).
+- [ ] Go "com" -> sau 300ms, list cap nhat thanh ket qua search.
+- [ ] Section heading doi sang `N kết quả cho "com"`.
+- [ ] Card search khong hien score (vi `expectedScore = null`).
+- [ ] Click nut X -> clear query, list ve alternatives mac dinh.
+- [ ] Empty state khi search khong co ket qua -> hien icon + msg + nut "Xoá tìm kiếm".
+
+**D. Serving stepper (Step 5, 7):**
+
+- [ ] Chon mot mon -> ServingStepper hien o footer voi `serving = expectedServing`.
+- [ ] Click `+` / `-` -> step 0.5. Min/Max snap dung boi 0.5 (vd expectedServing=1.5 -> max=2.0).
+- [ ] Helper line cuoi stepper: `Bước 0.5 bát · Min 0.5 · Max 2`.
+- [ ] Gram preview cap nhat dung `serving × baseServingG`.
+
+**E. Apply + pin tich luy (Step 4, 5, 6, 7, 8, 9):**
+
+- [ ] Click "Áp dụng & cân đối lại bữa" -> drawer dong, MealCard update.
+- [ ] FoodRow cua slot vua apply hien badge `MapPinIcon` + vien trai `brand-green`.
+- [ ] Header MealCard hien chip "1 món đã ghim".
+- [ ] Mo drawer cho slot khac (cung bua) -> PinnedStrip hien chip mon vua pin (slot khac, khong phai slot dang mo).
+- [ ] Apply slot thu 2 -> chip "2 món đã ghim". 2 FoodRow co badge pin.
+- [ ] Click badge pin tren FoodRow -> bo pin. Chip header giam so. Lan apply tiep theo cua bua khong gui pin nay.
+
+**F. Suggestion banner (Step 6, 9):**
+
+- [ ] Khi swap lam diem giam, BE tra `suggestion` -> banner amber hien tren list food (icon `LightBulbIcon`).
+- [ ] Click "Áp dụng gợi ý" -> drawer mo o slot goi y, mon goi y auto-select.
+- [ ] Click X dismiss -> banner bien mat.
+- [ ] Khi xem bua khac, banner KHONG hien (filter dung `mealType`).
+
+**G. Warning carb-bomb (Step 7, 8, 9):**
+
+- [ ] Mo drawer slot tinh bot (vd Cơm), chon mon, tang stepper len 3 bát.
+- [ ] Click apply -> drawer KHONG dong, hien banner amber voi message warning va 2 nut.
+- [ ] "Vẫn áp dụng" -> drawer dong, pin van apply.
+- [ ] "Điều chỉnh lại" -> banner bien mat, stepper van con de user chinh, drawer mo.
+
+**H. Regen plan reset pin (Step 8):**
+
+- [ ] Pin vai mon -> click "Gen lại cả ngày" tren InfoStrip.
+- [ ] Plan moi tra ve, chip pin biến mất, `pinsByMeal` reset.
+
+Files changed:
+
+- (khong sua code o Step 10)
+- `doc/UserTuDeXuatContextFE.md` (cap nhat log)
+
+Tong ket commit Phase 2 FE:
+
+- `664039c` docs(nutrition): add user proposed meal FE context (Step 0)
+- `737dfe3` feat(meal): extend types for user proposed meal feature (Step 1)
+- `3a4a429` feat(meal): add dish search service for swap drawer (Step 2)
+- `290a5e6` feat(meal): show Vietnamese serving unit and handle null score (Step 3)
+- `a714d5d` feat(meal): add pin indicator and Vietnamese serving to FoodRow (Step 4)
+- `18f7420` feat(meal): add search, pinned strip and serving stepper components (Step 5)
+- `7b2fef6` feat(meal): add pin count chip and suggestion banner to MealCard (Step 6)
+- `a8f9836` feat(meal): rewrite SwapDrawer with search, pinned strip and serving stepper (Step 7)
+- `07b1939` feat(meal): add cumulative pin state and applyPin to useMealPlan (Step 8)
+- `6097430` feat(meal): wire pin state and warning banner into MealRecommendationPage (Step 9)
+
+Tat ca 10 commit nam tren branch `feature/UserTuDeXuat`. Commit `664039c`, `737dfe3`, `3a4a429` da push len remote (Step 2 push). Cac commit con lai chua push.
+
+Review can user xac nhan:
+
+- Chap nhan ket qua lint + build, hieu rang ESLint errors ngoai scope la tech debt co san.
+- Lay checklist smoke test ra chay manual khi BE chay.
+- Sau khi xong smoke test va dat: push noi dung con lai (commit 4-9) len remote va mo PR.
+- Tach Step 11 (Sidebar collapse/expand) lam PR rieng.
+
+---
+
+## Trang thai tong the
+
+- Phase 2 FE: hoan thanh 10/10 step.
+- Tat ca code change da pass `tsc -b` va ESLint trong scope.
+- Production build pass.
+- Smoke test runtime: chua thuc hien (can user chay BE).
+- Sidebar collapse/expand: chua bat dau, tach PR rieng theo thoa thuan.
