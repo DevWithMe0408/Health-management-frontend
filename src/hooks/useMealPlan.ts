@@ -11,9 +11,20 @@ import type {
   DailyPlanResponse,
   DishSuggestionResponse,
   MealType,
+  PinnedDish,
   SwapSuggestion,
   UIMealState,
+  WarningResponse,
 } from '../types/meal.types';
+
+// One pin entry per slot of a meal. overrideGrams forces a fixed serving
+// for the BE engine; without it the engine is free to optimize the slot.
+interface PinEntry {
+  dishId: string;
+  overrideGrams: number;
+}
+
+export type PinsByMeal = Map<MealType, Map<string, PinEntry>>;
 
 const CACHE_TTL_MS = 4 * 60 * 60 * 1000;
 
@@ -48,12 +59,29 @@ interface UseMealPlanResult {
   confirmLoading: MealType | null;
   scoreDropEvent: ScoreDropEvent | null;
   lastSwapSuggestion: SwapSuggestion | null;
+  // MealType of the meal whose swap produced `lastSwapSuggestion`. Page uses
+  // this to attach the suggestion banner to the right MealCard.
+  lastSwapSuggestionMealType: MealType | null;
+  lastWarnings: WarningResponse[];
+  pinsByMeal: PinsByMeal;
   generate: (options?: GenerateMealPlanOptions) => Promise<DailyPlanResponse | null>;
   swap: (
     mealType: MealType,
     swappedSlot: string,
     newDishId: string
   ) => Promise<DailyPlanResponse | null>;
+  // Phase 2 entry point: applies (or updates) a pin for `swappedSlot` and
+  // re-sends every pin of the same meal so the BE engine keeps them fixed.
+  applyPin: (
+    mealType: MealType,
+    swappedSlot: string,
+    newDishId: string,
+    overrideGrams: number
+  ) => Promise<DailyPlanResponse | null>;
+  // Local-only unpin: drops the slot from `pinsByMeal` without calling BE.
+  // Next applyPin for this meal will not include the dropped pin.
+  unpin: (mealType: MealType, slotKey: string) => void;
+  dismissWarnings: () => void;
   confirm: (mealType: MealType) => Promise<void>;
   skip: (mealType: MealType) => void;
   toggleExpand: (mealType: MealType) => void;
@@ -190,6 +218,10 @@ export const useMealPlan = ({
   const [confirmLoading, setConfirmLoading] = useState<MealType | null>(null);
   const [scoreDropEvent, setScoreDropEvent] = useState<ScoreDropEvent | null>(null);
   const [lastSwapSuggestion, setLastSwapSuggestion] = useState<SwapSuggestion | null>(null);
+  const [lastSwapSuggestionMealType, setLastSwapSuggestionMealType] =
+    useState<MealType | null>(null);
+  const [lastWarnings, setLastWarnings] = useState<WarningResponse[]>([]);
+  const [pinsByMeal, setPinsByMeal] = useState<PinsByMeal>(() => new Map());
   const [swapSnapshot, setSwapSnapshot] = useState<SwapSnapshot | null>(null);
 
   const cacheKey = useMemo(() => getCacheKey(user?.userId), [user?.userId]);
@@ -221,6 +253,9 @@ export const useMealPlan = ({
     setError(null);
     setScoreDropEvent(null);
     setLastSwapSuggestion(null);
+    setLastSwapSuggestionMealType(null);
+    setLastWarnings([]);
+    setPinsByMeal(new Map());
     setSwapSnapshot(null);
 
     try {
@@ -272,6 +307,8 @@ export const useMealPlan = ({
       const nextStates = replaceMealInStates(mealStates, mealType, result.updatedMeal);
       persistPlan(nextPlan, nextStates);
       setLastSwapSuggestion(result.suggestion);
+      setLastSwapSuggestionMealType(result.suggestion ? mealType : null);
+      setLastWarnings(result.warnings ?? []);
       setScoreDropEvent(
         result.scoreDropTriggered
           ? {
@@ -290,6 +327,103 @@ export const useMealPlan = ({
       setSwapLoading(false);
     }
   }, [mealStates, persistPlan, plan]);
+
+  const applyPin = useCallback(async (
+    mealType: MealType,
+    swappedSlot: string,
+    newDishId: string,
+    overrideGrams: number
+  ) => {
+    if (!plan) return null;
+
+    const targetMeal = plan.meals.find((meal) => meal.mealType === mealType);
+    if (!targetMeal) return null;
+
+    const snapshot: SwapSnapshot = { plan, mealStates };
+    setSwapSnapshot(snapshot);
+    setSwapLoading(true);
+    setError(null);
+
+    try {
+      // Forward every pin of this meal so the BE engine keeps them fixed.
+      // The swapped slot is appended last with the user's overrideGrams.
+      const existingPins = pinsByMeal.get(mealType);
+      const pinnedDishes: PinnedDish[] = [];
+
+      if (existingPins) {
+        for (const [slotKey, pin] of existingPins) {
+          if (slotKey === swappedSlot) continue;
+          pinnedDishes.push({
+            slotKey,
+            dishId: pin.dishId,
+            overrideGrams: pin.overrideGrams,
+          });
+        }
+      }
+
+      pinnedDishes.push({
+        slotKey: swappedSlot,
+        dishId: newDishId,
+        overrideGrams,
+      });
+
+      const result = await swapDish({
+        currentPlan: plan,
+        mealType,
+        swappedSlot,
+        newDishId,
+        pinnedDishes,
+      });
+
+      const nextPlan = replaceMealInPlan(plan, mealType, result.updatedMeal);
+      const nextStates = replaceMealInStates(mealStates, mealType, result.updatedMeal);
+      persistPlan(nextPlan, nextStates);
+
+      setPinsByMeal((prev) => {
+        const next = new Map(prev);
+        const mealPins = new Map(next.get(mealType) ?? new Map<string, PinEntry>());
+        mealPins.set(swappedSlot, { dishId: newDishId, overrideGrams });
+        next.set(mealType, mealPins);
+        return next;
+      });
+
+      setLastSwapSuggestion(result.suggestion);
+      setLastSwapSuggestionMealType(result.suggestion ? mealType : null);
+      setLastWarnings(result.warnings ?? []);
+      setScoreDropEvent(
+        result.scoreDropTriggered
+          ? {
+              mealType,
+              from: result.originalFinalScore,
+              to: result.newFinalScore,
+            }
+          : null
+      );
+
+      return nextPlan;
+    } catch (applyError) {
+      setSwapSnapshot(null);
+      setError(applyError instanceof Error ? applyError.message : 'Không thể đổi món.');
+      return null;
+    } finally {
+      setSwapLoading(false);
+    }
+  }, [mealStates, persistPlan, pinsByMeal, plan]);
+
+  const unpin = useCallback((mealType: MealType, slotKey: string) => {
+    setPinsByMeal((prev) => {
+      const next = new Map(prev);
+      const mealPins = new Map(next.get(mealType) ?? new Map<string, PinEntry>());
+      mealPins.delete(slotKey);
+      if (mealPins.size === 0) next.delete(mealType);
+      else next.set(mealType, mealPins);
+      return next;
+    });
+  }, []);
+
+  const dismissWarnings = useCallback(() => {
+    setLastWarnings([]);
+  }, []);
 
   const confirm = useCallback(async (mealType: MealType) => {
     if (!plan) return;
@@ -354,6 +488,8 @@ export const useMealPlan = ({
     persistPlan(swapSnapshot.plan, swapSnapshot.mealStates);
     setScoreDropEvent(null);
     setLastSwapSuggestion(null);
+    setLastSwapSuggestionMealType(null);
+    setLastWarnings([]);
     setSwapSnapshot(null);
   }, [persistPlan, swapSnapshot]);
 
@@ -366,8 +502,14 @@ export const useMealPlan = ({
     confirmLoading,
     scoreDropEvent,
     lastSwapSuggestion,
+    lastSwapSuggestionMealType,
+    lastWarnings,
+    pinsByMeal,
     generate,
     swap,
+    applyPin,
+    unpin,
+    dismissWarnings,
     confirm,
     skip,
     toggleExpand,

@@ -370,7 +370,7 @@ Review can user xac nhan:
 
 ### Step 7 - Sua `SwapDrawer.tsx`: search + pin strip + stepper + warning + reset state
 
-Status: DONE — cho user review.
+Status: DONE. Committed: `a8f9836 feat(meal): rewrite SwapDrawer with search, pinned strip and serving stepper`.
 
 Noi dung da lam:
 
@@ -456,6 +456,81 @@ Review can user xac nhan:
 
 ### Step 8 - Sua `useMealPlan.ts`: pin tich luy + applyPin + unpin + lastWarnings
 
+Status: DONE — cho user review.
+
+Noi dung da lam:
+
+**State moi (3):**
+
+- `pinsByMeal: PinsByMeal = Map<MealType, Map<slotKey, { dishId, overrideGrams }>>`. Map of map ho tro pin tich luy tung bua.
+- `lastWarnings: WarningResponse[]` — luu warnings tu lan swap/applyPin gan nhat.
+- `lastSwapSuggestionMealType: MealType | null` — gan kem voi `lastSwapSuggestion` (giu shape cu) de page filter dung bua. Khong sua `SwapSuggestion` DTO.
+
+**Type moi (export):**
+
+- `PinsByMeal` type alias de page import.
+- `PinEntry` interface noi bo.
+
+**Method moi (3):**
+
+- `applyPin(mealType, swappedSlot, newDishId, overrideGrams)`:
+  - Build pinnedDishes = tat ca pin hien co cua bua (loc bo swappedSlot neu trung) + 1 pin moi cho swappedSlot.
+  - Call `swapDish` voi pinnedDishes day du.
+  - Update plan, `pinsByMeal[mealType][swappedSlot] = { dishId, overrideGrams }`.
+  - Update `lastSwapSuggestion`, `lastSwapSuggestionMealType`, `lastWarnings`, `scoreDropEvent`.
+  - Tao `swapSnapshot` truoc -> ho tro `revertSwap` cho luong moi.
+- `unpin(mealType, slotKey)`:
+  - Chi xoa khoi state, KHONG goi API (theo huong dan §13 - scope thesis).
+  - Lan applyPin sau cua bua se khong gui pin nay nua.
+- `dismissWarnings()`: clear `lastWarnings` ve `[]`. Page wire vao "Điều chỉnh lại" cua drawer.
+
+**Sua `generate()`:**
+
+- Reset them `pinsByMeal = new Map()`, `lastWarnings = []`, `lastSwapSuggestionMealType = null`. Tranh stale state khi re-gen plan.
+
+**Sua `swap()` (legacy):**
+
+- Bo sung set `lastSwapSuggestionMealType` va `lastWarnings` de behavior cu cung tra ve metadata day du. Logic auto-pin slot khac giu nguyen.
+- Note: sau Step 9, page se goi `applyPin` thay vi `swap`. `swap` se thanh dead code; co the xoa o cleanup sau, ngoai scope.
+
+**Sua `revertSwap()`:**
+
+- Reset them `lastSwapSuggestionMealType`, `lastWarnings`.
+
+**Expose them:**
+
+- `lastSwapSuggestionMealType`, `lastWarnings`, `pinsByMeal`, `applyPin`, `unpin`, `dismissWarnings`.
+
+Files changed:
+
+- `src/hooks/useMealPlan.ts`
+
+Verification:
+
+- `npx tsc -b` -> pass. Page hien tai van compile vi `mealPlan.lastSwapSuggestion` shape khong doi.
+- `npx eslint src/hooks/useMealPlan.ts` -> pass.
+
+Ghi chu cho cac step sau:
+
+- Step 9 page se:
+  - Lay `pinsByMeal.get(meal.mealType)?.keys() ?? []` -> `pinnedSlotKeys: Set<string>` truyen vao MealCard.
+  - Compute `getOtherPins(mealType, currentSlotKey): PinnedItem[]` doc tu `pinsByMeal` + `topCombination.dishes` (lay dishName/foodGroup/unit/baseServingG).
+  - Compute `getKeepNames(mealType, currentSlotKey): string`.
+  - Doi callsite `onConfirm` tu `(newDishId) => swap(...)` sang `(newDishId, overrideGrams) => applyPin(...)`.
+  - Wire `onUnpin`, `onDismissWarning`, `warning` (lay tu `lastWarnings.find(w => w.type === 'CARB_BOMB')`).
+  - Wire `suggestion` cho MealCard (`lastSwapSuggestionMealType === meal.mealType ? lastSwapSuggestion : null`).
+- Co the consider remove `swap()` o cleanup PR sau, ngoai scope tinh nang nay.
+
+Review can user xac nhan:
+
+- Pattern `Map<MealType, Map<slotKey, PinEntry>>` chap nhan duoc, hay user muon `Record<MealType, Record<slotKey, PinEntry>>` (plain object)?
+- Giu `swap()` cu va them `applyPin()` rieng (huong tien hoa) chap nhan duoc, hay nen refactor `swap()` thanh wrapper goi `applyPin()`?
+- `unpin` chi clear state, khong goi BE — chap nhan trade-off (BE engine se khong tu doi serving cua slot vua unpin)?
+
+---
+
+### Step 9 - Sua `MealRecommendationPage.tsx`: wire pin state vao SwapDrawer va MealCard
+
 Status: PENDING.
 
-(Se cap nhat sau khi user xac nhan Step 7.)
+(Se cap nhat sau khi user xac nhan Step 8.)
