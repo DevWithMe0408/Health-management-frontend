@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import {
   CheckIcon,
   ChevronDownIcon,
@@ -15,6 +16,7 @@ import StatusPill from './atoms/StatusPill';
 import type {
   DishSuggestionResponse,
   MealSuggestionResponse,
+  MealType,
   SwapSuggestion,
   UIMealStatus,
 } from '../../types/meal.types';
@@ -30,6 +32,11 @@ interface MealCardProps {
   onConfirm: () => void;
   onSkip: () => void;
   onToggleFavorite: (dishId: string, currentFavorite: boolean) => void | Promise<void>;
+  onRebalanceServing?: (
+    mealType: MealType,
+    dish: DishSuggestionResponse,
+    draftServing: number
+  ) => void | Promise<void>;
   // Pin state for this meal. Optional so existing call sites keep working
   // before MealRecommendationPage wires the full state in Step 9.
   pinnedSlotKeys?: Set<string>;
@@ -60,6 +67,7 @@ const MealCard = ({
   onConfirm,
   onSkip,
   onToggleFavorite,
+  onRebalanceServing,
   pinnedSlotKeys = EMPTY_PINNED_SLOTS,
   onTogglePin,
   suggestion = null,
@@ -72,6 +80,31 @@ const MealCard = ({
   const icon = MEAL_TYPE_ICON[meal.mealType];
   const iconBg = MEAL_TYPE_ICON_BG[meal.mealType];
   const pinnedCount = pinnedSlotKeys.size;
+  const [editingSlotKey, setEditingSlotKey] = useState<string | null>(null);
+  const [servingDraft, setServingDraft] = useState(0);
+  const [rebalancingSlotKey, setRebalancingSlotKey] = useState<string | null>(null);
+
+  const handleToggleServing = (dish: DishSuggestionResponse) => {
+    if (!dish.slotKey) return;
+    if (editingSlotKey === dish.slotKey) {
+      setEditingSlotKey(null);
+      return;
+    }
+    setServingDraft(dish.servingMultiplier);
+    setEditingSlotKey(dish.slotKey);
+  };
+
+  const handleRebalanceServing = async (dish: DishSuggestionResponse) => {
+    if (!dish.slotKey || !onRebalanceServing) return;
+
+    setRebalancingSlotKey(dish.slotKey);
+    try {
+      await onRebalanceServing(meal.mealType, dish, servingDraft);
+      setEditingSlotKey(null);
+    } finally {
+      setRebalancingSlotKey(null);
+    }
+  };
 
   return (
     <article className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
@@ -181,6 +214,14 @@ const MealCard = ({
                 onSwapClick={onSwapClick}
                 onToggleFavorite={onToggleFavorite}
                 onTogglePin={onTogglePin}
+                editingServing={editingSlotKey === dish.slotKey}
+                servingDraft={editingSlotKey === dish.slotKey ? servingDraft : undefined}
+                onToggleServing={() => handleToggleServing(dish)}
+                onServingDraftChange={setServingDraft}
+                onRebalance={
+                  onRebalanceServing ? () => void handleRebalanceServing(dish) : undefined
+                }
+                rebalanceLoading={rebalancingSlotKey === dish.slotKey}
               />
             ))}
           </div>
