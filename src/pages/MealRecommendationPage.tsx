@@ -253,6 +253,20 @@ const MealRecommendationPage = () => {
     [mealPlan.plan, openSwapDrawer]
   );
 
+  const handleRebalanceServing = useCallback(
+    async (
+      mealType: MealType,
+      dish: DishSuggestionResponse,
+      draftServing: number
+    ) => {
+      if (!dish.slotKey || !dish.baseServingG) return;
+
+      const overrideGrams = Math.round(draftServing * dish.baseServingG);
+      await mealPlan.applyPin(mealType, dish.slotKey, dish.dishId, overrideGrams);
+    },
+    [mealPlan]
+  );
+
   const handleToggleFavorite = async (dishId: string, currentFavorite: boolean) => {
     const nextFavorite = !currentFavorite;
     mealPlan.setDishFavorite(dishId, nextFavorite);
@@ -373,6 +387,7 @@ const MealRecommendationPage = () => {
                 onConfirm={() => void mealPlan.confirm(meal.mealType)}
                 onSkip={() => mealPlan.skip(meal.mealType)}
                 onToggleFavorite={handleToggleFavorite}
+                onRebalanceServing={handleRebalanceServing}
                 pinnedSlotKeys={pinnedSlotKeys}
                 onTogglePin={(slotKey) => mealPlan.unpin(meal.mealType, slotKey)}
                 suggestion={mealSuggestion}
