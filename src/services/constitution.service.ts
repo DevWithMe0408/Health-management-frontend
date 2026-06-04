@@ -13,7 +13,9 @@ export interface ConstitutionResponse {
   method: string;
   bmi: number | null;
   pbf: number | null;
-  pbfSource: PbfMethod;
+  pbfFormula?: number | null;
+  pbfModel?: number | null;
+  pbfSource: PbfMethod | null;
   bmiClass: number | null;
   pbfClass: number | null;
   finalClass: number;

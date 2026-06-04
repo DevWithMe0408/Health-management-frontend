@@ -64,6 +64,8 @@ export interface DashboardMetricsApiResponse {
   bmr?: MetricDataResponse;
   tdee?: MetricDataResponse;
   pbf?: MetricDataResponse;
+  pbfFormula?: MetricDataResponse | null;
+  pbfModel?: MetricDataResponse | null;
   whr?: MetricDataResponse;
 }
 

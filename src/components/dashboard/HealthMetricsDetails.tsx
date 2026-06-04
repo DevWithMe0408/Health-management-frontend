@@ -21,7 +21,7 @@ const metricRows: Array<{
   { key: 'whr', label: 'WHR', fallbackUnit: '', tip: 'Tỉ lệ bụng/hông' },
 ];
 
-const formatMetric = (metric: MetricDataResponse | undefined, fallbackUnit: string) => {
+const formatMetric = (metric: MetricDataResponse | null | undefined, fallbackUnit: string) => {
   if (!metric || metric.value == null) return '--';
   const unit = metric.unit ?? fallbackUnit;
   return `${metric.value.toLocaleString('vi-VN', { maximumFractionDigits: 2 })}${unit ? ` ${unit}` : ''}`;
