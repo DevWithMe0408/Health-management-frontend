@@ -12,10 +12,11 @@ export interface OnboardingState {
   heightCm: number | null;
   weightKg: number | null;
   activityFactor: number | null;
-  waistCm: number | null;
+  abdomenCm: number | null;
   hipCm: number | null;
   neckCm: number | null;
   bustCm: number | null;
+  thighCm: number | null;
 }
 
 interface OnboardingContextType {
@@ -37,10 +38,11 @@ const initialState: OnboardingState = {
   heightCm: null,
   weightKg: null,
   activityFactor: null,
-  waistCm: null,
+  abdomenCm: null,
   hipCm: null,
   neckCm: null,
   bustCm: null,
+  thighCm: null,
 };
 
 const clampStep = (step: number) => Math.min(5, Math.max(1, step));
@@ -52,10 +54,13 @@ export const OnboardingProvider: React.FC<{ children: ReactNode }> = ({ children
     try {
       const stored = sessionStorage.getItem(STORAGE_KEY);
       if (stored) {
-        const parsed = JSON.parse(stored) as Partial<OnboardingState>;
+        const parsed = JSON.parse(stored) as Partial<OnboardingState> & {
+          waistCm?: number | null;
+        };
         return {
           ...initialState,
           ...parsed,
+          abdomenCm: parsed.abdomenCm ?? parsed.waistCm ?? initialState.abdomenCm,
           currentStep: clampStep(Number(parsed.currentStep) || 1),
         };
       }

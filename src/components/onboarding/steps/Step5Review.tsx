@@ -86,10 +86,11 @@ const Step5Review: React.FC<Step5ReviewProps> = ({ onBack, goToStep }) => {
     resolver: zodResolver(step5Schema),
     mode: 'onChange',
     defaultValues: {
-      waistCm: state.waistCm,
+      abdomenCm: state.abdomenCm,
       hipCm: state.hipCm,
       neckCm: state.neckCm,
       bustCm: state.bustCm,
+      thighCm: state.thighCm,
     },
   });
 
@@ -116,10 +117,11 @@ const Step5Review: React.FC<Step5ReviewProps> = ({ onBack, goToStep }) => {
         heightCm: state.heightCm,
         weightKg: state.weightKg,
         activityFactor: state.activityFactor,
-        waistCm: data.waistCm,
+        abdomenCm: data.abdomenCm,
         hipCm: data.hipCm,
         neckCm: data.neckCm,
         bustCm: data.bustCm,
+        thighCm: data.thighCm,
       });
 
       await refreshUser();
@@ -163,14 +165,14 @@ const Step5Review: React.FC<Step5ReviewProps> = ({ onBack, goToStep }) => {
 
         <form className="mt-6" onSubmit={handleSubmit(onSubmit)}>
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-            <WizardField label="Vòng eo" optional error={errors.waistCm?.message}>
+            <WizardField label="Vòng bụng (đo ngang rốn)" optional error={errors.abdomenCm?.message}>
               <div className="relative">
                 <input
                   type="number"
                   step="0.1"
                   placeholder="72"
-                  className={`${inputClassName(!!errors.waistCm)} pr-12`}
-                  {...register('waistCm', measurementRegisterOptions)}
+                  className={`${inputClassName(!!errors.abdomenCm)} pr-12`}
+                  {...register('abdomenCm', measurementRegisterOptions)}
                 />
                 <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-gray-400">cm</span>
               </div>
@@ -210,6 +212,19 @@ const Step5Review: React.FC<Step5ReviewProps> = ({ onBack, goToStep }) => {
                   placeholder="86"
                   className={`${inputClassName(!!errors.bustCm)} pr-12`}
                   {...register('bustCm', measurementRegisterOptions)}
+                />
+                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-gray-400">cm</span>
+              </div>
+            </WizardField>
+
+            <WizardField label="Vòng đùi" optional error={errors.thighCm?.message}>
+              <div className="relative">
+                <input
+                  type="number"
+                  step="0.1"
+                  placeholder="54"
+                  className={`${inputClassName(!!errors.thighCm)} pr-12`}
+                  {...register('thighCm', measurementRegisterOptions)}
                 />
                 <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-gray-400">cm</span>
               </div>

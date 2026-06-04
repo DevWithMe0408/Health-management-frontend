@@ -26,10 +26,11 @@ export interface SubmitOnboardingPayload {
   heightCm: number;
   weightKg: number;
   activityFactor: number;
-  waistCm?: number | null;
+  abdomenCm?: number | null;
   hipCm?: number | null;
   neckCm?: number | null;
   bustCm?: number | null;
+  thighCm?: number | null;
 }
 
 export interface OnboardingResult {
@@ -64,10 +65,11 @@ export const submitOnboarding = async (
     { type: 'ACTIVITY_FACTOR', value: payload.activityFactor },
   ];
 
-  addOptionalMetric(baseMetrics, 'WAIST', payload.waistCm);
+  addOptionalMetric(baseMetrics, 'ABDOMEN', payload.abdomenCm);
   addOptionalMetric(baseMetrics, 'HIP', payload.hipCm);
   addOptionalMetric(baseMetrics, 'NECK', payload.neckCm);
   addOptionalMetric(baseMetrics, 'BUST', payload.bustCm);
+  addOptionalMetric(baseMetrics, 'THIGH', payload.thighCm);
 
   await apiClient.post<DataResponse<null>>('/api/health-data/submit', {
     baseMetrics,

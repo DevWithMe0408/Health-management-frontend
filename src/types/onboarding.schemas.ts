@@ -63,8 +63,8 @@ export const step4Schema = z.object({
 });
 
 export const step5Schema = z.object({
-  waistCm: optionalNumber().refine((value) => value === null || (value >= 40 && value <= 200), {
-    message: 'Vòng eo không hợp lệ',
+  abdomenCm: optionalNumber().refine((value) => value === null || (value >= 40 && value <= 200), {
+    message: 'Vòng bụng không hợp lệ',
   }),
   hipCm: optionalNumber().refine((value) => value === null || (value >= 50 && value <= 200), {
     message: 'Vòng hông không hợp lệ',
@@ -74,6 +74,9 @@ export const step5Schema = z.object({
   }),
   bustCm: optionalNumber().refine((value) => value === null || (value >= 50 && value <= 200), {
     message: 'Vòng ngực không hợp lệ',
+  }),
+  thighCm: optionalNumber().refine((value) => value === null || (value >= 30 && value <= 120), {
+    message: 'Vòng đùi không hợp lệ',
   }),
 });
 
