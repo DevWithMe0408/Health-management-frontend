@@ -140,12 +140,12 @@ export const INDICATOR_TYPES = {
   },
   WHR: {
     name: "WHR",
-    label: "Tỷ lệ Eo/Hông (WHR)",
+    label: "Tỷ lệ Bụng/Hông (WHR)",
     category: IndicatorCategory.CALCULATED,
     unit: null, // Tỷ lệ không có đơn vị
     defaultColor: "#3F51B5", // Chàm
     decimalPlaces: 2,
-    tooltipInfo: "Tỷ lệ giữa chu vi vòng eo và vòng hông, đánh giá sự phân bổ mỡ và nguy cơ sức khỏe."
+    tooltipInfo: "Tỷ lệ giữa chu vi vòng bụng và vòng hông, đánh giá sự phân bổ mỡ và nguy cơ sức khỏe."
   }
 } as const; // `as const` rất quan trọng để có type inference chính xác
 

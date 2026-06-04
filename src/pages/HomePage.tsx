@@ -15,7 +15,7 @@ const spinnerClass = "animate-spin rounded-full h-12 w-12 border-t-4 border-b-4 
 // Định nghĩa các loại biểu đồ có sẵn và thông tin của chúng
 // Sử dụng IndicatorTypeName từ model
 const ALL_AVAILABLE_CHART_TYPES = getAllIndicatorInfos()
-  .filter(info => info.category === IndicatorCategory.CALCULATED || info.name === "WEIGHT" || info.name === "WAIST") // Ví dụ: chỉ lấy calculated và một số base
+  .filter(info => info.category === IndicatorCategory.CALCULATED || info.name === "WEIGHT" || info.name === "ABDOMEN") // Ví dụ: chỉ lấy calculated và một số base
   .map(info => ({
     typeName: info.name as IndicatorTypeName, // Ép kiểu nếu cần, hoặc đảm bảo name trong INDICATOR_TYPES là IndicatorTypeName
     label: info.label,
@@ -225,11 +225,11 @@ const HomePage: React.FC = () => {
           tooltipInfo="Tỷ lệ phần trăm mỡ trong cơ thể."
         />
         <MetricCard 
-          title="Tỷ lệ Eo/Hông (WHR)" 
+          title="Tỷ lệ Bụng/Hông (WHR)" 
           value={dashboardData.whr?.value} 
           unit={dashboardData.whr?.unit || ''} 
           lastUpdatedAt={dashboardData.whr?.lastUpdatedAt}
-          tooltipInfo="Tỷ lệ giữa chu vi vòng eo và vòng hông, đánh giá sự phân bổ mỡ."
+          tooltipInfo="Tỷ lệ giữa chu vi vòng bụng và vòng hông, đánh giá sự phân bổ mỡ."
         />
       </div>
     ) : (

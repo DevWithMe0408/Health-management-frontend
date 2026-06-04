@@ -80,7 +80,7 @@ const MealPlanEmptyState = ({ mobile = false }: MealPlanEmptyStateProps) => {
         <div className="flex flex-col gap-3">
           <ChecklistItem label="Cân nặng (kg)" />
           <ChecklistItem label="Chiều cao (cm)" />
-          <ChecklistItem label="Vòng eo (cm)" optional />
+          <ChecklistItem label="Vòng bụng (cm)" optional />
         </div>
       </div>
     </section>
@@ -88,4 +88,3 @@ const MealPlanEmptyState = ({ mobile = false }: MealPlanEmptyStateProps) => {
 };
 
 export default MealPlanEmptyState;
-

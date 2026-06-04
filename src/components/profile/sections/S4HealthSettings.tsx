@@ -112,7 +112,7 @@ const S4HealthSettings: React.FC<S4HealthSettingsProps> = ({
           icon={BeakerIcon}
           title="Công thức Navy"
           badge="Mặc định"
-          desc="Tính từ chiều cao, vòng eo, vòng cổ và vòng hông cho nữ. Nhanh, không cần thiết bị."
+          desc="Tính từ chiều cao, vòng bụng, vòng cổ và vòng hông cho nữ. Nhanh, không cần thiết bị."
           selected={currentMethod === 'FORMULA'}
           onClick={() => handleToggle('FORMULA')}
           disabled={saving}

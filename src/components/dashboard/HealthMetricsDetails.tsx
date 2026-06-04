@@ -18,7 +18,7 @@ const metricRows: Array<{
   { key: 'bmr', label: 'BMR', fallbackUnit: 'kcal/ngày', tip: 'Tỉ lệ chuyển hóa cơ bản (Mifflin-St Jeor)' },
   { key: 'tdee', label: 'TDEE', fallbackUnit: 'kcal/ngày', tip: 'Tổng năng lượng tiêu thụ ngày' },
   { key: 'pbf', label: 'PBF', fallbackUnit: '%', tip: 'Tỉ lệ mỡ cơ thể (Navy formula)' },
-  { key: 'whr', label: 'WHR', fallbackUnit: '', tip: 'Tỉ lệ eo/hông' },
+  { key: 'whr', label: 'WHR', fallbackUnit: '', tip: 'Tỉ lệ bụng/hông' },
 ];
 
 const formatMetric = (metric: MetricDataResponse | undefined, fallbackUnit: string) => {
