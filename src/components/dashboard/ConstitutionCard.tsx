@@ -112,6 +112,14 @@ const formatDateTime = (value?: string | null) => {
   return `Cập nhật ${date.toLocaleDateString('vi-VN')}`;
 };
 
+const formatPercent = (value?: number | null) => (value == null ? '--' : `${value.toFixed(1)}%`);
+
+const pbfSourceLabel = (source?: ConstitutionResponse['pbfSource']) => {
+  if (source === 'FORMULA') return 'Navy';
+  if (source === 'MODEL_1') return 'Model AI';
+  return null;
+};
+
 const BmiScale: React.FC<{ bmi: number | null }> = ({ bmi }) => {
   const MIN = 14;
   const MAX = 30;
@@ -214,6 +222,9 @@ const ConstitutionCard: React.FC<ConstitutionCardProps> = ({
 
   const currentMeta = meta[constitution.constitution];
   const updatedAt = constitution.computedAt || bmiMetric?.recordedAt || bmiMetric?.lastUpdatedAt;
+  const activePbfSource = pbfSourceLabel(constitution.pbfSource);
+  const pbfFormulaValue = constitution.pbfFormula ?? (constitution.pbfSource === 'FORMULA' ? constitution.pbf : null);
+  const pbfModelValue = constitution.pbfModel ?? (constitution.pbfSource === 'MODEL_1' ? constitution.pbf : null);
 
   return (
     <DashboardCard title="Thể trạng hiện tại" info="Phân loại theo BMI + PBF (worst case principle)">
@@ -238,14 +249,28 @@ const ConstitutionCard: React.FC<ConstitutionCardProps> = ({
                 <span>
                   <span className="mr-1 text-gray-400">PBF</span>
                   <b className="text-gray-900">{constitution.pbf.toFixed(1)}%</b>
-                  <span className="ml-1.5 inline-block rounded bg-gray-100 px-1.5 py-0.5 text-[10.5px] font-medium text-gray-500">
-                    {constitution.pbfSource === 'FORMULA' ? 'Navy' : 'ML'}
-                  </span>
+                  {activePbfSource && (
+                    <span className="ml-1.5 inline-block rounded bg-gray-100 px-1.5 py-0.5 text-[10.5px] font-medium text-gray-500">
+                      {activePbfSource}
+                    </span>
+                  )}
                 </span>
               </>
             )}
           </div>
           <p className="mt-2 text-sm leading-6 text-gray-600">{currentMeta.advice}</p>
+          <div className="mt-3 grid gap-2 text-xs text-gray-600 sm:grid-cols-2">
+            <div className={`rounded-lg border px-3 py-2 ${constitution.pbfSource === 'FORMULA' ? 'border-emerald-200 bg-emerald-50' : 'border-gray-100 bg-gray-50'}`}>
+              <div className="font-semibold text-gray-500">PBF (Công thức Navy)</div>
+              <div className="mt-0.5 font-bold text-gray-900">{formatPercent(pbfFormulaValue)}</div>
+            </div>
+            <div className={`rounded-lg border px-3 py-2 ${constitution.pbfSource === 'MODEL_1' ? 'border-emerald-200 bg-emerald-50' : 'border-gray-100 bg-gray-50'}`}>
+              <div className="font-semibold text-gray-500">PBF (Model AI)</div>
+              <div className="mt-0.5 font-bold text-gray-900">
+                {pbfModelValue == null ? 'Chưa có (cần Model AI)' : formatPercent(pbfModelValue)}
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 

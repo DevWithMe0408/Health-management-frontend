@@ -61,9 +61,13 @@ const DashboardPage: React.FC = () => {
   }, [loadDashboard]);
 
   const pbfMethod = useMemo(() => {
+    const activeSource = overview?.constitution?.pbfSource;
+    if (activeSource === 'FORMULA') return 'Công thức Navy';
+    if (activeSource === 'MODEL_1') return 'Model AI';
+
     const preference = overview?.preferences.find((item) => item.prefKey === 'pbf_method');
-    return preference?.prefValue === 'MODEL_1' ? 'Model 1' : 'Công thức Navy';
-  }, [overview?.preferences]);
+    return preference?.prefValue === 'MODEL_1' ? 'Model AI' : 'Công thức Navy';
+  }, [overview?.constitution?.pbfSource, overview?.preferences]);
 
   const displayName = user?.name || user?.username || 'bạn';
   const currentGoal = overview?.currentGoal?.goalCode;
@@ -160,6 +164,7 @@ const DashboardPage: React.FC = () => {
       <HealthMetricsDetails
         metrics={overview?.metrics ?? null}
         error={overview?.errors.metrics}
+        pbfSource={overview?.constitution?.pbfSource}
       />
     </div>
   );
