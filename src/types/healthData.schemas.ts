@@ -23,10 +23,11 @@ const numberOrNull = (message: string, min?: number, max?: number) => {
 export const SubmitHealthDataSchema = z.object({
   height: numberOrNull("Chiều cao phải là số dương").optional(),
   weight: numberOrNull("Cân nặng phải là số dương").optional(),
-  waist: numberOrNull("Vòng eo phải là số dương").optional(),
+  abdomen: numberOrNull("Vòng bụng phải là số dương").optional(),
   hip: numberOrNull("Vòng hông phải là số dương").optional(),
   neck: numberOrNull("Vòng cổ phải là số dương").optional(),
   bust: numberOrNull("Vòng ngực phải là số dương").optional(),
+  thigh: numberOrNull("Vòng đùi phải là số dương").optional(),
   activityFactor: numberOrNull("Hệ số vận động không hợp lệ", 1.0, 2.5).optional(),
   BMINew: numberOrNull("BMI mới phải là số dương").optional(),
   BMRNew: numberOrNull("BMR mới phải là số dương").optional(),

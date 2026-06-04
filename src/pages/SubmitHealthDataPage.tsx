@@ -27,10 +27,11 @@ const SubmitHealthDataPage: React.FC = () => {
     defaultValues: {
       height: null,
       weight: null,
-      waist: null,
+      abdomen: null,
       hip: null,
       neck: null,
       bust: null,
+      thigh: null,
       activityFactor: null,
       BMINew: null,
       BMRNew: null,
@@ -43,10 +44,11 @@ const SubmitHealthDataPage: React.FC = () => {
   const createEmptyFormValues = (): SubmitHealthDataFormData => ({
     height: null,
     weight: null,
-    waist: null,
+    abdomen: null,
     hip: null,
     neck: null,
     bust: null,
+    thigh: null,
     activityFactor: null,
     BMINew: null,
     BMRNew: null,
@@ -65,10 +67,11 @@ const SubmitHealthDataPage: React.FC = () => {
           if (latestData.baseMetrics) {
             formValues.height = latestData.baseMetrics["HEIGHT"] ?? undefined;
             formValues.weight = latestData.baseMetrics["WEIGHT"] ?? undefined;
-            formValues.waist = latestData.baseMetrics["WAIST"] ?? undefined;
+            formValues.abdomen = latestData.baseMetrics["ABDOMEN"] ?? undefined;
             formValues.hip = latestData.baseMetrics["HIP"] ?? undefined;
             formValues.neck = latestData.baseMetrics["NECK"] ?? undefined;
             formValues.bust = latestData.baseMetrics["BUST"] ?? undefined;
+            formValues.thigh = latestData.baseMetrics["THIGH"] ?? undefined;
             formValues.activityFactor = latestData.baseMetrics["ACTIVITY_FACTOR"] ?? undefined;
           }
           reset(formValues);
@@ -127,10 +130,11 @@ const onSubmit: SubmitHandler<SubmitHealthDataFormData> = async (formData) => {
       if (latestData.baseMetrics) {
         formValues.height = latestData.baseMetrics["HEIGHT"] ?? null;
         formValues.weight = latestData.baseMetrics["WEIGHT"] ?? null;
-        formValues.waist = latestData.baseMetrics["WAIST"] ?? null;
+        formValues.abdomen = latestData.baseMetrics["ABDOMEN"] ?? null;
         formValues.hip = latestData.baseMetrics["HIP"] ?? null;
         formValues.neck = latestData.baseMetrics["NECK"] ?? null;
         formValues.bust = latestData.baseMetrics["BUST"] ?? null;
+        formValues.thigh = latestData.baseMetrics["THIGH"] ?? null;
         formValues.activityFactor = latestData.baseMetrics["ACTIVITY_FACTOR"] ?? null;
       }
       reset(formValues);
@@ -188,11 +192,11 @@ const onSubmit: SubmitHandler<SubmitHealthDataFormData> = async (formData) => {
                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
               />
               <InputField 
-                label="Vòng eo (cm)" 
+                label="Vòng bụng (đo ngang rốn) (cm)" 
                 type="number" 
                 step="0.1" 
-                {...register("waist")} 
-                error={errors.waist?.message} 
+                {...register("abdomen")} 
+                error={errors.abdomen?.message} 
                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
               />
               <InputField 
@@ -217,6 +221,14 @@ const onSubmit: SubmitHandler<SubmitHealthDataFormData> = async (formData) => {
                 step="0.1" 
                 {...register("bust")} 
                 error={errors.bust?.message} 
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
+              />
+              <InputField 
+                label="Vòng đùi (cm)" 
+                type="number" 
+                step="0.1" 
+                {...register("thigh")} 
+                error={errors.thigh?.message} 
                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
               />
               <InputField 
