@@ -218,11 +218,18 @@ const HomePage: React.FC = () => {
           tooltipInfo="Tổng năng lượng tiêu thụ hàng ngày, bao gồm cả vận động."
         />
         <MetricCard 
-          title="Mỡ cơ thể (PBF)" 
-          value={dashboardData.pbf?.value} 
-          unit={dashboardData.pbf?.unit || '%'} 
-          lastUpdatedAt={dashboardData.pbf?.lastUpdatedAt}
-          tooltipInfo="Tỷ lệ phần trăm mỡ trong cơ thể."
+          title="PBF (Công thức Navy)" 
+          value={dashboardData.pbfFormula?.value ?? dashboardData.pbf?.value} 
+          unit={dashboardData.pbfFormula?.unit || dashboardData.pbf?.unit || '%'} 
+          lastUpdatedAt={dashboardData.pbfFormula?.lastUpdatedAt ?? dashboardData.pbf?.lastUpdatedAt}
+          tooltipInfo="Tỷ lệ phần trăm mỡ trong cơ thể theo công thức Navy."
+        />
+        <MetricCard 
+          title="PBF (Model AI)" 
+          value={dashboardData.pbfModel?.value} 
+          unit={dashboardData.pbfModel?.unit || '%'} 
+          lastUpdatedAt={dashboardData.pbfModel?.lastUpdatedAt}
+          tooltipInfo="Tỷ lệ phần trăm mỡ trong cơ thể dự đoán bằng Model AI. Nếu chưa có dữ liệu, hãy dùng Công thức Navy."
         />
         <MetricCard 
           title="Tỷ lệ Bụng/Hông (WHR)" 
