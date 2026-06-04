@@ -49,7 +49,10 @@ const OnboardingWizard: React.FC = () => {
     setDirection(targetStep >= currentStep ? 1 : -1);
     setStep(targetStep);
   };
-  const goNext = () => goToStep(currentStep + 1);
+  const goNext = () => {
+    setDirection(1);
+    setStep(currentStep + 1);
+  };
   const goBack = () => goToStep(currentStep - 1);
 
   return (

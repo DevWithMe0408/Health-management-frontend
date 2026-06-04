@@ -86,11 +86,11 @@ const Step5Review: React.FC<Step5ReviewProps> = ({ onBack, goToStep }) => {
     resolver: zodResolver(step5Schema),
     mode: 'onChange',
     defaultValues: {
-      abdomenCm: state.abdomenCm,
-      hipCm: state.hipCm,
-      neckCm: state.neckCm,
-      bustCm: state.bustCm,
-      thighCm: state.thighCm,
+      abdomenCm: state.abdomenCm ?? null,
+      hipCm: state.hipCm ?? null,
+      neckCm: state.neckCm ?? null,
+      bustCm: state.bustCm ?? null,
+      thighCm: state.thighCm ?? null,
     },
   });
 
