@@ -44,7 +44,7 @@ const Header: React.FC<HeaderProps> = ({
 
   return (
     <header className="bg-white text-brand-gray-dark shadow-sm sticky top-0 z-30">
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="px-4 sm:px-6">
         <div className="flex justify-between items-center h-16">
           {/* Mobile sidebar toggle (hidden on md+) */}
           <div className="md:hidden">

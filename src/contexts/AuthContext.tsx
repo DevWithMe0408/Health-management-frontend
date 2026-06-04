@@ -92,8 +92,10 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   
   const performLogout = () => {
     console.log("AuthProvider: Performing logout...");
-    localStorage.removeItem('accessToken');
-    localStorage.removeItem('refreshToken');
+    // Clear all browser cache on logout to avoid leaking in-progress state between accounts.
+    // sessionStorage contains 'onboarding-state', so both storages must be cleared.
+    localStorage.clear();
+    sessionStorage.clear();
     setAccessToken(null);
     setRefreshToken(null);
     setIsAuthenticated(false);

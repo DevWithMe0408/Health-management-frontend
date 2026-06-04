@@ -61,7 +61,7 @@ const InfoStrip = ({
     >
       <InfoItem icon={FlagIcon} label="Mục tiêu" value={goalLabel} />
       <Dot />
-      <InfoItem icon={BoltIcon} label="TDEE" value={`${tdee.toLocaleString('vi-VN')} kcal`} />
+      <InfoItem icon={BoltIcon} label="TDEE" value={`${tdee.toLocaleString('vi-VN', { maximumFractionDigits: 0 })} kcal`} />
       <Dot />
       <InfoItem icon={ChartBarIcon} label="Thể trạng" value={constitutionLabel} />
       <Dot />
@@ -98,4 +98,3 @@ const InfoStrip = ({
 };
 
 export default InfoStrip;
-
