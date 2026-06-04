@@ -18,8 +18,9 @@ export type UserPreferenceKey =
 export type OnboardingBaseMetricType =
   | 'HEIGHT'
   | 'WEIGHT'
-  | 'WAIST'
+  | 'ABDOMEN'
   | 'HIP'
   | 'NECK'
   | 'BUST'
+  | 'THIGH'
   | 'ACTIVITY_FACTOR';

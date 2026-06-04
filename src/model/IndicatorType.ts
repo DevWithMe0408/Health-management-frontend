@@ -46,14 +46,14 @@ export const INDICATOR_TYPES = {
     decimalPlaces: 1,
     tooltipInfo: "Cân nặng hiện tại của bạn, đo bằng kilogram."
   },
-  WAIST: {
-    name: "WAIST",
-    label: "Vòng eo",
+  ABDOMEN: {
+    name: "ABDOMEN",
+    label: "Vòng bụng",
     category: IndicatorCategory.BASE,
     unit: "cm",
     defaultColor: "#FFC107", // Vàng
     decimalPlaces: 1,
-    tooltipInfo: "Chu vi vòng eo, đo bằng centimet."
+    tooltipInfo: "Chu vi vòng bụng, đo ngang rốn (qua rốn), bằng centimet."
   },
   HIP: {
     name: "HIP",
@@ -81,6 +81,15 @@ export const INDICATOR_TYPES = {
     defaultColor: "#9C27B0", // Tím
     decimalPlaces: 1,
     tooltipInfo: "Chu vi vòng ngực, đo bằng centimet."
+  },
+  THIGH: {
+    name: "THIGH",
+    label: "Vòng đùi",
+    category: IndicatorCategory.BASE,
+    unit: "cm",
+    defaultColor: "#8B5CF6", // Tím nhạt
+    decimalPlaces: 1,
+    tooltipInfo: "Chu vi vòng đùi, đo ở chỗ to nhất ngay dưới mông, bằng centimet."
   },
   ACTIVITY_FACTOR: {
     name: "ACTIVITY_FACTOR",
