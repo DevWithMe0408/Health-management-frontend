@@ -60,7 +60,7 @@ const Step3Personal: React.FC<Step3PersonalProps> = ({ onBack, onNext }) => {
           <WizardField label="Họ và tên" required error={errors.fullName?.message} colSpan={2}>
             <input
               type="text"
-              placeholder="VD. Nguyễn Minh Anh"
+              placeholder="VD. Nguyễn Thu Huyền"
               className={inputClassName(!!errors.fullName)}
               {...register('fullName')}
             />
