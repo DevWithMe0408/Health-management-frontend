@@ -12,6 +12,23 @@ interface SubmitResponse {
   message: string;
 }
 
+const DEFAULT_SUBMIT_MESSAGE = 'Cập nhật thành công';
+
+const normalizeSubmitMessage = (message?: string | null) => {
+  if (!message || message === 'Success') return DEFAULT_SUBMIT_MESSAGE;
+  return message;
+};
+
+const getSubmitMessage = (
+  payload: DataResponse<SubmitResponse | null> | SubmitResponse
+): string => {
+  if ('data' in payload && 'code' in payload) {
+    return normalizeSubmitMessage(payload.message || payload.data?.message);
+  }
+
+  return normalizeSubmitMessage(payload.message);
+};
+
 export interface LatestHealthDataApiResponse {
   baseMetrics: { [key: string]: number | null };
 }
@@ -33,12 +50,11 @@ export const submitHealthData = async (
 ): Promise<SubmitResponse> => {
   void _token;
   try {
-    const response = await apiClient.post<DataResponse<SubmitResponse> | SubmitResponse>(
+    const response = await apiClient.post<DataResponse<SubmitResponse | null> | SubmitResponse>(
       '/api/health-data/submit',
       data
     );
-    const payload = unwrapDataResponse(response.data);
-    return { message: payload.message || 'Dữ liệu đã được gửi thành công!' };
+    return { message: getSubmitMessage(response.data) };
   } catch (error) {
     return throwApiError(error, 'Gửi dữ liệu thất bại.');
   }

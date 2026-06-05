@@ -429,7 +429,7 @@ interface ActionBarProps {
 
 export function ActionBar({ saving = false, onReset }: ActionBarProps) {
   return (
-    <div className="sticky bottom-0 -mx-4 mt-2 border-t border-gray-200 bg-brand-gray-light/80 px-4 py-4 backdrop-blur md:-mx-6 md:px-6">
+    <div className="mt-2 rounded-3xl border border-gray-200 bg-brand-gray-light/80 px-4 py-4 md:px-6">
       <div className="flex items-center justify-end gap-3">
         <button
           type="button"
