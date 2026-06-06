@@ -7,7 +7,7 @@ import {
 } from '@heroicons/react/24/outline';
 import type { ConstitutionResponse } from '../../services/constitution.service';
 import type { MetricDataResponse } from '../../services/dashboard.service';
-import type { ConstitutionCode } from '../../types/refactorUi.types';
+import type { ConstitutionCode, PbfMethod } from '../../types/refactorUi.types';
 import DashboardCard from './DashboardCard';
 
 interface ConstitutionCardProps {
@@ -15,6 +15,9 @@ interface ConstitutionCardProps {
   bmiMetric?: MetricDataResponse;
   error?: string;
   onRetry: () => void;
+  onChangePbfMethod?: (method: PbfMethod) => void;
+  pendingSource?: PbfMethod | null;
+  switching?: boolean;
 }
 
 const ConstitutionGlyph: React.FC<{ type: 'thin' | 'check' | 'warn'; color: string }> = ({ type, color }) => {
@@ -169,6 +172,9 @@ const ConstitutionCard: React.FC<ConstitutionCardProps> = ({
   bmiMetric,
   error,
   onRetry,
+  onChangePbfMethod,
+  pendingSource,
+  switching = false,
 }) => {
   if (error && !constitution) {
     return (
@@ -225,6 +231,7 @@ const ConstitutionCard: React.FC<ConstitutionCardProps> = ({
   const activePbfSource = pbfSourceLabel(constitution.pbfSource);
   const pbfFormulaValue = constitution.pbfFormula ?? (constitution.pbfSource === 'FORMULA' ? constitution.pbf : null);
   const pbfModelValue = constitution.pbfModel ?? (constitution.pbfSource === 'MODEL_1' ? constitution.pbf : null);
+  const effectiveSource = pendingSource ?? constitution.pbfSource;
 
   return (
     <DashboardCard title="Thể trạng hiện tại" info="Phân loại theo BMI + PBF (worst case principle)">
@@ -259,16 +266,43 @@ const ConstitutionCard: React.FC<ConstitutionCardProps> = ({
             )}
           </div>
           <p className="mt-2 text-sm leading-6 text-gray-600">{currentMeta.advice}</p>
-          <div className="mt-3 grid gap-2 text-xs text-gray-600 sm:grid-cols-2">
-            <div className={`rounded-lg border px-3 py-2 ${constitution.pbfSource === 'FORMULA' ? 'border-emerald-200 bg-emerald-50' : 'border-gray-100 bg-gray-50'}`}>
-              <div className="font-semibold text-gray-500">PBF (Công thức Navy)</div>
-              <div className="mt-0.5 font-bold text-gray-900">{formatPercent(pbfFormulaValue)}</div>
-            </div>
-            <div className={`rounded-lg border px-3 py-2 ${constitution.pbfSource === 'MODEL_1' ? 'border-emerald-200 bg-emerald-50' : 'border-gray-100 bg-gray-50'}`}>
-              <div className="font-semibold text-gray-500">PBF (Model AI)</div>
-              <div className="mt-0.5 font-bold text-gray-900">
-                {pbfModelValue == null ? 'Chưa có (cần Model AI)' : formatPercent(pbfModelValue)}
-              </div>
+          <div className="mt-3">
+            <div className="mb-1.5 text-[11px] font-medium text-gray-400">Bấm để chọn cách tính PBF</div>
+            <div className="grid gap-2 text-xs text-gray-600 sm:grid-cols-2">
+              <button
+                type="button"
+                disabled={switching || effectiveSource === 'FORMULA'}
+                onClick={() => onChangePbfMethod?.('FORMULA')}
+                className={`rounded-lg border px-3 py-2 text-left transition disabled:cursor-not-allowed ${
+                  effectiveSource === 'FORMULA'
+                    ? 'border-emerald-300 bg-emerald-50 ring-1 ring-emerald-200'
+                    : 'border-gray-100 bg-gray-50 hover:border-emerald-200'
+                }`}
+              >
+                <div className="font-semibold text-gray-500">PBF (Công thức Navy)</div>
+                <div className="mt-0.5 font-bold text-gray-900">{formatPercent(pbfFormulaValue)}</div>
+                {effectiveSource === 'FORMULA' && (
+                  <div className="mt-1 text-[10px] font-semibold text-emerald-600">Đang dùng</div>
+                )}
+              </button>
+              <button
+                type="button"
+                disabled={switching || pbfModelValue == null || effectiveSource === 'MODEL_1'}
+                onClick={() => onChangePbfMethod?.('MODEL_1')}
+                className={`rounded-lg border px-3 py-2 text-left transition disabled:cursor-not-allowed disabled:opacity-60 ${
+                  effectiveSource === 'MODEL_1'
+                    ? 'border-emerald-300 bg-emerald-50 ring-1 ring-emerald-200'
+                    : 'border-gray-100 bg-gray-50 hover:border-emerald-200'
+                }`}
+              >
+                <div className="font-semibold text-gray-500">PBF (Model AI)</div>
+                <div className="mt-0.5 font-bold text-gray-900">
+                  {pbfModelValue == null ? 'Chưa có (cần Model AI)' : formatPercent(pbfModelValue)}
+                </div>
+                {effectiveSource === 'MODEL_1' && (
+                  <div className="mt-1 text-[10px] font-semibold text-emerald-600">Đang dùng</div>
+                )}
+              </button>
             </div>
           </div>
         </div>
