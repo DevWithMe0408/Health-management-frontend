@@ -573,3 +573,103 @@ export function SubmitSkeleton() {
     </div>
   );
 }
+
+interface ConfirmModalProps {
+  open: boolean;
+  changes: Array<{ label: string; from: string; to: string }>;
+  saving?: boolean;
+  onConfirm: () => void;
+  onCancel: () => void;
+}
+
+export function ConfirmModal({
+  open,
+  changes,
+  saving = false,
+  onConfirm,
+  onCancel,
+}: ConfirmModalProps) {
+  if (!open) return null;
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-6">
+      <button
+        type="button"
+        aria-label="Đóng xác nhận lưu"
+        className="absolute inset-0 bg-gray-900/40 backdrop-blur-[2px]"
+        onClick={() => {
+          if (!saving) onCancel();
+        }}
+      />
+      <div
+        role="dialog"
+        aria-modal="true"
+        className="relative w-full max-w-md rounded-3xl bg-white p-6 lg:p-7"
+        style={{ boxShadow: '0 24px 60px -12px rgba(15,31,26,.35)' }}
+      >
+        <div className="flex items-start gap-3.5">
+          <span className="grid h-11 w-11 flex-shrink-0 place-items-center rounded-2xl bg-brand-green-light text-brand-green-dark">
+            <Ico
+              d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10"
+              className="h-5 w-5"
+            />
+          </span>
+          <div className="flex-1">
+            <h3 className="text-lg font-bold tracking-tight text-gray-900">Lưu thay đổi chỉ số?</h3>
+            <p className="mt-1 text-sm leading-relaxed text-gray-500">
+              Hệ thống sẽ tính lại BMI, BMR, TDEE và PBF dựa trên số đo mới. Dữ liệu trước đó vẫn được lưu trong lịch sử.
+            </p>
+          </div>
+        </div>
+
+        <div className="mt-4 rounded-2xl border border-gray-100 bg-gray-50/70 p-3">
+          <p className="mb-2 px-1 text-[11px] font-semibold uppercase tracking-wide text-gray-400">
+            {changes.length} chỉ số thay đổi
+          </p>
+          <div className="max-h-48 space-y-1 overflow-y-auto">
+            {changes.map((change) => (
+              <div
+                key={change.label}
+                className="flex items-center justify-between rounded-xl bg-white px-3 py-2 text-sm"
+              >
+                <span className="font-medium text-gray-700">{change.label}</span>
+                <span className="flex items-center gap-1.5" style={{ fontVariantNumeric: 'tabular-nums' }}>
+                  <span className="text-gray-400 line-through">{change.from}</span>
+                  <Ico d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" className="h-3.5 w-3.5 text-brand-green" sw={2.2} />
+                  <span className="font-semibold text-brand-green-darker">{change.to}</span>
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="mt-6 flex items-center justify-end gap-3">
+          <button
+            type="button"
+            onClick={onCancel}
+            disabled={saving}
+            className="rounded-xl border-2 border-gray-200 bg-white px-5 py-2.5 text-sm font-semibold text-gray-600 transition hover:border-gray-300 disabled:opacity-60"
+          >
+            Hủy
+          </button>
+          <button
+            type="button"
+            onClick={onConfirm}
+            disabled={saving}
+            className={`inline-flex items-center gap-2 rounded-xl px-6 py-2.5 text-sm font-semibold text-white shadow-md transition ${
+              saving ? 'cursor-not-allowed bg-brand-green/70' : 'bg-brand-green hover:bg-brand-green-dark'
+            }`}
+          >
+            {saving && (
+              <svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                <path className="opacity-90" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
+              </svg>
+            )}
+            {saving ? 'Đang lưu...' : 'Xác nhận lưu'}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
