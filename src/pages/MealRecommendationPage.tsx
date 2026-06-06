@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { AdjustmentsHorizontalIcon } from '@heroicons/react/24/outline';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import FooterSummary from '../components/meal/FooterSummary';
@@ -133,6 +134,11 @@ const MealRecommendationPage = () => {
     userContext: userContext.data,
     preferences: preferences.preferences,
   });
+  const {
+    generate: generateMealPlan,
+    loading: mealPlanLoading,
+    plan: generatedMealPlan,
+  } = mealPlan;
   const [wizardOpen, setWizardOpen] = useState(false);
   const [warningModalOpen, setWarningModalOpen] = useState(false);
   const autoGenerateAttempted = useRef(false);
@@ -172,16 +178,16 @@ const MealRecommendationPage = () => {
       userContext.data &&
       preferences.preferences &&
       !preferences.isFirstTime &&
-      !mealPlan.plan &&
-      !mealPlan.loading
+      !generatedMealPlan &&
+      !mealPlanLoading
     ) {
       autoGenerateAttempted.current = true;
-      void mealPlan.generate();
+      void generateMealPlan();
     }
   }, [
-    mealPlan.generate,
-    mealPlan.loading,
-    mealPlan.plan,
+    generateMealPlan,
+    generatedMealPlan,
+    mealPlanLoading,
     preferences.isFirstTime,
     preferences.preferences,
     userContext.data,
@@ -324,6 +330,14 @@ const MealRecommendationPage = () => {
             Thực đơn cá nhân hóa theo mục tiêu, TDEE và thể trạng hiện tại.
           </p>
         </div>
+        <button
+          type="button"
+          onClick={() => setWizardOpen(true)}
+          className="inline-flex items-center gap-1.5 rounded-xl border border-emerald-200 bg-white px-3.5 py-2 text-sm font-semibold text-brand-green-darker transition hover:bg-emerald-50"
+        >
+          <AdjustmentsHorizontalIcon className="h-4 w-4" />
+          {preferences.isFirstTime ? 'Thiết lập bữa ăn' : 'Đổi thiết lập'}
+        </button>
       </div>
 
       {userContext.data && (
@@ -334,7 +348,14 @@ const MealRecommendationPage = () => {
           constitutionLabel={CONSTITUTION_LABEL[userContext.data.constitution]}
           date={todayLabel}
           onChangeGoal={() => navigate('/profile')}
-          onRegen={() => void mealPlan.generate({ forceCompute: true })}
+          onRegen={() => {
+            if (preferences.isFirstTime) {
+              setWizardOpen(true);
+              toast.info('Hãy thiết lập bữa ăn trước khi tạo thực đơn.');
+              return;
+            }
+            void generateMealPlan({ forceCompute: true });
+          }}
           regenLoading={mealPlan.loading}
         />
       )}
@@ -357,8 +378,17 @@ const MealRecommendationPage = () => {
       )}
 
       {mealPlan.mealStates.length === 0 && !wizardOpen ? (
-        <div className="rounded-2xl border border-gray-200 bg-white p-8 text-center text-gray-500">
-          Chưa có thực đơn. Hãy hoàn tất thiết lập hoặc gen lại cả ngày.
+        <div className="rounded-2xl border border-gray-200 bg-white p-8 text-center">
+          <p className="text-gray-500">
+            Chưa có thực đơn. Hãy thiết lập bữa ăn để hệ thống đề xuất.
+          </p>
+          <button
+            type="button"
+            onClick={() => setWizardOpen(true)}
+            className="mt-4 inline-flex items-center gap-2 rounded-xl bg-brand-green px-5 py-2.5 text-sm font-semibold text-white shadow-md transition hover:bg-brand-green-dark"
+          >
+            Thiết lập bữa ăn
+          </button>
         </div>
       ) : (
         <div className="mb-6 flex flex-col gap-4">
