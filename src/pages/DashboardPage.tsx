@@ -1,12 +1,14 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowPathIcon, PlusCircleIcon } from '@heroicons/react/24/outline';
+import { toast } from 'sonner';
 import { useAuth } from '../contexts/AuthContext';
 import {
   getDashboardOverview,
   type DashboardOverview,
 } from '../services/dashboard.service';
-import type { GoalCode } from '../types/refactorUi.types';
+import { updatePbfMethod } from '../services/userPreferences.service';
+import type { GoalCode, PbfMethod } from '../types/refactorUi.types';
 import ComplianceCard from '../components/dashboard/ComplianceCard';
 import ConstitutionCard from '../components/dashboard/ConstitutionCard';
 import HealthMetricsDetails from '../components/dashboard/HealthMetricsDetails';
@@ -41,6 +43,8 @@ const DashboardPage: React.FC = () => {
   const [overview, setOverview] = useState<DashboardOverview | null>(null);
   const [loading, setLoading] = useState(true);
   const [pageError, setPageError] = useState<string | null>(null);
+  const [pbfOverride, setPbfOverride] = useState<PbfMethod | null>(null);
+  const [switchingPbf, setSwitchingPbf] = useState(false);
 
   const loadDashboard = useCallback(async () => {
     setLoading(true);
@@ -60,14 +64,42 @@ const DashboardPage: React.FC = () => {
     loadDashboard();
   }, [loadDashboard]);
 
+  useEffect(() => {
+    if (pbfOverride && overview?.constitution?.pbfSource === pbfOverride) {
+      setPbfOverride(null);
+    }
+  }, [overview?.constitution?.pbfSource, pbfOverride]);
+
+  const handleChangePbf = useCallback(async (method: PbfMethod) => {
+    const activeSource = pbfOverride ?? overview?.constitution?.pbfSource;
+    if (switchingPbf || activeSource === method) return;
+
+    setPbfOverride(method);
+    setSwitchingPbf(true);
+    try {
+      await updatePbfMethod(method);
+      const data = await getDashboardOverview();
+      setOverview(data);
+      setPageError(null);
+      if (data.constitution?.pbfSource === method) {
+        setPbfOverride(null);
+      }
+    } catch (error) {
+      setPbfOverride(null);
+      toast.error(error instanceof Error ? error.message : 'Không thể đổi cách tính PBF.');
+    } finally {
+      setSwitchingPbf(false);
+    }
+  }, [overview?.constitution?.pbfSource, pbfOverride, switchingPbf]);
+
   const pbfMethod = useMemo(() => {
-    const activeSource = overview?.constitution?.pbfSource;
+    const activeSource = pbfOverride ?? overview?.constitution?.pbfSource;
     if (activeSource === 'FORMULA') return 'Công thức Navy';
     if (activeSource === 'MODEL_1') return 'Model AI';
 
     const preference = overview?.preferences.find((item) => item.prefKey === 'pbf_method');
     return preference?.prefValue === 'MODEL_1' ? 'Model AI' : 'Công thức Navy';
-  }, [overview?.constitution?.pbfSource, overview?.preferences]);
+  }, [overview?.constitution?.pbfSource, overview?.preferences, pbfOverride]);
 
   const displayName = user?.name || user?.username || 'bạn';
   const currentGoal = overview?.currentGoal?.goalCode;
@@ -136,6 +168,9 @@ const DashboardPage: React.FC = () => {
           bmiMetric={overview?.metrics?.bmi}
           error={overview?.errors.constitution}
           onRetry={loadDashboard}
+          onChangePbfMethod={handleChangePbf}
+          pendingSource={pbfOverride}
+          switching={switchingPbf}
         />
         <ReminderList
           user={user}
