@@ -5,9 +5,11 @@ import type { Resolver, SubmitHandler } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { toast } from 'sonner';
 import {
+  ACTIVITY_OPTIONS,
   ActionBar,
   AdvancedAccordion,
   BasicInfoCard,
+  ConfirmModal,
   HeaderCard,
   MeasurementsCard,
   ResultPanel,
@@ -36,6 +38,24 @@ const FORM_FIELDS: Array<keyof SubmitHealthDataFormData> = [
   'PBFNew',
   'WHRNew',
 ];
+
+type FieldChange = { label: string; from: string; to: string };
+
+const FIELD_META: Record<keyof SubmitHealthDataFormData, { label: string; unit?: string }> = {
+  height: { label: 'Chiều cao', unit: 'cm' },
+  weight: { label: 'Cân nặng', unit: 'kg' },
+  abdomen: { label: 'Vòng bụng', unit: 'cm' },
+  hip: { label: 'Vòng hông', unit: 'cm' },
+  neck: { label: 'Vòng cổ', unit: 'cm' },
+  bust: { label: 'Vòng ngực', unit: 'cm' },
+  thigh: { label: 'Vòng đùi', unit: 'cm' },
+  activityFactor: { label: 'Mức vận động' },
+  BMINew: { label: 'BMI' },
+  BMRNew: { label: 'BMR', unit: 'kcal/ngày' },
+  TDEENew: { label: 'TDEE', unit: 'kcal/ngày' },
+  PBFNew: { label: 'PBF', unit: '%' },
+  WHRNew: { label: 'WHR' },
+};
 
 const createEmptyFormValues = (): SubmitHealthDataFormData => ({
   height: null,
@@ -93,6 +113,43 @@ const cleanFormData = (formData: SubmitHealthDataFormData): Partial<SubmitHealth
   return cleanedData;
 };
 
+const formatFieldValue = (
+  name: keyof SubmitHealthDataFormData,
+  value: number | null | undefined
+): string => {
+  if (value == null) return '—';
+  if (name === 'activityFactor') {
+    const option = ACTIVITY_OPTIONS.find((item) => item.value === value);
+    return option ? option.title : String(value);
+  }
+
+  const meta = FIELD_META[name];
+  const formattedNumber = value.toLocaleString('vi-VN', { maximumFractionDigits: 2 });
+  return meta.unit ? `${formattedNumber} ${meta.unit}` : formattedNumber;
+};
+
+const buildChanges = (
+  previous: SubmitHealthDataFormData,
+  next: SubmitHealthDataFormData
+): FieldChange[] => {
+  const changes: FieldChange[] = [];
+
+  FORM_FIELDS.forEach((name) => {
+    const before = previous[name] ?? null;
+    const after = next[name] ?? null;
+
+    if (before !== after && after != null) {
+      changes.push({
+        label: FIELD_META[name].label,
+        from: formatFieldValue(name, before),
+        to: formatFieldValue(name, after),
+      });
+    }
+  });
+
+  return changes;
+};
+
 const SubmitHealthDataPage: React.FC = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -100,6 +157,10 @@ const SubmitHealthDataPage: React.FC = () => {
   const [advancedOpen, setAdvancedOpen] = useState(false);
   const [autoMetrics, setAutoMetrics] = useState<DashboardMetricsResponse | null>(null);
   const [result, setResult] = useState<DashboardMetricsResponse | null>(null);
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [pendingData, setPendingData] = useState<SubmitHealthDataFormData | null>(null);
+  const [changes, setChanges] = useState<FieldChange[]>([]);
   const prefilledRef = useRef<SubmitHealthDataFormData>(createEmptyFormValues());
 
   const {
@@ -108,7 +169,7 @@ const SubmitHealthDataPage: React.FC = () => {
     reset,
     watch,
     setValue,
-    formState: { errors, isDirty, isSubmitting },
+    formState: { errors },
   } = useForm<SubmitHealthDataFormData>({
     resolver: zodResolver(SubmitHealthDataSchema) as Resolver<SubmitHealthDataFormData>,
     defaultValues: createEmptyFormValues(),
@@ -149,23 +210,30 @@ const SubmitHealthDataPage: React.FC = () => {
     };
   }, [reset]);
 
-  const onSubmit: SubmitHandler<SubmitHealthDataFormData> = async (formData) => {
+  const onValidSubmit: SubmitHandler<SubmitHealthDataFormData> = (formData) => {
     if (!user?.userId) {
       toast.error('Bạn cần đăng nhập để thực hiện hành động này.');
       return;
     }
 
-    const cleanedData = cleanFormData(formData);
-    const hasValidData = Object.keys(cleanedData).length > 0;
-
-    if (!isDirty && !hasValidData) {
-      toast.info('Không có dữ liệu mới nào được nhập để gửi.');
+    const diff = buildChanges(prefilledRef.current, formData);
+    if (diff.length === 0) {
+      toast.info('Không có thay đổi để lưu.');
       return;
     }
 
+    setPendingData(formData);
+    setChanges(diff);
+    setConfirmOpen(true);
+  };
+
+  const performSubmit = async (formData: SubmitHealthDataFormData) => {
+    if (!user?.userId) return;
+
+    setSaving(true);
     try {
       const apiRequestData: SubmitHealthApiRequest = {
-        ...cleanedData,
+        ...cleanFormData(formData),
         userId: user.userId,
       };
 
@@ -177,8 +245,14 @@ const SubmitHealthDataPage: React.FC = () => {
       setAutoMetrics(dashboardMetrics);
       prefilledRef.current = formData;
       reset(formData);
+
+      setConfirmOpen(false);
+      setPendingData(null);
+      setChanges([]);
     } catch (error) {
       toast.error(getApiErrorMessage(error, 'Gửi dữ liệu thất bại.'));
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -202,7 +276,7 @@ const SubmitHealthDataPage: React.FC = () => {
         />
       )}
 
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+      <form onSubmit={handleSubmit(onValidSubmit)} className="space-y-5">
         <BasicInfoCard
           register={register}
           errors={errors}
@@ -225,8 +299,22 @@ const SubmitHealthDataPage: React.FC = () => {
           autoMetrics={autoMetrics}
         />
 
-        <ActionBar saving={isSubmitting} onReset={() => reset(prefilledRef.current)} />
+        <ActionBar saving={saving} onReset={() => reset(prefilledRef.current)} />
       </form>
+      <ConfirmModal
+        open={confirmOpen}
+        changes={changes}
+        saving={saving}
+        onConfirm={() => {
+          if (pendingData) void performSubmit(pendingData);
+        }}
+        onCancel={() => {
+          if (!saving) {
+            setConfirmOpen(false);
+            setPendingData(null);
+          }
+        }}
+      />
     </div>
   );
 };
