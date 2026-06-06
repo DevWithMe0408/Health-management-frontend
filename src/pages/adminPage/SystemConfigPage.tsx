@@ -10,6 +10,7 @@ import {
   type SystemConfigUpdateRequest,
   type ConstraintItem,
 } from '../../services/admin/systemConfig.admin.service';
+import { getApiErrorMessage } from '../../services/apiResponse';
 
 const SLOT_LABELS: Record<string, string> = {
   CHINH:    'Món chính',
@@ -122,8 +123,8 @@ const SystemConfigPage: React.FC = () => {
       setData(saved);
       initDraft(saved);
       toast.success('Đã lưu cấu hình hệ thống');
-    } catch (err: any) {
-      toast.error(err?.response?.data?.message || 'Lỗi khi lưu');
+    } catch (err: unknown) {
+      toast.error(getApiErrorMessage(err, 'Lỗi khi lưu'));
     } finally {
       setSaving(false);
     }

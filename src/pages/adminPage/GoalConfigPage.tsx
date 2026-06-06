@@ -11,6 +11,7 @@ import {
   type GoalConfig,
   type GoalConfigUpdateRequest,
 } from '../../services/admin/goalConfig.admin.service';
+import { getApiErrorMessage } from '../../services/apiResponse';
 
 type GoalCode = 'GIAM' | 'DUY_TRI' | 'TANG';
 
@@ -82,9 +83,8 @@ const GoalConfigPage: React.FC = () => {
       setConfigs((prev) => prev ? { ...prev, [activeTab]: saved } : prev);
       setIsDirty(false);
       toast.success('Đã lưu cấu hình');
-    } catch (err: any) {
-      const msg = err?.response?.data?.message || 'Lỗi khi lưu';
-      toast.error(msg);
+    } catch (err: unknown) {
+      toast.error(getApiErrorMessage(err, 'Lỗi khi lưu'));
     } finally {
       setSaving(false);
     }

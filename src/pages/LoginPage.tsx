@@ -10,6 +10,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import AuthLayout from '../layouts/AuthLayout';
+import { getApiErrorMessage } from '../services/apiResponse';
 
 const LoginPage: React.FC = () => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -33,8 +34,8 @@ const LoginPage: React.FC = () => {
       await login(authData);
       const from = location.state?.from?.pathname || '/dashboard';
       navigate(from, { replace: true });
-    } catch (error: any) {
-      toast.error(error.message || 'Đăng nhập thất bại. Vui lòng thử lại.');
+    } catch (error: unknown) {
+      toast.error(getApiErrorMessage(error, 'Đăng nhập thất bại. Vui lòng thử lại.'));
     } finally {
       setIsLoading(false);
     }

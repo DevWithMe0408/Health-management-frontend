@@ -11,6 +11,7 @@ import {
   type MealRatio,
   type MealConfigResponse,
 } from '../../services/admin/mealConfig.admin.service';
+import { getApiErrorMessage } from '../../services/apiResponse';
 
 type PlanType = '3_BUA' | '5_BUA';
 
@@ -83,8 +84,8 @@ const MealConfigPage: React.FC = () => {
       await updateMealConfig(activeTab, { meals });
       setIsDirty(false);
       toast.success('Đã lưu cấu hình bữa ăn');
-    } catch (err: any) {
-      toast.error(err?.response?.data?.message || 'Lỗi khi lưu');
+    } catch (err: unknown) {
+      toast.error(getApiErrorMessage(err, 'Lỗi khi lưu'));
     } finally {
       setSaving(false);
     }

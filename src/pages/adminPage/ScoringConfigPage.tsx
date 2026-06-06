@@ -9,6 +9,7 @@ import {
   type ScoringConfigResponse,
   type ScoringConfigUpdateRequest,
 } from '../../services/admin/scoringConfig.admin.service';
+import { getApiErrorMessage } from '../../services/apiResponse';
 
 const ScoringConfigPage: React.FC = () => {
   const [data, setData] = useState<ScoringConfigResponse | null>(null);
@@ -61,8 +62,8 @@ const ScoringConfigPage: React.FC = () => {
       setData(saved);
       initDraft(saved);
       toast.success('Đã lưu cấu hình scoring');
-    } catch (err: any) {
-      toast.error(err?.response?.data?.message || 'Lỗi khi lưu');
+    } catch (err: unknown) {
+      toast.error(getApiErrorMessage(err, 'Lỗi khi lưu'));
     } finally {
       setSaving(false);
     }

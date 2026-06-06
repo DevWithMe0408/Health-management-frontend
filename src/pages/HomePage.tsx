@@ -8,6 +8,7 @@ import TrendChart from '../components/dashboard/TrendChart';
 import { IndicatorCategory, getAllIndicatorInfos } from '../model/IndicatorType';
 import type {IndicatorTypeName} from '../model/IndicatorType';
 import { XMarkIcon } from '@heroicons/react/24/outline'; // Import XMarkIcon
+import { getApiErrorMessage } from '../services/apiResponse';
 
 // Tailwind classes cho loading state
 const spinnerClass = "animate-spin rounded-full h-12 w-12 border-t-4 border-b-4 border-brand-green";
@@ -64,8 +65,8 @@ const HomePage: React.FC = () => {
         try {
           const data = await getDashboardMetrics(accessToken);
           setDashboardData(data);
-        } catch (err: any) {
-          setDashboardError(err.message || "Không thể tải dữ liệu dashboard.");
+        } catch (err: unknown) {
+          setDashboardError(getApiErrorMessage(err, "Không thể tải dữ liệu dashboard."));
         } finally {
           setIsLoadingDashboard(false);
         }
@@ -91,7 +92,7 @@ const HomePage: React.FC = () => {
           currentDateRange.to.toISOString().split('T')[0]
         );
         setChartsData(prevData => ({ ...prevData, [indicatorName]: data }));
-      } catch (err: any) {
+      } catch (err: unknown) {
         console.error(`Error fetching ${indicatorName} history:`, err);
         setChartsData(prevData => ({ ...prevData, [indicatorName]: [] }));
         setChartsError(`Lỗi tải dữ liệu biểu đồ cho ${indicatorName}.`);
@@ -110,7 +111,6 @@ const HomePage: React.FC = () => {
       );
       Promise.all(promises).finally(() => setIsChartsLoading(false));
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user, accessToken, selectedChartTypeNames, dateRange, selectedGranularity, fetchChartDataForType]);
 
 
@@ -126,7 +126,7 @@ const HomePage: React.FC = () => {
 
   const setQuickDateRange = (period: '7D' | '1M' | '3M' | '6M' | '1Y') => {
     const to = new Date();
-    let from = new Date();
+    const from = new Date();
     switch (period) {
       case '7D': from.setDate(to.getDate() - 7); break;
       case '1M': from.setMonth(to.getMonth() - 1); break;

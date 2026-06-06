@@ -38,7 +38,8 @@ export interface UserProfileData {
 }
 
 export const registerUser = async (data: RegisterFormData): Promise<void> => {
-  const { confirmPassword: _c, ...payload } = data;
+  const { confirmPassword: _confirmPassword, ...payload } = data;
+  void _confirmPassword;
   try {
     await axios.post<DataResponse<null>>(`${API_URL}/register`, payload);
   } catch (error: unknown) {

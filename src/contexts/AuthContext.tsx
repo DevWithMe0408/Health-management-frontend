@@ -3,6 +3,7 @@ import type { ReactNode } from 'react';
 import type { LoginResponse } from '../services/auth.service'; // Import LoginResponse
 import type { UserProfileData } from '../services/auth.service'; // Import UserProfileData
 import { getCurrentUserProfile } from '../services/auth.service'; // Import hàm lấy thông tin user profile
+import { getApiErrorMessage } from '../services/apiResponse';
 
 interface UserProfile extends UserProfileData {
   userId: string | null;
@@ -43,12 +44,13 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
           if (storedRefreshToken) setRefreshToken(storedRefreshToken);
           setUser(userProfile); // Lưu thông tin user đầy đủ
           setIsAuthenticated(true);
-        } catch (error: any) {
-          if (error.message === 'INVALID_TOKEN') {
+        } catch (error: unknown) {
+          const message = getApiErrorMessage(error, 'Failed to fetch user profile.');
+          if (message === 'INVALID_TOKEN') {
             console.log("AuthProvider: Stored token is invalid or expired. Logging out.");
             performLogout(); // Token không hợp lệ từ Gateway
           } else {
-            console.error("AuthProvider: Error fetching user profile during auto-login:", error.message);
+            console.error("AuthProvider: Error fetching user profile during auto-login:", message);
             // Có thể là lỗi mạng hoặc lỗi server sau Gateway, cân nhắc không logout ngay
             // Hoặc nếu muốn an toàn thì vẫn logout:
             performLogout();
@@ -59,7 +61,6 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     };
 
     attemptAutoLogin();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // Chỉ chạy 1 lần khi mount
 
   const performLogin = async (authData: LoginResponse) => {

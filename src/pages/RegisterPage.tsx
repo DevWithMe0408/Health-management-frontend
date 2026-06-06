@@ -9,6 +9,7 @@ import { registerUser, ApiError } from '../services/auth.service';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import AuthLayout from '../layouts/AuthLayout';
+import { getApiErrorMessage } from '../services/apiResponse';
 
 const RegisterPage: React.FC = () => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -31,7 +32,7 @@ const RegisterPage: React.FC = () => {
       await registerUser(data);
       toast.success('Đăng ký thành công! Vui lòng đăng nhập.');
       navigate('/login');
-    } catch (error: any) {
+    } catch (error: unknown) {
       if (error instanceof ApiError) {
         switch (error.code) {
           case 'AUTH-001':
@@ -44,7 +45,7 @@ const RegisterPage: React.FC = () => {
             toast.error(error.message);
         }
       } else {
-        toast.error(error.message || 'Đăng ký thất bại. Vui lòng thử lại.');
+        toast.error(getApiErrorMessage(error, 'Đăng ký thất bại. Vui lòng thử lại.'));
       }
     } finally {
       setIsLoading(false);

@@ -9,6 +9,7 @@ import {
   type PenaltyConfigResponse,
   type PenaltyConfigUpdateRequest,
 } from '../../services/admin/penaltyConfig.admin.service';
+import { getApiErrorMessage } from '../../services/apiResponse';
 
 const PenaltyConfigPage: React.FC = () => {
   const [data, setData] = useState<PenaltyConfigResponse | null>(null);
@@ -62,8 +63,8 @@ const PenaltyConfigPage: React.FC = () => {
       setData(saved);
       initDraft(saved);
       toast.success('Đã lưu cấu hình penalty');
-    } catch (err: any) {
-      toast.error(err?.response?.data?.message || 'Lỗi khi lưu');
+    } catch (err: unknown) {
+      toast.error(getApiErrorMessage(err, 'Lỗi khi lưu'));
     } finally {
       setSaving(false);
     }

@@ -23,6 +23,12 @@ interface TrendChartProps {
   onChartClick?: () => void; // Xử lý khi click vào biểu đồ để mở modal
 }
 
+interface CustomTooltipProps {
+  active?: boolean;
+  payload?: Array<{ value?: number | string | null }>;
+  label?: string | number;
+}
+
 const TrendChart: React.FC<TrendChartProps> = ({
   data,
   title,
@@ -47,13 +53,16 @@ const TrendChart: React.FC<TrendChartProps> = ({
     })).sort((a, b) => a.fullTimestamp.getTime() - b.fullTimestamp.getTime()); // Sắp xếp dữ liệu theo thời gian
   }, [data, xAxisDataKey]);
 
-  const CustomTooltip: React.FC<any> = ({ active, payload, label }) => {
+  const CustomTooltip: React.FC<CustomTooltipProps> = ({ active, payload, label }) => {
     if (active && payload && payload.length) {
+      const value = payload[0].value;
+      const formattedValue = typeof value === 'number' ? value.toFixed(1) : value ?? '--';
+
       return (
         <div className="bg-white p-3 rounded shadow-lg border border-gray-200">
           <p className="text-sm text-gray-700">{`Ngày: ${label}`}</p>
           <p className="text-sm font-semibold" style={{ color: lineColor }}>
-            {`${title}: ${payload[0].value?.toFixed(1)} ${unit}`}
+            {`${title}: ${formattedValue} ${unit}`}
           </p>
         </div>
       );
