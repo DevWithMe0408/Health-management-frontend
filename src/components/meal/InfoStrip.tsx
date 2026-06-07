@@ -65,9 +65,9 @@ const InfoStrip = ({
       <Dot />
       <InfoItem icon={ChartBarIcon} label="Thể trạng" value={constitutionLabel} />
       <Dot />
-      <div className="hidden min-w-0 items-center gap-1.5 text-sm text-gray-500 lg:flex">
+      <div className="hidden min-w-0 items-center gap-1.5 text-sm lg:flex">
         <CalendarDaysIcon className="h-4 w-4 shrink-0" />
-        <span className="truncate">{date}</span>
+        <span className="truncate font-bold">{date}</span>
       </div>
 
       <div className="min-w-0 flex-1" />

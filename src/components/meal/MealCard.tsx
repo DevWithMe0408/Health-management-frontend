@@ -15,14 +15,14 @@ import ScoreBadge from './atoms/ScoreBadge';
 import StatusPill from './atoms/StatusPill';
 import type {
   DishSuggestionResponse,
-  MealSuggestionResponse,
+  MealSuggestionWithCombination,
   MealType,
   SwapSuggestion,
   UIMealStatus,
 } from '../../types/meal.types';
 
 interface MealCardProps {
-  meal: MealSuggestionResponse;
+  meal: MealSuggestionWithCombination;
   status: UIMealStatus;
   expanded: boolean;
   score: number;

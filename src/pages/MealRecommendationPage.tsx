@@ -20,6 +20,7 @@ import { addFavoriteDish, removeFavoriteDish } from '../services/meal.service';
 import type {
   DishOptionResponse,
   DishSuggestionResponse,
+  DailyPlanWarningResponse,
   MealType,
   SwapSuggestion,
   UIMealState,
@@ -141,6 +142,9 @@ const MealRecommendationPage = () => {
   } = mealPlan;
   const [wizardOpen, setWizardOpen] = useState(false);
   const [warningModalOpen, setWarningModalOpen] = useState(false);
+  const [recommendationWarning, setRecommendationWarning] =
+    useState<DailyPlanWarningResponse | null>(null);
+  const [constitutionConfirmed, setConstitutionConfirmed] = useState(false);
   const autoGenerateAttempted = useRef(false);
   const [swapDrawerState, setSwapDrawerState] = useState<SwapDrawerState>(
     EMPTY_SWAP_DRAWER_STATE
@@ -158,18 +162,33 @@ const MealRecommendationPage = () => {
   }, [preferences.isFirstTime, preferences.loading]);
 
   useEffect(() => {
-    if (userContext.data?.warning) {
-      setWarningModalOpen(true);
-    }
-  }, [userContext.data?.warning]);
-
-  useEffect(() => {
     autoGenerateAttempted.current = false;
+    setConstitutionConfirmed(false);
+    setRecommendationWarning(null);
+    setWarningModalOpen(false);
   }, [
     preferences.preferences?.planType,
     userContext.data?.goalCode,
     userContext.data?.tdee,
   ]);
+
+  const generateAndHandleWarning = useCallback(
+    async (options: Parameters<typeof generateMealPlan>[0] = {}) => {
+      const nextPlan = await generateMealPlan(options);
+
+      if (
+        nextPlan?.warning?.requireConfirm &&
+        (nextPlan.meals ?? []).length === 0 &&
+        !options.constitutionConfirmed
+      ) {
+        setRecommendationWarning(nextPlan.warning);
+        setWarningModalOpen(true);
+      }
+
+      return nextPlan;
+    },
+    [generateMealPlan]
+  );
 
   useEffect(() => {
     if (autoGenerateAttempted.current) return;
@@ -182,11 +201,37 @@ const MealRecommendationPage = () => {
       !mealPlanLoading
     ) {
       autoGenerateAttempted.current = true;
-      void generateMealPlan();
+      void generateAndHandleWarning({ constitutionConfirmed });
     }
   }, [
-    generateMealPlan,
+    constitutionConfirmed,
+    generateAndHandleWarning,
     generatedMealPlan,
+    mealPlanLoading,
+    preferences.isFirstTime,
+    preferences.preferences,
+    userContext.data,
+  ]);
+
+  const handleWarningContinue = useCallback(() => {
+    setConstitutionConfirmed(true);
+    setWarningModalOpen(false);
+    setRecommendationWarning(null);
+
+    if (
+      userContext.data &&
+      preferences.preferences &&
+      !preferences.isFirstTime &&
+      !mealPlanLoading
+    ) {
+      autoGenerateAttempted.current = true;
+      void generateAndHandleWarning({
+        constitutionConfirmed: true,
+        forceCompute: true,
+      });
+    }
+  }, [
+    generateAndHandleWarning,
     mealPlanLoading,
     preferences.isFirstTime,
     preferences.preferences,
@@ -208,15 +253,15 @@ const MealRecommendationPage = () => {
   // Build the PinnedStrip list for the currently open slot.
   const getOtherPins = useCallback(
     (mealType: MealType, currentSlotKey: string): PinnedItem[] => {
-      const meal = mealPlan.plan?.meals.find((m) => m.mealType === mealType);
-      if (!meal) return [];
+      const mealState = mealPlan.mealStates.find((state) => state.meal.mealType === mealType);
+      if (!mealState) return [];
       const pins = mealPlan.pinsByMeal.get(mealType);
       if (!pins) return [];
 
       const items: PinnedItem[] = [];
       for (const [slotKey, pin] of pins) {
         if (slotKey === currentSlotKey) continue;
-        const dish = meal.topCombination.dishes.find((d) => d.slotKey === slotKey);
+        const dish = mealState.meal.topCombination.dishes.find((d) => d.slotKey === slotKey);
         if (!dish || !dish.unit || !dish.baseServingG) continue;
         items.push({
           slotKey,
@@ -230,33 +275,33 @@ const MealRecommendationPage = () => {
       }
       return items;
     },
-    [mealPlan.plan, mealPlan.pinsByMeal]
+    [mealPlan.mealStates, mealPlan.pinsByMeal]
   );
 
   // Names of the dishes that are NOT being swapped, used in the apply caption.
   const getKeepNames = useCallback(
     (mealType: MealType, currentSlotKey: string): string => {
-      const meal = mealPlan.plan?.meals.find((m) => m.mealType === mealType);
-      if (!meal) return '';
-      return meal.topCombination.dishes
+      const mealState = mealPlan.mealStates.find((state) => state.meal.mealType === mealType);
+      if (!mealState) return '';
+      return mealState.meal.topCombination.dishes
         .filter((d) => d.slotKey !== currentSlotKey)
         .map((d) => d.dishName ?? 'Món ăn')
         .join(' + ');
     },
-    [mealPlan.plan]
+    [mealPlan.mealStates]
   );
 
   const handleApplySuggestion = useCallback(
     (mealType: MealType, suggestion: SwapSuggestion) => {
-      const meal = mealPlan.plan?.meals.find((m) => m.mealType === mealType);
-      if (!meal) return;
-      const targetDish = meal.topCombination.dishes.find(
+      const mealState = mealPlan.mealStates.find((state) => state.meal.mealType === mealType);
+      if (!mealState) return;
+      const targetDish = mealState.meal.topCombination.dishes.find(
         (d) => d.slotKey === suggestion.targetSlotKey
       );
       if (!targetDish) return;
       openSwapDrawer(mealType, suggestion.targetSlotKey, targetDish);
     },
-    [mealPlan.plan, openSwapDrawer]
+    [mealPlan.mealStates, openSwapDrawer]
   );
 
   const handleRebalanceServing = useCallback(
@@ -354,7 +399,10 @@ const MealRecommendationPage = () => {
               toast.info('Hãy thiết lập bữa ăn trước khi tạo thực đơn.');
               return;
             }
-            void generateMealPlan({ forceCompute: true });
+            void generateAndHandleWarning({
+              forceCompute: true,
+              constitutionConfirmed,
+            });
           }}
           regenLoading={mealPlan.loading}
         />
@@ -445,10 +493,10 @@ const MealRecommendationPage = () => {
 
       <WarningGoalModal
         open={warningModalOpen}
-        warning={userContext.data?.warning}
+        warning={recommendationWarning}
         currentBMI={userContext.data?.bmi ?? null}
         onChangeGoal={() => navigate('/profile')}
-        onContinue={() => setWarningModalOpen(false)}
+        onContinue={handleWarningContinue}
       />
 
       {swapDrawerState.open &&

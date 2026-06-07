@@ -10,6 +10,7 @@ import type { NutritionUserContextData } from './useUserContext';
 import type {
   DailyPlanResponse,
   DishSuggestionResponse,
+  MealSuggestionWithCombination,
   MealType,
   PinnedDish,
   SwapResultResponse,
@@ -100,11 +101,37 @@ interface GenerateMealPlanOptions {
 }
 
 const buildInitialMealStates = (plan: DailyPlanResponse): UIMealState[] => {
-  return plan.meals.map((meal, index) => ({
+  return getRenderableMeals(plan).map((meal, index) => ({
     meal,
     status: 'suggested',
     expanded: index === 0,
   }));
+};
+
+const hasRenderableCombination = (
+  meal: DailyPlanResponse['meals'][number]
+): meal is MealSuggestionWithCombination => {
+  return Boolean(meal.topCombination && meal.topCombination.dishes.length > 0);
+};
+
+const getRenderableMeals = (plan: DailyPlanResponse): MealSuggestionWithCombination[] => {
+  return plan.meals.filter(hasRenderableCombination);
+};
+
+const getInvalidMealCount = (plan: DailyPlanResponse) => {
+  return plan.meals.length - getRenderableMeals(plan).length;
+};
+
+const getUnavailableMealMessage = (invalidMealCount: number, totalMealCount: number) => {
+  if (totalMealCount === 0) {
+    return 'API đã trả về 200 nhưng chưa có bữa ăn nào trong thực đơn.';
+  }
+
+  if (invalidMealCount === totalMealCount) {
+    return 'API đã trả về 200 nhưng chưa có bữa nào tìm được tổ hợp món hợp lệ.';
+  }
+
+  return `${invalidMealCount} bữa chưa tìm được tổ hợp món hợp lệ nên chưa được hiển thị.`;
 };
 
 const getTodayKey = () => new Date().toISOString().slice(0, 10);
@@ -157,6 +184,8 @@ const replaceMealInStates = (
   mealType: MealType,
   updatedMeal: DailyPlanResponse['meals'][number]
 ): UIMealState[] => {
+  if (!hasRenderableCombination(updatedMeal)) return currentStates;
+
   return currentStates.map((state) =>
     state.meal.mealType === mealType ? { ...state, meal: updatedMeal } : state
   );
@@ -192,12 +221,14 @@ const updateFavoriteInPlan = (
   ...currentPlan,
   meals: currentPlan.meals.map((meal) => ({
     ...meal,
-    topCombination: {
-      ...meal.topCombination,
-      dishes: meal.topCombination.dishes.map((dish) =>
-        dish.dishId === dishId ? { ...dish, favorite } : dish
-      ),
-    },
+    topCombination: meal.topCombination
+      ? {
+          ...meal.topCombination,
+          dishes: meal.topCombination.dishes.map((dish) =>
+            dish.dishId === dishId ? { ...dish, favorite } : dish
+          ),
+        }
+      : null,
     slotAlternatives: Object.fromEntries(
       Object.entries(meal.slotAlternatives).map(([slotKey, options]) => [
         slotKey,
@@ -239,9 +270,17 @@ export const useMealPlan = ({
       sessionStorage.removeItem(cacheKey);
       return;
     }
+    if (getRenderableMeals(cached.plan).length === 0) {
+      sessionStorage.removeItem(cacheKey);
+      return;
+    }
+
+    const cachedStates = cached.mealStates.filter((state) =>
+      hasRenderableCombination(state.meal)
+    );
 
     setPlan(cached.plan);
-    setMealStates(cached.mealStates);
+    setMealStates(cachedStates.length > 0 ? cachedStates : buildInitialMealStates(cached.plan));
   }, [cacheKey, plan, userContext]);
 
   const persistPlan = useCallback((nextPlan: DailyPlanResponse, nextStates: UIMealState[]) => {
@@ -273,6 +312,31 @@ export const useMealPlan = ({
         forceCompute: options.forceCompute ?? false,
       });
       const nextStates = buildInitialMealStates(nextPlan);
+      const needsConstitutionConfirmation = Boolean(
+        nextPlan.warning?.requireConfirm &&
+          nextPlan.meals.length === 0 &&
+          !options.constitutionConfirmed
+      );
+
+      if (needsConstitutionConfirmation) {
+        setPlan(null);
+        setMealStates([]);
+        sessionStorage.removeItem(cacheKey);
+        return nextPlan;
+      }
+
+      const invalidMealCount = getInvalidMealCount(nextPlan);
+      if (invalidMealCount > 0) {
+        setError(getUnavailableMealMessage(invalidMealCount, nextPlan.meals.length));
+      }
+
+      if (nextStates.length === 0) {
+        setPlan(null);
+        setMealStates([]);
+        sessionStorage.removeItem(cacheKey);
+        return nextPlan;
+      }
+
       persistPlan(nextPlan, nextStates);
       return nextPlan;
     } catch (generateError) {
@@ -281,7 +345,7 @@ export const useMealPlan = ({
     } finally {
       setLoading(false);
     }
-  }, [persistPlan, preferences, userContext]);
+  }, [cacheKey, persistPlan, preferences, userContext]);
 
   const swap = useCallback(async (
     mealType: MealType,
@@ -292,6 +356,10 @@ export const useMealPlan = ({
 
     const targetMeal = plan.meals.find((meal) => meal.mealType === mealType);
     if (!targetMeal) return null;
+    if (!targetMeal.topCombination) {
+      setError('Bữa này chưa có tổ hợp món hợp lệ để đổi món.');
+      return null;
+    }
 
     const snapshot: SwapSnapshot = { plan, mealStates };
     setSwapSnapshot(snapshot);
@@ -439,6 +507,10 @@ export const useMealPlan = ({
 
     const targetMeal = plan.meals.find((meal) => meal.mealType === mealType);
     if (!targetMeal) return;
+    if (!targetMeal.topCombination) {
+      setError('Bữa này chưa có tổ hợp món hợp lệ để xác nhận.');
+      return;
+    }
 
     setConfirmLoading(mealType);
     setError(null);
@@ -480,10 +552,13 @@ export const useMealPlan = ({
     if (!plan) return;
 
     const nextPlan = updateFavoriteInPlan(plan, dishId, favorite);
-    const nextStates = mealStates.map((state) => ({
-      ...state,
-      meal: nextPlan.meals.find((meal) => meal.mealType === state.meal.mealType) ?? state.meal,
-    }));
+    const nextStates = mealStates.map((state) => {
+      const updatedMeal = nextPlan.meals.find((meal) => meal.mealType === state.meal.mealType);
+      return {
+        ...state,
+        meal: updatedMeal && hasRenderableCombination(updatedMeal) ? updatedMeal : state.meal,
+      };
+    });
     persistPlan(nextPlan, nextStates);
   }, [mealStates, persistPlan, plan]);
 

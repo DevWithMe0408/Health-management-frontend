@@ -91,9 +91,13 @@ export interface MealSuggestionResponse {
   proteinTarget: number;
   fatTarget: number;
   carbTarget: number;
-  topCombination: MealCombinationResponse;
+  topCombination: MealCombinationResponse | null;
   slotAlternatives: Record<string, DishOptionResponse[]>;
 }
+
+export type MealSuggestionWithCombination = MealSuggestionResponse & {
+  topCombination: MealCombinationResponse;
+};
 
 export interface DailyPlanResponse {
   planDate: string;
@@ -193,7 +197,7 @@ export interface MealLogHistoryResponse {
 }
 
 export interface UIMealState {
-  meal: MealSuggestionResponse;
+  meal: MealSuggestionWithCombination;
   status: UIMealStatus;
   expanded: boolean;
 }
