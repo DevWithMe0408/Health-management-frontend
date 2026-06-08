@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { ArrowPathIcon, PlusCircleIcon } from '@heroicons/react/24/outline';
 import { toast } from 'sonner';
 import { useAuth } from '../contexts/AuthContext';
@@ -7,12 +7,15 @@ import {
   getDashboardOverview,
   type DashboardOverview,
 } from '../services/dashboard.service';
+import { updateCurrentGoal } from '../services/userGoals.service';
 import { updatePbfMethod } from '../services/userPreferences.service';
 import type { GoalCode, PbfMethod } from '../types/refactorUi.types';
+import { computeRoadmap } from '../utils/roadmap';
 import ComplianceCard from '../components/dashboard/ComplianceCard';
 import ConstitutionCard from '../components/dashboard/ConstitutionCard';
 import HealthMetricsDetails from '../components/dashboard/HealthMetricsDetails';
 import MetricSummaryGrid from '../components/dashboard/MetricSummaryGrid';
+import RecommendationRoadmap from '../components/dashboard/RecommendationRoadmap';
 import ReminderList from '../components/dashboard/ReminderList';
 import WeightChartCard from '../components/dashboard/WeightChartCard';
 
@@ -39,6 +42,7 @@ const DashboardSkeleton: React.FC = () => (
 );
 
 const DashboardPage: React.FC = () => {
+  const navigate = useNavigate();
   const { user } = useAuth();
   const [overview, setOverview] = useState<DashboardOverview | null>(null);
   const [loading, setLoading] = useState(true);
@@ -100,6 +104,33 @@ const DashboardPage: React.FC = () => {
     const preference = overview?.preferences.find((item) => item.prefKey === 'pbf_method');
     return preference?.prefValue === 'MODEL_1' ? 'Model AI' : 'Công thức Navy';
   }, [overview?.constitution?.pbfSource, overview?.preferences, pbfOverride]);
+
+  const roadmap = useMemo(
+    () => computeRoadmap(overview?.constitution ?? null, overview?.metrics ?? null),
+    [overview?.constitution, overview?.metrics],
+  );
+
+  const handleSetTarget = useCallback(async () => {
+    if (roadmap.state !== 'normal' || !roadmap.suggestedGoal) return;
+
+    const confirmed = window.confirm(
+      'Đặt mục tiêu mới theo gợi ý? Tiến độ hiện tại (nếu có) sẽ được tính lại từ hôm nay.',
+    );
+    if (!confirmed) return;
+
+    try {
+      await updateCurrentGoal({
+        goalCode: roadmap.suggestedGoal,
+        targetWeightKg: roadmap.suggestedTargetKg ?? null,
+        targetDurationMonths: roadmap.suggestedDurationMonths ?? 6,
+        note: 'Đặt từ Lộ trình khuyến nghị',
+      });
+      toast.success('Đã cập nhật mục tiêu theo gợi ý.');
+      await loadDashboard();
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'Không cập nhật được mục tiêu.');
+    }
+  }, [loadDashboard, roadmap]);
 
   const displayName = user?.name || user?.username || 'bạn';
   const currentGoal = overview?.currentGoal?.goalCode;
@@ -179,6 +210,21 @@ const DashboardPage: React.FC = () => {
           currentGoal={overview?.currentGoal ?? null}
         />
       </div>
+
+      <RecommendationRoadmap
+        state={roadmap.state}
+        mode={roadmap.mode}
+        current={roadmap.current}
+        low={roadmap.low}
+        high={roadmap.high}
+        delta={roadmap.delta}
+        speed={roadmap.speed}
+        time={roadmap.time}
+        pbf={roadmap.pbf}
+        missing={roadmap.missing}
+        onSetTarget={handleSetTarget}
+        onUpdate={() => navigate('/submit-data')}
+      />
 
       <WeightChartCard
         data={overview?.weightHistory ?? []}
