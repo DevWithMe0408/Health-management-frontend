@@ -24,6 +24,7 @@ import MealConfigPage from './pages/adminPage/MealConfigPage';
 import PenaltyConfigPage from './pages/adminPage/PenaltyConfigPage';
 import ScoringConfigPage from './pages/adminPage/ScoringConfigPage';
 import SystemConfigPage from './pages/adminPage/SystemConfigPage';
+import DishListPage from './pages/adminPage/DishListPage';
 import UsersListPage from './pages/adminPage/UsersListPage';
 import UserDetailPage from './pages/adminPage/UserDetailPage';
 
@@ -120,6 +121,7 @@ const AppRoutes: React.FC = () => {
       <Route path="/admin/configs/penalties" element={<AdminRoute><AdminLayout><PenaltyConfigPage /></AdminLayout></AdminRoute>} />
       <Route path="/admin/configs/scoring" element={<AdminRoute><AdminLayout><ScoringConfigPage /></AdminLayout></AdminRoute>} />
       <Route path="/admin/configs/system" element={<AdminRoute><AdminLayout><SystemConfigPage /></AdminLayout></AdminRoute>} />
+      <Route path="/admin/dishes" element={<AdminRoute><AdminLayout><DishListPage /></AdminLayout></AdminRoute>} />
       <Route path="/admin/users" element={<AdminRoute><AdminLayout><UsersListPage /></AdminLayout></AdminRoute>} />
       <Route path="/admin/users/:userId" element={<AdminRoute><AdminLayout><UserDetailPage /></AdminLayout></AdminRoute>} />
     </Routes>

@@ -3,6 +3,7 @@ import { NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import {
   ChartBarIcon,
+  CakeIcon,
   Cog6ToothIcon,
   UserGroupIcon,
   ArrowLeftOnRectangleIcon,
@@ -91,6 +92,21 @@ const AdminSidebar: React.FC = () => {
             </div>
           )}
         </div>
+
+        {/* Dishes */}
+        <NavLink
+          to="/admin/dishes"
+          className={({ isActive }) =>
+            `flex items-center gap-3 px-3 py-2 rounded-md text-sm transition-colors ${
+              isActive
+                ? 'bg-green-50 text-brand-green font-semibold'
+                : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+            }`
+          }
+        >
+          <CakeIcon className="h-5 w-5 shrink-0" />
+          Món ăn
+        </NavLink>
 
         {/* Users */}
         <NavLink
