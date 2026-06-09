@@ -10,7 +10,7 @@ import AlternateCard from './AlternateCard';
 import PinnedStrip from './PinnedStrip';
 import type { PinnedItem } from './PinnedStrip';
 import SearchBar from './SearchBar';
-import ServingStepper from './ServingStepper';
+import ServingStepper, { clampServing } from './ServingStepper';
 import Spinner from '../common/Spinner';
 import { SLOT_CODE_LABEL } from '../../constants/slotCode.constants';
 import { searchDishes } from '../../services/dish.service';
@@ -110,7 +110,7 @@ const SwapDrawer = ({
     const initialId = findInitialDishId(alternatives, suggestion);
     setSelectedDishId(initialId);
     const initialOption = alternatives.find((option) => option.dishId === initialId);
-    if (initialOption) setServing(initialOption.expectedServing);
+    if (initialOption) setServing(clampServing(initialOption.expectedServing));
   }, [open, alternatives, suggestion]);
 
   // Debounce the search query.
@@ -153,12 +153,12 @@ const SwapDrawer = ({
 
   const handleSelect = (option: DishOptionResponse) => {
     setSelectedDishId(option.dishId);
-    setServing(option.expectedServing);
+    setServing(clampServing(option.expectedServing));
   };
 
   const handleConfirm = () => {
     if (!selectedOption?.baseServingG || confirmLoading) return;
-    const overrideGrams = Math.round(serving * selectedOption.baseServingG);
+    const overrideGrams = Math.round(clampServing(serving) * selectedOption.baseServingG);
     void onConfirm(selectedOption.dishId, overrideGrams);
   };
 
@@ -281,7 +281,6 @@ const SwapDrawer = ({
                   serving={serving}
                   unit={selectedOption.unit}
                   baseServingG={selectedOption.baseServingG}
-                  expectedServing={selectedOption.expectedServing}
                   onChange={setServing}
                 />
               )}
@@ -343,7 +342,7 @@ const SwapDrawer = ({
                       Khẩu phần áp dụng:{' '}
                       <b className="text-gray-700">
                         {selectedOption.unit && selectedOption.baseServingG
-                          ? `${formatServing(serving)} ${selectedOption.unit} (${Math.round(serving * selectedOption.baseServingG)}g)`
+                          ? `${formatServing(clampServing(serving))} ${selectedOption.unit} (${Math.round(clampServing(serving) * selectedOption.baseServingG)}g)`
                           : `${Math.round(selectedOption.expectedActualGrams)}g`}
                       </b>
                     </p>

@@ -146,7 +146,6 @@ const FoodRow = ({
             serving={servingDraft ?? dish.servingMultiplier}
             unit={dish.unit}
             baseServingG={dish.baseServingG}
-            expectedServing={dish.servingMultiplier}
             onChange={(nextServing) => onServingDraftChange?.(nextServing)}
           />
 

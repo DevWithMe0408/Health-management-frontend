@@ -13,6 +13,7 @@ import FoodRow from './FoodRow';
 import MacroBar from './atoms/MacroBar';
 import ScoreBadge from './atoms/ScoreBadge';
 import StatusPill from './atoms/StatusPill';
+import { clampServing } from './ServingStepper';
 import type {
   DishSuggestionResponse,
   MealSuggestionWithCombination,
@@ -90,7 +91,7 @@ const MealCard = ({
       setEditingSlotKey(null);
       return;
     }
-    setServingDraft(dish.servingMultiplier);
+    setServingDraft(clampServing(dish.servingMultiplier));
     setEditingSlotKey(dish.slotKey);
   };
 
@@ -99,7 +100,7 @@ const MealCard = ({
 
     setRebalancingSlotKey(dish.slotKey);
     try {
-      await onRebalanceServing(meal.mealType, dish, servingDraft);
+      await onRebalanceServing(meal.mealType, dish, clampServing(servingDraft));
       setEditingSlotKey(null);
     } finally {
       setRebalancingSlotKey(null);

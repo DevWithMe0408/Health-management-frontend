@@ -6,31 +6,28 @@ interface ServingStepperProps {
   serving: number;
   unit: string;
   baseServingG: number;
-  expectedServing: number;
   onChange: (nextServing: number) => void;
 }
 
-const STEP = 0.5;
-const MIN = 0.5;
+export const SERVING_STEP = 0.5;
+export const MIN_SERVING = 0.5;
+export const MAX_SERVING = 2.5;
 
-/**
- * Serving stepper bound to the 0.5 grid. Max is computed as 1.5x expected
- * serving snapped DOWN to the nearest 0.5 — using Math.floor not Math.round,
- * otherwise an expected of 1.5 would yield a max of 2.25 which falls off the
- * grid and breaks the +/- buttons.
- */
+export const clampServing = (value: number) => {
+  return Math.min(MAX_SERVING, Math.max(MIN_SERVING, value));
+};
+
 const ServingStepper = ({
   name,
   serving,
   unit,
   baseServingG,
-  expectedServing,
   onChange,
 }: ServingStepperProps) => {
-  const max = Math.floor(1.5 * expectedServing * 2) / 2;
-  const atMin = serving <= MIN;
-  const atMax = serving >= max;
-  const grams = Math.round(serving * baseServingG);
+  const safeServing = clampServing(serving);
+  const atMin = safeServing <= MIN_SERVING;
+  const atMax = safeServing >= MAX_SERVING;
+  const grams = Math.round(safeServing * baseServingG);
 
   const buttonBase =
     'grid h-9 w-9 place-items-center rounded-lg border-[1.5px] border-brand-green bg-white text-brand-green-dark';
@@ -51,7 +48,7 @@ const ServingStepper = ({
           <button
             type="button"
             disabled={atMin}
-            onClick={() => onChange(Math.max(MIN, serving - STEP))}
+            onClick={() => onChange(clampServing(safeServing - SERVING_STEP))}
             aria-label="Giảm khẩu phần"
             className={
               buttonBase +
@@ -67,7 +64,7 @@ const ServingStepper = ({
           <div className="mx-3 min-w-[90px] text-center">
             <div className="leading-tight">
               <span className="text-[22px] font-bold tabular-nums text-gray-900">
-                {formatServing(serving)}
+                {formatServing(safeServing)}
               </span>
               <span className="ml-1 text-sm font-medium text-gray-700">{unit}</span>
             </div>
@@ -79,7 +76,7 @@ const ServingStepper = ({
           <button
             type="button"
             disabled={atMax}
-            onClick={() => onChange(Math.min(max, serving + STEP))}
+            onClick={() => onChange(clampServing(safeServing + SERVING_STEP))}
             aria-label="Tăng khẩu phần"
             className={
               buttonBase +
@@ -95,7 +92,8 @@ const ServingStepper = ({
       </div>
 
       <div className="mt-2 text-center text-xs text-gray-500">
-        Bước {formatServing(STEP)} {unit} · Min {formatServing(MIN)} · Max {formatServing(max)}
+        Bước {formatServing(SERVING_STEP)} {unit} · Min {formatServing(MIN_SERVING)} · Max{' '}
+        {formatServing(MAX_SERVING)}
       </div>
     </div>
   );
