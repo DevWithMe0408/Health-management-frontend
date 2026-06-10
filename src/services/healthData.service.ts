@@ -40,6 +40,7 @@ export type HistoricalDataPoint = {
   timestamp: string;
   value: number;
   unit?: string;
+  unitCode?: string | null;
 };
 
 export type HistoricalDataApiResponse = HistoricalDataPoint[];
@@ -92,13 +93,15 @@ export const getHistoricalHealthData = async (
   _token: string | undefined,
   indicatorType: string,
   from?: string,
-  to?: string
+  to?: string,
+  granularity?: string
 ): Promise<HistoricalDataApiResponse> => {
   void _token;
   try {
     const params: Record<string, string> = {};
     if (from) params.from = from;
     if (to) params.to = to;
+    if (granularity) params.granularity = granularity;
 
     const response = await apiClient.get<
       DataResponse<HistoricalDataApiResponse> | HistoricalDataApiResponse

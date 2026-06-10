@@ -1,7 +1,14 @@
 import React from 'react';
 import { NavLink, useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
-import { HomeIcon, PencilSquareIcon, BeakerIcon, BellIcon, ArrowLeftOnRectangleIcon } from '@heroicons/react/24/outline';
+import {
+  ArrowLeftOnRectangleIcon,
+  BeakerIcon,
+  BellIcon,
+  HomeIcon,
+  PencilSquareIcon,
+  PresentationChartLineIcon,
+} from '@heroicons/react/24/outline';
 
 interface NavItemProps {
   to: string;
@@ -77,6 +84,7 @@ const Sidebar: React.FC = () => {
         <NavItem to="/submit-data" icon={PencilSquareIcon} label="Cập nhật Chỉ số" />
         <NavItem to="/nutrition-plan" icon={BeakerIcon} label="Đề xuất Thực đơn" />
         <NavItem to="/notifications" icon={BellIcon} label="Thông báo" />
+        <NavItem to="/indicators-history" icon={PresentationChartLineIcon} label="Lịch sử Chỉ số" />
       </nav>
 
       <div className="mt-auto">

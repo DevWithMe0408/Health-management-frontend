@@ -5,6 +5,7 @@ import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import DashboardPage from './pages/DashboardPage';
 import SubmitHealthDataPage from './pages/SubmitHealthDataPage';
+import HealthHistoryPage from './pages/HealthHistoryPage';
 import HealthStatsPage from './pages/HealthStatsPage';
 import NotFoundPage from './pages/NotFoundPage';
 import LandingPage from './pages/LandingPage';
@@ -109,6 +110,14 @@ const AppRoutes: React.FC = () => {
         } 
       />
       {/* Placeholder routes cho các chức năng khác */}
+      <Route
+        path="/indicators-history"
+        element={
+          <ProtectedRoute>
+            <MainLayout><HealthHistoryPage /></MainLayout>
+          </ProtectedRoute>
+        }
+      />
       <Route path="/nutrition-plan" element={<ProtectedRoute><MainLayout><MealRecommendationPage /></MainLayout></ProtectedRoute>} />
       <Route path="/notifications" element={<ProtectedRoute><MainLayout><div>Notifications Page (Coming Soon)</div></MainLayout></ProtectedRoute>} />
       
