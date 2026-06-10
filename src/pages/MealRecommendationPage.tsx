@@ -1,7 +1,11 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { AdjustmentsHorizontalIcon } from '@heroicons/react/24/outline';
+import {
+  AdjustmentsHorizontalIcon,
+  InformationCircleIcon,
+} from '@heroicons/react/24/outline';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
+import DaySelector, { TomorrowChip } from '../components/meal/DaySelector';
 import FooterSummary from '../components/meal/FooterSummary';
 import InfoStrip from '../components/meal/InfoStrip';
 import MealCard from '../components/meal/MealCard';
@@ -22,6 +26,7 @@ import type {
   DishSuggestionResponse,
   DailyPlanWarningResponse,
   MealType,
+  PlanDay,
   SwapSuggestion,
   UIMealState,
 } from '../types/meal.types';
@@ -150,6 +155,12 @@ const MealRecommendationPage = () => {
     EMPTY_SWAP_DRAWER_STATE
   );
   const todayLabel = useMemo(() => formatVietnameseDate(new Date()), []);
+  const tomorrowLabel = useMemo(() => {
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    return formatVietnameseDate(tomorrow);
+  }, []);
+  const dateLabel = mealPlan.planDay === 'TOMORROW' ? tomorrowLabel : todayLabel;
   const daySummary = useMemo(
     () => computeDaySummary(mealPlan.mealStates),
     [mealPlan.mealStates]
@@ -188,6 +199,25 @@ const MealRecommendationPage = () => {
       return nextPlan;
     },
     [generateMealPlan]
+  );
+
+  const handleDayChange = useCallback(
+    (day: PlanDay) => {
+      if (day === mealPlan.planDay) return;
+      if (preferences.isFirstTime) {
+        setWizardOpen(true);
+        toast.info('Hãy thiết lập bữa ăn trước khi tạo thực đơn.');
+        return;
+      }
+
+      void generateAndHandleWarning({ planDay: day, constitutionConfirmed });
+    },
+    [
+      constitutionConfirmed,
+      generateAndHandleWarning,
+      mealPlan.planDay,
+      preferences.isFirstTime,
+    ]
   );
 
   useEffect(() => {
@@ -369,20 +399,36 @@ const MealRecommendationPage = () => {
   return (
     <div className="mx-auto max-w-6xl">
       <div className="mb-6 flex flex-wrap items-end justify-between gap-3">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">Đề xuất thực đơn</h1>
+        <div className="min-w-0">
+          <div className="flex flex-wrap items-center gap-2.5">
+            <h1 className="text-2xl font-bold text-gray-900">Đề xuất thực đơn</h1>
+            {mealPlan.planDay === 'TOMORROW' && <TomorrowChip />}
+          </div>
           <p className="mt-1 text-sm text-gray-500">
             Thực đơn cá nhân hóa theo mục tiêu, TDEE và thể trạng hiện tại.
           </p>
+          {mealPlan.planDay === 'TOMORROW' && (
+            <p className="mt-1.5 flex items-center gap-1.5 text-xs font-medium text-brand-green-darker">
+              <InformationCircleIcon className="h-3.5 w-3.5 flex-shrink-0" />
+              Đề xuất chuẩn bị trước cho ngày mai
+            </p>
+          )}
         </div>
-        <button
-          type="button"
-          onClick={() => setWizardOpen(true)}
-          className="inline-flex items-center gap-1.5 rounded-xl border border-emerald-200 bg-white px-3.5 py-2 text-sm font-semibold text-brand-green-darker transition hover:bg-emerald-50"
-        >
-          <AdjustmentsHorizontalIcon className="h-4 w-4" />
-          {preferences.isFirstTime ? 'Thiết lập bữa ăn' : 'Đổi thiết lập'}
-        </button>
+        <div className="flex flex-wrap items-center gap-2">
+          <DaySelector
+            value={mealPlan.planDay}
+            onChange={handleDayChange}
+            disabled={mealPlan.loading}
+          />
+          <button
+            type="button"
+            onClick={() => setWizardOpen(true)}
+            className="inline-flex items-center gap-1.5 rounded-xl border border-emerald-200 bg-white px-3.5 py-2 text-sm font-semibold text-brand-green-darker transition hover:bg-emerald-50"
+          >
+            <AdjustmentsHorizontalIcon className="h-4 w-4" />
+            {preferences.isFirstTime ? 'Thiết lập bữa ăn' : 'Đổi thiết lập'}
+          </button>
+        </div>
       </div>
 
       {userContext.data && (
@@ -391,7 +437,7 @@ const MealRecommendationPage = () => {
           goalLabel={GOAL_LABEL[userContext.data.goalCode]}
           tdee={userContext.data.tdee}
           constitutionLabel={CONSTITUTION_LABEL[userContext.data.constitution]}
-          date={todayLabel}
+          date={dateLabel}
           onChangeGoal={() => navigate('/profile')}
           onRegen={() => {
             if (preferences.isFirstTime) {

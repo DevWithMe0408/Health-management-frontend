@@ -2,6 +2,8 @@ export type GoalCode = 'GIAM' | 'DUY_TRI' | 'TANG';
 
 export type PlanType = '3_BUA' | '5_BUA';
 
+export type PlanDay = 'TODAY' | 'TOMORROW';
+
 export type ConstitutionCode = 'GAY' | 'CAN_DOI' | 'THUA_CAN' | 'BEO_PHI';
 
 export type MealType = 'SANG' | 'PHU_SANG' | 'TRUA' | 'PHU_CHIEU' | 'TOI';
@@ -148,6 +150,7 @@ export interface RecommendFullDayRequest {
   constitutionConfirmed?: boolean;
   perMealConfig: PerMealConfigMap;
   forceCompute?: boolean;
+  planDay?: PlanDay;
 }
 
 export interface PinnedDish {

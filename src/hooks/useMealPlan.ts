@@ -12,6 +12,7 @@ import type {
   DishSuggestionResponse,
   MealSuggestionWithCombination,
   MealType,
+  PlanDay,
   PinnedDish,
   SwapResultResponse,
   SwapSuggestion,
@@ -66,6 +67,7 @@ interface UseMealPlanResult {
   lastSwapSuggestionMealType: MealType | null;
   lastWarnings: WarningResponse[];
   pinsByMeal: PinsByMeal;
+  planDay: PlanDay;
   generate: (options?: GenerateMealPlanOptions) => Promise<DailyPlanResponse | null>;
   swap: (
     mealType: MealType,
@@ -98,6 +100,7 @@ interface UseMealPlanResult {
 interface GenerateMealPlanOptions {
   forceCompute?: boolean;
   constitutionConfirmed?: boolean;
+  planDay?: PlanDay;
 }
 
 const buildInitialMealStates = (plan: DailyPlanResponse): UIMealState[] => {
@@ -136,8 +139,8 @@ const getUnavailableMealMessage = (invalidMealCount: number, totalMealCount: num
 
 const getTodayKey = () => new Date().toISOString().slice(0, 10);
 
-const getCacheKey = (userId: string | null | undefined) => {
-  return `nutrition-plan-${userId ?? 'anonymous'}-${getTodayKey()}`;
+const getCacheKey = (userId: string | null | undefined, planDay: PlanDay) => {
+  return `nutrition-plan-${userId ?? 'anonymous'}-${getTodayKey()}-${planDay}`;
 };
 
 const readCachedMealPlan = (cacheKey: string): CachedMealPlan | null => {
@@ -258,11 +261,12 @@ export const useMealPlan = ({
   const [lastWarnings, setLastWarnings] = useState<WarningResponse[]>([]);
   const [pinsByMeal, setPinsByMeal] = useState<PinsByMeal>(() => new Map());
   const [swapSnapshot, setSwapSnapshot] = useState<SwapSnapshot | null>(null);
+  const [planDay, setPlanDay] = useState<PlanDay>('TODAY');
 
-  const cacheKey = useMemo(() => getCacheKey(user?.userId), [user?.userId]);
+  const cacheKey = useMemo(() => getCacheKey(user?.userId, planDay), [user?.userId, planDay]);
 
   useEffect(() => {
-    if (!userContext || plan) return;
+    if (!userContext || plan || loading) return;
 
     const cached = readCachedMealPlan(cacheKey);
     if (!cached) return;
@@ -281,16 +285,29 @@ export const useMealPlan = ({
 
     setPlan(cached.plan);
     setMealStates(cachedStates.length > 0 ? cachedStates : buildInitialMealStates(cached.plan));
-  }, [cacheKey, plan, userContext]);
+  }, [cacheKey, loading, plan, userContext]);
 
-  const persistPlan = useCallback((nextPlan: DailyPlanResponse, nextStates: UIMealState[]) => {
-    setPlan(nextPlan);
-    setMealStates(nextStates);
-    writeCachedMealPlan(cacheKey, nextPlan, nextStates);
-  }, [cacheKey]);
+  const persistPlan = useCallback(
+    (nextPlan: DailyPlanResponse, nextStates: UIMealState[], key: string = cacheKey) => {
+      setPlan(nextPlan);
+      setMealStates(nextStates);
+      writeCachedMealPlan(key, nextPlan, nextStates);
+    },
+    [cacheKey]
+  );
 
   const generate = useCallback(async (options: GenerateMealPlanOptions = {}) => {
     if (!userContext || !preferences) return null;
+
+    const effectiveDay: PlanDay = options.planDay ?? planDay;
+    const effectiveKey = getCacheKey(user?.userId, effectiveDay);
+    const isSwitchingDay = effectiveDay !== planDay;
+
+    if (isSwitchingDay) {
+      setPlanDay(effectiveDay);
+      setPlan(null);
+      setMealStates([]);
+    }
 
     setLoading(true);
     setError(null);
@@ -310,6 +327,7 @@ export const useMealPlan = ({
         constitutionConfirmed: options.constitutionConfirmed ?? false,
         perMealConfig: preferences.perMealConfig,
         forceCompute: options.forceCompute ?? false,
+        planDay: effectiveDay,
       });
       const nextStates = buildInitialMealStates(nextPlan);
       const needsConstitutionConfirmation = Boolean(
@@ -321,7 +339,7 @@ export const useMealPlan = ({
       if (needsConstitutionConfirmation) {
         setPlan(null);
         setMealStates([]);
-        sessionStorage.removeItem(cacheKey);
+        sessionStorage.removeItem(effectiveKey);
         return nextPlan;
       }
 
@@ -333,11 +351,11 @@ export const useMealPlan = ({
       if (nextStates.length === 0) {
         setPlan(null);
         setMealStates([]);
-        sessionStorage.removeItem(cacheKey);
+        sessionStorage.removeItem(effectiveKey);
         return nextPlan;
       }
 
-      persistPlan(nextPlan, nextStates);
+      persistPlan(nextPlan, nextStates, effectiveKey);
       return nextPlan;
     } catch (generateError) {
       setError(generateError instanceof Error ? generateError.message : 'Không thể tạo thực đơn.');
@@ -345,7 +363,7 @@ export const useMealPlan = ({
     } finally {
       setLoading(false);
     }
-  }, [cacheKey, persistPlan, preferences, userContext]);
+  }, [persistPlan, planDay, preferences, user?.userId, userContext]);
 
   const swap = useCallback(async (
     mealType: MealType,
@@ -589,6 +607,7 @@ export const useMealPlan = ({
     lastSwapSuggestionMealType,
     lastWarnings,
     pinsByMeal,
+    planDay,
     generate,
     swap,
     applyPin,
