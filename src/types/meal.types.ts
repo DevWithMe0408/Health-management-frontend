@@ -193,6 +193,7 @@ export interface MealLogHistoryResponse {
   totalCarb: number;
   finalScore: number;
   status: BackendMealStatus;
+  customNote: string | null;
   dishes: DishSuggestionResponse[];
 }
 

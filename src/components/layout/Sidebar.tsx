@@ -5,6 +5,7 @@ import {
   ArrowLeftOnRectangleIcon,
   BeakerIcon,
   BellIcon,
+  CalendarDaysIcon,
   HomeIcon,
   PencilSquareIcon,
   PresentationChartLineIcon,
@@ -18,8 +19,9 @@ interface NavItemProps {
 }
 
 const NavItem: React.FC<NavItemProps> = ({ to, icon: Icon, label, onClick }) => {
-  const baseClasses = "flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors duration-150 group";
-  
+  const baseClasses =
+    'flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors duration-150 group';
+
   if (onClick) {
     return (
       <button
@@ -45,12 +47,10 @@ const NavItem: React.FC<NavItemProps> = ({ to, icon: Icon, label, onClick }) => 
     >
       {({ isActive }) => (
         <>
-          <Icon 
+          <Icon
             className={`h-6 w-6 ${
-              isActive 
-                ? 'text-white' 
-                : 'text-gray-600 group-hover:text-green-600'
-            }`} 
+              isActive ? 'text-white' : 'text-gray-600 group-hover:text-green-600'
+            }`}
           />
           <span>{label}</span>
         </>
@@ -71,8 +71,8 @@ const Sidebar: React.FC = () => {
   return (
     <aside className="w-64 bg-white shadow-lg h-full flex flex-col p-4 pt-6 border-r border-gray-200">
       <div className="mb-8 text-center">
-        <Link 
-          to={user ? "/dashboard" : "/"} 
+        <Link
+          to={user ? '/dashboard' : '/'}
           className="text-2xl font-bold text-green-700 hover:text-green-800 transition-colors"
         >
           HealthCare
@@ -82,9 +82,10 @@ const Sidebar: React.FC = () => {
       <nav className="flex-grow space-y-2">
         <NavItem to="/dashboard" icon={HomeIcon} label="Thông số Sức khỏe" />
         <NavItem to="/submit-data" icon={PencilSquareIcon} label="Cập nhật Chỉ số" />
-        <NavItem to="/nutrition-plan" icon={BeakerIcon} label="Đề xuất Thực đơn" />
-        <NavItem to="/notifications" icon={BellIcon} label="Thông báo" />
         <NavItem to="/indicators-history" icon={PresentationChartLineIcon} label="Lịch sử Chỉ số" />
+        <NavItem to="/nutrition-plan" icon={BeakerIcon} label="Đề xuất Thực đơn" />
+        <NavItem to="/nutrition-history" icon={CalendarDaysIcon} label="Nhật ký bữa ăn" />
+        <NavItem to="/notifications" icon={BellIcon} label="Thông báo" />
       </nav>
 
       <div className="mt-auto">

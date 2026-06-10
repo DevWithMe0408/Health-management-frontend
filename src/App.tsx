@@ -16,6 +16,7 @@ import { useAuth } from './contexts/AuthContext';
 import ProfilePage from './pages/ProfilePage';
 import OnboardingWizardPage from './pages/OnboardingWizardPage';
 import MealRecommendationPage from './pages/MealRecommendationPage';
+import NutritionHistoryPage from './pages/nutritionHistory/NutritionHistoryPage';
 
 import AdminRoute from './components/common/AdminRoute';
 import AdminLayout from './layouts/AdminLayout';
@@ -119,6 +120,7 @@ const AppRoutes: React.FC = () => {
         }
       />
       <Route path="/nutrition-plan" element={<ProtectedRoute><MainLayout><MealRecommendationPage /></MainLayout></ProtectedRoute>} />
+      <Route path="/nutrition-history" element={<ProtectedRoute><MainLayout><NutritionHistoryPage /></MainLayout></ProtectedRoute>} />
       <Route path="/notifications" element={<ProtectedRoute><MainLayout><div>Notifications Page (Coming Soon)</div></MainLayout></ProtectedRoute>} />
       
       <Route path="*" element={<MainLayout><NotFoundPage /></MainLayout>} />
