@@ -1,13 +1,14 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
-  confirmMeal,
-  recommendFullDay,
+  dayPlan,
   swapDish,
 } from '../services/meal.service';
+import { updateMealStatus as patchMealStatus } from '../services/mealLog.service';
 import { useAuth } from '../contexts/AuthContext';
 import type { NutritionPreferences } from './useMealPreferences';
 import type { NutritionUserContextData } from './useUserContext';
 import type {
+  BackendMealStatus,
   DailyPlanResponse,
   DishSuggestionResponse,
   MealSuggestionWithCombination,
@@ -17,6 +18,7 @@ import type {
   SwapResultResponse,
   SwapSuggestion,
   UIMealState,
+  UIMealStatus,
   WarningResponse,
 } from '../types/meal.types';
 
@@ -90,7 +92,7 @@ interface UseMealPlanResult {
   dismissWarnings: () => void;
   dismissSuggestion: () => void;
   confirm: (mealType: MealType) => Promise<void>;
-  skip: (mealType: MealType) => void;
+  skip: (mealType: MealType) => Promise<void>;
   toggleExpand: (mealType: MealType) => void;
   setDishFavorite: (dishId: string, favorite: boolean) => void;
   dismissScoreDropEvent: () => void;
@@ -101,12 +103,19 @@ interface GenerateMealPlanOptions {
   forceCompute?: boolean;
   constitutionConfirmed?: boolean;
   planDay?: PlanDay;
+  forceRegenerate?: boolean;
 }
+
+const toUiStatus = (status: BackendMealStatus | null | undefined): UIMealStatus => {
+  if (status === 'FOLLOWED' || status === 'MODIFIED' || status === 'CUSTOM') return 'eaten';
+  if (status === 'SKIPPED') return 'skipped';
+  return 'suggested';
+};
 
 const buildInitialMealStates = (plan: DailyPlanResponse): UIMealState[] => {
   return getRenderableMeals(plan).map((meal, index) => ({
     meal,
-    status: 'suggested',
+    status: toUiStatus(meal.status),
     expanded: index === 0,
   }));
 };
@@ -123,6 +132,11 @@ const getRenderableMeals = (plan: DailyPlanResponse): MealSuggestionWithCombinat
 
 const getInvalidMealCount = (plan: DailyPlanResponse) => {
   return plan.meals.length - getRenderableMeals(plan).length;
+};
+
+const hasPersistedMealLogData = (plan: DailyPlanResponse) => {
+  const renderableMeals = getRenderableMeals(plan);
+  return renderableMeals.length > 0 && renderableMeals.every((meal) => Boolean(meal.mealLogId));
 };
 
 const getUnavailableMealMessage = (invalidMealCount: number, totalMealCount: number) => {
@@ -204,6 +218,17 @@ const updateMealStatus = (
   );
 };
 
+const updateMealStatusInPlan = (
+  currentPlan: DailyPlanResponse,
+  mealType: MealType,
+  status: BackendMealStatus
+): DailyPlanResponse => ({
+  ...currentPlan,
+  meals: currentPlan.meals.map((meal) =>
+    meal.mealType === mealType ? { ...meal, status } : meal
+  ),
+});
+
 const buildPinnedDishes = (
   mealDishes: DishSuggestionResponse[],
   swappedSlot: string
@@ -266,15 +291,18 @@ export const useMealPlan = ({
   const cacheKey = useMemo(() => getCacheKey(user?.userId, planDay), [user?.userId, planDay]);
 
   useEffect(() => {
-    if (!userContext || plan || loading) return;
+    if (!userContext || !preferences || plan || loading) return;
 
     const cached = readCachedMealPlan(cacheKey);
     if (!cached) return;
-    if (cached.plan.goalCode !== userContext.goalCode) {
+    if (
+      cached.plan.goalCode !== userContext.goalCode ||
+      cached.plan.planType !== preferences.planType
+    ) {
       sessionStorage.removeItem(cacheKey);
       return;
     }
-    if (getRenderableMeals(cached.plan).length === 0) {
+    if (!hasPersistedMealLogData(cached.plan)) {
       sessionStorage.removeItem(cacheKey);
       return;
     }
@@ -285,7 +313,7 @@ export const useMealPlan = ({
 
     setPlan(cached.plan);
     setMealStates(cachedStates.length > 0 ? cachedStates : buildInitialMealStates(cached.plan));
-  }, [cacheKey, loading, plan, userContext]);
+  }, [cacheKey, loading, plan, preferences, userContext]);
 
   const persistPlan = useCallback(
     (nextPlan: DailyPlanResponse, nextStates: UIMealState[], key: string = cacheKey) => {
@@ -303,6 +331,36 @@ export const useMealPlan = ({
     const effectiveKey = getCacheKey(user?.userId, effectiveDay);
     const isSwitchingDay = effectiveDay !== planDay;
 
+    if (!options.forceRegenerate) {
+      const cached = readCachedMealPlan(effectiveKey);
+      if (cached && !hasPersistedMealLogData(cached.plan)) {
+        sessionStorage.removeItem(effectiveKey);
+      }
+      if (
+        cached &&
+        cached.plan.goalCode === userContext.goalCode &&
+        cached.plan.planType === preferences.planType &&
+        hasPersistedMealLogData(cached.plan)
+      ) {
+        if (isSwitchingDay) setPlanDay(effectiveDay);
+        const cachedStates = cached.mealStates.filter((state) =>
+          hasRenderableCombination(state.meal)
+        );
+        setError(null);
+        setScoreDropEvent(null);
+        setLastSwapSuggestion(null);
+        setLastSwapSuggestionMealType(null);
+        setLastWarnings([]);
+        setPinsByMeal(new Map());
+        setSwapSnapshot(null);
+        setPlan(cached.plan);
+        setMealStates(
+          cachedStates.length > 0 ? cachedStates : buildInitialMealStates(cached.plan)
+        );
+        return cached.plan;
+      }
+    }
+
     if (isSwitchingDay) {
       setPlanDay(effectiveDay);
       setPlan(null);
@@ -319,7 +377,7 @@ export const useMealPlan = ({
     setSwapSnapshot(null);
 
     try {
-      const nextPlan = await recommendFullDay({
+      const nextPlan = await dayPlan({
         tdee: userContext.tdee,
         goalCode: userContext.goalCode,
         planType: preferences.planType,
@@ -328,6 +386,7 @@ export const useMealPlan = ({
         perMealConfig: preferences.perMealConfig,
         forceCompute: options.forceCompute ?? false,
         planDay: effectiveDay,
+        forceRegenerate: options.forceRegenerate ?? false,
       });
       const nextStates = buildInitialMealStates(nextPlan);
       const needsConstitutionConfirmation = Boolean(
@@ -529,22 +588,19 @@ export const useMealPlan = ({
       setError('Bữa này chưa có tổ hợp món hợp lệ để xác nhận.');
       return;
     }
+    if (!targetMeal.mealLogId) {
+      setError('Bữa này chưa được lưu, hãy tạo lại thực đơn.');
+      return;
+    }
 
     setConfirmLoading(mealType);
     setError(null);
 
     try {
-      await confirmMeal({
-        mealDate: plan.planDate,
-        mealType,
-        planType: plan.planType,
-        goalCode: plan.goalCode,
-        mealKcalTarget: targetMeal.mealKcalTarget,
-        selectedCombination: targetMeal.topCombination,
-      });
-
+      await patchMealStatus(targetMeal.mealLogId, 'FOLLOWED');
+      const nextPlan = updateMealStatusInPlan(plan, mealType, 'FOLLOWED');
       const nextStates = updateMealStatus(mealStates, mealType, 'eaten');
-      persistPlan(plan, nextStates);
+      persistPlan(nextPlan, nextStates);
     } catch (confirmError) {
       setError(confirmError instanceof Error ? confirmError.message : 'Không thể xác nhận bữa ăn.');
     } finally {
@@ -552,10 +608,28 @@ export const useMealPlan = ({
     }
   }, [mealStates, persistPlan, plan]);
 
-  const skip = useCallback((mealType: MealType) => {
+  const skip = useCallback(async (mealType: MealType) => {
     if (!plan) return;
-    const nextStates = updateMealStatus(mealStates, mealType, 'skipped');
-    persistPlan(plan, nextStates);
+
+    const targetMeal = plan.meals.find((meal) => meal.mealType === mealType);
+    if (!targetMeal?.mealLogId) {
+      setError('Bữa này chưa được lưu, hãy tạo lại thực đơn.');
+      return;
+    }
+
+    setConfirmLoading(mealType);
+    setError(null);
+
+    try {
+      await patchMealStatus(targetMeal.mealLogId, 'SKIPPED');
+      const nextPlan = updateMealStatusInPlan(plan, mealType, 'SKIPPED');
+      const nextStates = updateMealStatus(mealStates, mealType, 'skipped');
+      persistPlan(nextPlan, nextStates);
+    } catch (skipError) {
+      setError(skipError instanceof Error ? skipError.message : 'Không thể bỏ qua bữa ăn.');
+    } finally {
+      setConfirmLoading(null);
+    }
   }, [mealStates, persistPlan, plan]);
 
   const toggleExpand = useCallback((mealType: MealType) => {

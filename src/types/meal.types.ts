@@ -95,6 +95,8 @@ export interface MealSuggestionResponse {
   carbTarget: number;
   topCombination: MealCombinationResponse | null;
   slotAlternatives: Record<string, DishOptionResponse[]>;
+  status: BackendMealStatus | null;
+  mealLogId: string | null;
 }
 
 export type MealSuggestionWithCombination = MealSuggestionResponse & {
@@ -151,6 +153,7 @@ export interface RecommendFullDayRequest {
   perMealConfig: PerMealConfigMap;
   forceCompute?: boolean;
   planDay?: PlanDay;
+  forceRegenerate?: boolean;
 }
 
 export interface PinnedDish {

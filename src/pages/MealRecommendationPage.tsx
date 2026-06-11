@@ -446,6 +446,7 @@ const MealRecommendationPage = () => {
               return;
             }
             void generateAndHandleWarning({
+              forceRegenerate: true,
               forceCompute: true,
               constitutionConfirmed,
             });
@@ -509,7 +510,7 @@ const MealRecommendationPage = () => {
                   openSwapDrawer(meal.mealType, slotKey, currentDish)
                 }
                 onConfirm={() => void mealPlan.confirm(meal.mealType)}
-                onSkip={() => mealPlan.skip(meal.mealType)}
+                onSkip={() => void mealPlan.skip(meal.mealType)}
                 onToggleFavorite={handleToggleFavorite}
                 onRebalanceServing={handleRebalanceServing}
                 pinnedSlotKeys={pinnedSlotKeys}

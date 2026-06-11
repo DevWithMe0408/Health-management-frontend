@@ -22,6 +22,17 @@ export const recommendFullDay = async (
   return unwrapDataResponse(response.data);
 };
 
+export const dayPlan = async (
+  payload: RecommendFullDayRequest
+): Promise<DailyPlanResponse> => {
+  const response = await apiClient.post<DataResponse<DailyPlanResponse> | DailyPlanResponse>(
+    '/api/recommendation/day-plan',
+    payload
+  );
+
+  return unwrapDataResponse(response.data);
+};
+
 export const swapDish = async (
   payload: SwapDishRequest
 ): Promise<SwapResultResponse> => {
@@ -76,4 +87,3 @@ export const addFavoriteDish = async (
 export const removeFavoriteDish = async (dishId: string): Promise<void> => {
   await apiClient.delete<DataResponse<null>>(`/api/favorite-dishes/${dishId}`);
 };
-

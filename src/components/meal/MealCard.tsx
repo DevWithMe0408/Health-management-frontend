@@ -80,10 +80,12 @@ const MealCard = ({
   const mealName = MEAL_TYPE_LABEL[meal.mealType];
   const icon = MEAL_TYPE_ICON[meal.mealType];
   const iconBg = MEAL_TYPE_ICON_BG[meal.mealType];
-  const pinnedCount = pinnedSlotKeys.size;
   const [editingSlotKey, setEditingSlotKey] = useState<string | null>(null);
   const [servingDraft, setServingDraft] = useState(0);
   const [rebalancingSlotKey, setRebalancingSlotKey] = useState<string | null>(null);
+  const locked = status !== 'suggested';
+  const effectivePinnedSlotKeys = locked ? EMPTY_PINNED_SLOTS : pinnedSlotKeys;
+  const effectivePinnedCount = effectivePinnedSlotKeys.size;
 
   const handleToggleServing = (dish: DishSuggestionResponse) => {
     if (!dish.slotKey) return;
@@ -140,10 +142,10 @@ const MealCard = ({
 
         {status !== 'suggested' && <StatusPill status={status} />}
 
-        {pinnedCount > 0 && (
+        {effectivePinnedCount > 0 && (
           <span className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-full bg-brand-green-light px-3 py-[5px] text-[12.5px] font-semibold text-brand-green-darker ring-1 ring-brand-green/30">
             <MapPinIcon className="h-3 w-3" />
-            {pinnedCount} món đã ghim
+            {effectivePinnedCount} món đã ghim
           </span>
         )}
 
@@ -176,7 +178,7 @@ const MealCard = ({
 
       {expanded && (
         <div className={mobile ? 'px-4 pb-4' : 'px-5 pb-5'}>
-          {suggestion && (
+          {!locked && suggestion && (
             <div className="mx-1 mb-4 mt-1 flex items-center gap-2.5 rounded-r-lg border-l-4 border-amber-500 bg-amber-50 px-3.5 py-3">
               <LightBulbIcon className="h-5 w-5 shrink-0 text-amber-600" />
               <div className="min-w-0 flex-1 text-[12.5px] leading-snug text-amber-900">
@@ -211,16 +213,18 @@ const MealCard = ({
                 key={dish.slotKey ?? `${dish.dishId}-${index}`}
                 dish={dish}
                 isLast={index === dishes.length - 1}
-                pinned={dish.slotKey ? pinnedSlotKeys.has(dish.slotKey) : false}
-                onSwapClick={onSwapClick}
+                pinned={dish.slotKey ? effectivePinnedSlotKeys.has(dish.slotKey) : false}
+                onSwapClick={locked ? undefined : onSwapClick}
                 onToggleFavorite={onToggleFavorite}
-                onTogglePin={onTogglePin}
+                onTogglePin={locked ? undefined : onTogglePin}
                 editingServing={editingSlotKey === dish.slotKey}
                 servingDraft={editingSlotKey === dish.slotKey ? servingDraft : undefined}
-                onToggleServing={() => handleToggleServing(dish)}
+                onToggleServing={locked ? undefined : () => handleToggleServing(dish)}
                 onServingDraftChange={setServingDraft}
                 onRebalance={
-                  onRebalanceServing ? () => void handleRebalanceServing(dish) : undefined
+                  locked || !onRebalanceServing
+                    ? undefined
+                    : () => void handleRebalanceServing(dish)
                 }
                 rebalanceLoading={rebalancingSlotKey === dish.slotKey}
               />

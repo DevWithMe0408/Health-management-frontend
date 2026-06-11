@@ -13,7 +13,7 @@ interface FoodRowProps {
   dish: DishSuggestionResponse;
   isLast: boolean;
   pinned?: boolean;
-  onSwapClick: (slotKey: string, currentDish: DishSuggestionResponse) => void;
+  onSwapClick?: (slotKey: string, currentDish: DishSuggestionResponse) => void;
   onToggleFavorite: (dishId: string, currentFavorite: boolean) => void | Promise<void>;
   onTogglePin?: (slotKey: string) => void;
   editingServing?: boolean;
@@ -43,7 +43,8 @@ const FoodRow = ({
   rebalanceLoading = false,
 }: FoodRowProps) => {
   const dishName = dish.dishName ?? 'Món ăn';
-  const canSwap = Boolean(dish.slotKey);
+  const canSwap = Boolean(dish.slotKey && onSwapClick);
+  const canEditServing = Boolean(dish.slotKey && onToggleServing);
   const hasUnit = Boolean(dish.unit && dish.baseServingG);
 
   const containerClass = [
@@ -69,7 +70,7 @@ const FoodRow = ({
               favorite={dish.favorite}
               onToggle={onToggleFavorite}
             />
-            {pinned && (
+            {pinned && onTogglePin && (
               <button
                 type="button"
                 onClick={(event) => {
@@ -106,10 +107,10 @@ const FoodRow = ({
         </div>
 
         <div className="flex shrink-0 items-center gap-2">
-          {hasUnit && (
+          {hasUnit && onToggleServing && (
             <button
               type="button"
-              disabled={!canSwap}
+              disabled={!canEditServing}
               className={`inline-flex shrink-0 items-center justify-center gap-1.5 rounded-lg border px-3 py-2 text-xs font-semibold transition disabled:cursor-not-allowed disabled:opacity-50 ${
                 editingServing
                   ? 'border-brand-green bg-brand-green-light text-brand-green-dark hover:bg-brand-green-light'
@@ -127,19 +128,21 @@ const FoodRow = ({
             </button>
           )}
 
-          <button
-            type="button"
-            disabled={!canSwap}
-            className="inline-flex shrink-0 items-center justify-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3 py-2 text-xs font-semibold text-gray-600 transition hover:bg-gray-50 hover:text-brand-green-dark disabled:cursor-not-allowed disabled:opacity-50"
-            onClick={() => dish.slotKey && onSwapClick(dish.slotKey, dish)}
-          >
-            <ArrowPathIcon className="h-3.5 w-3.5" />
-            Đổi món
-          </button>
+          {onSwapClick && (
+            <button
+              type="button"
+              disabled={!canSwap}
+              className="inline-flex shrink-0 items-center justify-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3 py-2 text-xs font-semibold text-gray-600 transition hover:bg-gray-50 hover:text-brand-green-dark disabled:cursor-not-allowed disabled:opacity-50"
+              onClick={() => dish.slotKey && onSwapClick(dish.slotKey, dish)}
+            >
+              <ArrowPathIcon className="h-3.5 w-3.5" />
+              Đổi món
+            </button>
+          )}
         </div>
       </div>
 
-      {editingServing && hasUnit && dish.unit && dish.baseServingG && (
+      {editingServing && onToggleServing && hasUnit && dish.unit && dish.baseServingG && (
         <div className="ml-[72px] mt-3">
           <ServingStepper
             name={dishName}
